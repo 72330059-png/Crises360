@@ -4,14 +4,12 @@
     android:orientation="horizontal"
     android:layout_marginBottom="14dp">
 
-    <!-- 🔴 PRIORITY STRIP -->
     <View
         android:id="@+id/priorityStrip"
         android:layout_width="6dp"
         android:layout_height="match_parent"
         android:background="#D32F2F"/>
 
-    <!-- CARD CONTENT -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -20,13 +18,11 @@
         android:padding="16dp"
         android:elevation="6dp">
 
-        <!-- TOP ROW -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
-            <!-- TYPE -->
             <TextView
                 android:id="@+id/txtType"
                 android:layout_width="0dp"
@@ -37,7 +33,6 @@
                 android:textSize="15sp"
                 android:textColor="#D32F2F"/>
 
-            <!-- TIME -->
             <TextView
                 android:id="@+id/txtTime"
                 android:layout_width="wrap_content"
@@ -47,7 +42,6 @@
                 android:textColor="#999"/>
         </LinearLayout>
 
-        <!-- MESSAGE -->
         <TextView
             android:id="@+id/txtMessage"
             android:layout_width="match_parent"
@@ -57,7 +51,6 @@
             android:textColor="#333"
             android:layout_marginTop="8dp"/>
 
-        <!-- LOCATION -->
         <TextView
             android:id="@+id/txtLocation"
             android:layout_width="wrap_content"

@@ -26,8 +26,6 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-
-        //  Fade animation
         ImageView bg = findViewById(R.id.backgroundImage);
 
         Animation fadeIn = AnimationUtils.loadAnimation(this, R.anim.fade_in);

@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- Background Image -->
+
     <ImageView
         android:id="@+id/backgroundImage"
         android:layout_width="0dp"
@@ -18,7 +18,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!-- Dark overlay -->
+
     <View
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -28,9 +28,8 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!-- App Name -->
 
-    <!-- Copyright text -->
+
     <TextView
         android:id="@+id/appName"
         android:layout_width="wrap_content"
@@ -54,7 +53,7 @@
         android:id="@+id/copyright"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="© 2026 Crisis360. All rights reserved."
+        android:text="© 2026 Crises360. All rights reserved."
         android:textColor="#CCFFFFFF"
         android:textSize="12sp"
         android:layout_marginBottom="20dp"

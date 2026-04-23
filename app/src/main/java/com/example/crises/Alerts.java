@@ -58,7 +58,6 @@ public class Alerts extends AppCompatActivity {
         recyclerView = findViewById(R.id.recyclerAlerts);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        // ✅ SAMPLE DATA
         list = new ArrayList<>();
         list.add(new AlertModel(1, "Danger", "Explosion reported", "Beirut", "2 min ago", "ACTIVE"));
         list.add(new AlertModel(2, "Safe", "Area secured", "Hamra", "5 min ago", "ACTIVE"));
@@ -71,7 +70,7 @@ public class Alerts extends AppCompatActivity {
         initBottomNavigation();
     }
 
-    // 🚨 SWIPE ACTIONS
+
     private void initSwipe() {
 
         ItemTouchHelper.SimpleCallback swipe = new ItemTouchHelper.SimpleCallback(0,
@@ -146,8 +145,6 @@ public class Alerts extends AppCompatActivity {
 
         new ItemTouchHelper(swipe).attachToRecyclerView(recyclerView);
     }
-
-    // 📌 BOTTOM NAVIGATION
     private void initBottomNavigation() {
 
         bottomNav = findViewById(R.id.bottomNavigation);

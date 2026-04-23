@@ -41,49 +41,26 @@ public class HomeActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // 1. Enable modern edge-to-edge UI and set layout
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_home);
-
-        // 2. Initialize Top App Bar (Notifications & Settings)
         initTopAppBar();
-
-        // 3. Initialize ImageSwitcher (Top Slideshow)
         initImageSwitcher();
-
-        // 4. Initialize News Card & Animation
         initNewsSection();
-
-        // 5. Initialize Bottom Navigation
         initBottomNavigation();
     }
 
-    /**
-     * Sets up the Notification and Settings buttons in the top app bar
-     */
     private void initTopAppBar() {
         ImageButton notificationBtn = findViewById(R.id.notificationBtn);
         ImageButton settingsBtn = findViewById(R.id.settingsBtn);
-
-        // Click listener for Notification Button
         notificationBtn.setOnClickListener(v -> {
-            // Assumes you have an activity named Notifications
             Intent intent = new Intent(HomeActivity.this, Notifications.class);
             startActivity(intent);
         });
-
-        // Click listener for Settings Button
         settingsBtn.setOnClickListener(v -> {
-            // Assumes you have an activity named Settings
             Intent intent = new Intent(HomeActivity.this, Settings.class);
             startActivity(intent);
         });
     }
-
-    /**
-     * Sets up the top image slideshow with fade effects
-     */
     private void initImageSwitcher() {
         imageSwitcher = findViewById(R.id.imageSwitcher);
 
@@ -123,10 +100,6 @@ public class HomeActivity extends AppCompatActivity {
             }
         }, SLIDE_DELAY);
     }
-
-    /**
-     * Sets up the News Card click listener and the Zoom animation
-     */
     private void initNewsSection() {
         CardView newsCard = findViewById(R.id.newsCard);
         ImageView newsImage = findViewById(R.id.newsImage);
@@ -142,10 +115,6 @@ public class HomeActivity extends AppCompatActivity {
             startActivity(intent);
         });
     }
-
-    /**
-     * Sets up the footer navigation bar
-     */
     private void initBottomNavigation() {
         BottomNavigationView bottomNav = findViewById(R.id.bottomNavigation);
         bottomNav.setSelectedItemId(R.id.nav_home);
@@ -184,7 +153,6 @@ public class HomeActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // Stop the slideshow timer to prevent memory leaks
         slideshowHandler.removeCallbacksAndMessages(null);
     }
 }

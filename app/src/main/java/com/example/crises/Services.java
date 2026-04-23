@@ -19,8 +19,6 @@ public class Services extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_services);
-
-        // QUICK CALL BUTTON
         quickCall = findViewById(R.id.btnQuickCall);
 
         quickCall.setOnClickListener(v -> {
@@ -42,8 +40,6 @@ public class Services extends AppCompatActivity {
 
             builder.show();
         });
-
-        // BOTTOM NAVIGATION
         BottomNavigationView bottomNav = findViewById(R.id.bottomNavigation);
         bottomNav.setSelectedItemId(R.id.nav_service);
 

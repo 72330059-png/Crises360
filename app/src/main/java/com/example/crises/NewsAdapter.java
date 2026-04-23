@@ -35,7 +35,6 @@ public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.ViewHolder> {
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        // Use the parent's context to avoid memory leaks
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_news, parent, false);
         return new ViewHolder(view);
@@ -60,7 +59,6 @@ public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.ViewHolder> {
         holder.title.setText(news.getTitle());
         holder.date.setText(news.getPubDate());
 
-        // Open news link when clicked
         holder.itemView.setOnClickListener(v -> {
             String url = news.getLink();
             if (url != null && !url.isEmpty()) {

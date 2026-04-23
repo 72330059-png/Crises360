@@ -24,8 +24,6 @@ public class Settings extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         prefs = getSharedPreferences("settings", MODE_PRIVATE);
-
-        // 🌙 DARK MODE (KEEP OR REMOVE IF NOT NEEDED)
         if (prefs.getBoolean("dark", false)) {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
         } else {
@@ -33,8 +31,6 @@ public class Settings extends AppCompatActivity {
         }
 
         setContentView(R.layout.activity_settings);
-
-        // INIT
         backBtn = findViewById(R.id.backBtn);
 
         swNotifications = findViewById(R.id.switch_notifications);
@@ -42,10 +38,7 @@ public class Settings extends AppCompatActivity {
         swSafe = findViewById(R.id.switch_safe);
         swSound = findViewById(R.id.switch_sound);
         swVibration = findViewById(R.id.switch_vibration);
-
         languageGroup = findViewById(R.id.language_group);
-
-        // LOAD SAVED VALUES
         swNotifications.setChecked(prefs.getBoolean("notifications", true));
         swDanger.setChecked(prefs.getBoolean("danger", true));
         swSafe.setChecked(prefs.getBoolean("safe", true));
@@ -60,7 +53,6 @@ public class Settings extends AppCompatActivity {
             languageGroup.check(R.id.lang_en);
         }
 
-        // SAVE SETTINGS
         swNotifications.setOnCheckedChangeListener((b, v) ->
                 prefs.edit().putBoolean("notifications", v).apply());
 
@@ -76,7 +68,7 @@ public class Settings extends AppCompatActivity {
         swVibration.setOnCheckedChangeListener((b, v) ->
                 prefs.edit().putBoolean("vibration", v).apply());
 
-        // 🌍 LANGUAGE FIX (IMPORTANT)
+
         languageGroup.setOnCheckedChangeListener((group, checkedId) -> {
 
             if (checkedId == R.id.lang_ar) {
@@ -87,8 +79,6 @@ public class Settings extends AppCompatActivity {
 
             recreate();
         });
-
-        // 🔙 BACK TO HOME
         backBtn.setOnClickListener(v -> {
             Intent intent = new Intent(Settings.this, HomeActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);

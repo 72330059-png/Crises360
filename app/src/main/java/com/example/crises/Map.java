@@ -26,12 +26,8 @@ public class Map extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // 1. Enable EdgeToEdge
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_map);
-
-        // 2. Safely apply window insets to prevent the NullPointerException crash
         View mainView = findViewById(R.id.main);
         if (mainView != null) {
             ViewCompat.setOnApplyWindowInsetsListener(mainView, (v, insets) -> {
@@ -40,21 +36,15 @@ public class Map extends AppCompatActivity {
                 return insets;
             });
         }
-
-        // 3. Setup Bottom Navigation
         initBottomNavigation();
     }
 
     private void initBottomNavigation() {
         BottomNavigationView bottomNav = findViewById(R.id.bottomNavigation);
-
-        // Ensure the Map icon is highlighted
         bottomNav.setSelectedItemId(R.id.nav_map);
 
         bottomNav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
-
-            // If user clicks Map while already on Map, do nothing
             if (id == R.id.nav_map) return true;
 
             Intent intent = null;
@@ -69,7 +59,7 @@ public class Map extends AppCompatActivity {
             }
 
             if (intent != null) {
-                // FLAG_ACTIVITY_REORDER_TO_FRONT prevents creating multiple copies of pages
+                //  prevents creating multiple copies of pages
                 intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                 startActivity(intent);
                 overridePendingTransition(0, 0); // Smooth "no-jump" transition

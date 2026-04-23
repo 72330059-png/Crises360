@@ -27,20 +27,14 @@ public class Account extends AppCompatActivity {
     protected void attachBaseContext(Context newBase) {
         SharedPreferences prefs = newBase.getSharedPreferences("settings", MODE_PRIVATE);
         String lang = prefs.getString("lang", "en");
-        // Ensure LocaleHelper exists in your project
         super.attachBaseContext(LocaleHelper.setLocale(newBase, lang));
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // 1. MUST BE FIRST: Enable EdgeToEdge and Set Content View
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_account);
-
-        // 2. Fix the Insets (Padding for status bar)
-        // Ensure your XML root has: android:id="@+id/main"
         View mainView = findViewById(R.id.main);
         if (mainView != null) {
             ViewCompat.setOnApplyWindowInsetsListener(mainView, (v, insets) -> {
@@ -50,27 +44,26 @@ public class Account extends AppCompatActivity {
             });
         }
 
-        // 3. Setup the Dropdowns (Material Exposed Dropdowns)
+        // Setup the Dropdowns
         setupDropdowns();
 
-        // 4. Setup the Calendar for Date of Birth
+        // Setup the Calendar
         setupCalendar();
 
-        // 5. Setup Save Button
+        //  Save Button
         View btnSave = findViewById(R.id.btnSave);
         if (btnSave != null) {
             btnSave.setOnClickListener(v -> {
                 Toast.makeText(this, "Profile Updated Successfully!", Toast.LENGTH_SHORT).show();
-                // Add your database/SharedPreferences saving logic here
+
             });
         }
 
-        // 6. Setup Bottom Navigation
+
         initBottomNavigation();
     }
 
     private void setupDropdowns() {
-        // --- Gender Dropdown ---
         String[] genders = {"Male", "Female", "Other"};
         ArrayAdapter<String> genderAdapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_list_item_1, genders);
@@ -79,7 +72,7 @@ public class Account extends AppCompatActivity {
             genderDropdown.setAdapter(genderAdapter);
         }
 
-        // --- Family Status Dropdown ---
+
         String[] statusList = {"Single", "Married", "Divorced", "Widowed"};
         ArrayAdapter<String> statusAdapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_list_item_1, statusList);
@@ -88,7 +81,6 @@ public class Account extends AppCompatActivity {
             statusDropdown.setAdapter(statusAdapter);
         }
 
-        // --- Blood Group Dropdown ---
         String[] bloodGroups = {"A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"};
         ArrayAdapter<String> bloodAdapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_list_item_1, bloodGroups);
@@ -103,8 +95,6 @@ public class Account extends AppCompatActivity {
     private void setupCalendar() {
         EditText etDob = findViewById(R.id.etDob);
         if (etDob == null) return;
-
-        // When user clicks the Date of Birth field
         etDob.setOnClickListener(v -> {
             final Calendar c = Calendar.getInstance();
             int year = c.get(Calendar.YEAR);
@@ -113,12 +103,9 @@ public class Account extends AppCompatActivity {
 
             DatePickerDialog datePickerDialog = new DatePickerDialog(this,
                     (view, selectedYear, selectedMonth, selectedDay) -> {
-                        // Months are 0-indexed, so add 1
                         String date = selectedDay + "/" + (selectedMonth + 1) + "/" + selectedYear;
                         etDob.setText(date);
                     }, year, month, day);
-
-            // Set max date to today so they can't select future dates
             datePickerDialog.getDatePicker().setMaxDate(System.currentTimeMillis());
             datePickerDialog.show();
         });

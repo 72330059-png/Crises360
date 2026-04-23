@@ -6,7 +6,6 @@
     android:layout_height="match_parent"
     android:background="#F4F6FA">
 
-    <!-- HEADER -->
     <LinearLayout
         android:id="@+id/header"
         android:layout_width="match_parent"
@@ -31,7 +30,7 @@
             android:layout_marginTop="4dp" />
     </LinearLayout>
 
-    <!-- ALERT LIST -->
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerAlerts"
         android:layout_width="match_parent"
@@ -41,7 +40,7 @@
         android:padding="16dp"
         android:clipToPadding="false" />
 
-    <!-- BOTTOM NAVIGATION -->
+
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"

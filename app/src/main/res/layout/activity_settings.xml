@@ -4,7 +4,6 @@
     android:layout_height="match_parent"
     android:background="#F6F8FC">
 
-    <!-- 🔙 HEADER -->
     <LinearLayout
         android:id="@+id/header"
         android:layout_width="match_parent"
@@ -14,7 +13,6 @@
         android:padding="12dp"
         android:background="#F6F8FC">
 
-        <!-- Back Icon -->
         <TextView
             android:id="@+id/backBtn"
             android:layout_width="48dp"
@@ -26,7 +24,6 @@
             android:gravity="center"
             android:background="?android:attr/selectableItemBackgroundBorderless"/>
 
-        <!-- Title -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -37,7 +34,7 @@
             android:layout_marginStart="12dp"/>
     </LinearLayout>
 
-    <!-- CONTENT -->
+
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -48,8 +45,6 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="16dp">
-
-            <!-- 🔔 NOTIFICATIONS -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -89,14 +84,10 @@
                 android:layout_height="wrap_content"
                 android:text="📳 Vibration"/>
 
-            <!-- SPACE -->
             <View
                 android:layout_width="match_parent"
                 android:layout_height="20dp"/>
 
-
-
-            <!-- 🌍 LANGUAGE -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
