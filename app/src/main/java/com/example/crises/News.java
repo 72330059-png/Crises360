@@ -1,34 +1,86 @@
 package com.example.crises;
 
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
 
 public class News extends AppCompatActivity {
 
-    @Override
-    protected void attachBaseContext(Context newBase) {
+    RecyclerView recyclerView;
+    ArrayList<Newsss> list;
+    NewsAdapter adapter;
 
-        SharedPreferences prefs = newBase.getSharedPreferences("settings", MODE_PRIVATE);
-        String lang = prefs.getString("lang", "en");
-
-        super.attachBaseContext(LocaleHelper.setLocale(newBase, lang));
-    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_news);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
+
+        recyclerView = findViewById(R.id.recyclerView);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        list = new ArrayList<>();
+
+        loadNews();
+    }
+
+    private void loadNews() {
+
+        new Thread(() -> {
+            try {
+
+                URL url = new URL("http://10.0.2.2/crises_api/get_news.php");
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("GET");
+
+                BufferedReader br = new BufferedReader(
+                        new InputStreamReader(conn.getInputStream())
+                );
+
+                StringBuilder sb = new StringBuilder();
+                String line;
+
+                while ((line = br.readLine()) != null) {
+                    sb.append(line);
+                }
+
+                JSONArray array = new JSONArray(sb.toString());
+
+                list.clear();
+
+                for (int i = 0; i < array.length(); i++) {
+
+                    JSONObject obj = array.getJSONObject(i);
+
+                    list.add(new Newsss(
+                            obj.optString("title"),
+                            obj.optString("description"),
+                            obj.optString("source"),
+                            obj.optString("location"),
+                            obj.optString("type"),
+                            obj.optString("pubDate"),
+                            obj.optString("severity")
+                    ));
+                }
+
+                runOnUiThread(() -> {
+                    adapter = new NewsAdapter(list);
+                    recyclerView.setAdapter(adapter);
+                });
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 }

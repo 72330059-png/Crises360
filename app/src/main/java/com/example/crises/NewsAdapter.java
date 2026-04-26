@@ -1,13 +1,10 @@
 package com.example.crises;
 
-import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -16,65 +13,69 @@ import java.util.List;
 
 public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.ViewHolder> {
 
-    private final List<com.example.crises.Newsss> list;
+    List<Newsss> list;
 
-    public NewsAdapter(List<com.example.crises.Newsss> list, Context context) {
+    public NewsAdapter(List<Newsss> list) {
         this.list = list;
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        private final TextView title, date;
+
+        TextView title, description, source, location, type, date, severity;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
+
             title = itemView.findViewById(R.id.title);
+            description = itemView.findViewById(R.id.description);
+            source = itemView.findViewById(R.id.source);
+            location = itemView.findViewById(R.id.location);
+            type = itemView.findViewById(R.id.type);
             date = itemView.findViewById(R.id.date);
+            severity = itemView.findViewById(R.id.severity);
         }
     }
 
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
+        View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_news, parent, false);
-        return new ViewHolder(view);
+        return new ViewHolder(v);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        com.example.crises.Newsss news = list.get(position);
-        holder.itemView.setAlpha(0f);
-        holder.itemView.setTranslationY(50);
 
-        holder.itemView.setScaleX(0.9f);
-        holder.itemView.setScaleY(0.9f);
-        holder.itemView.setAlpha(0f);
+        Newsss news = list.get(position);
 
-        holder.itemView.animate()
-                .scaleX(1f)
-                .scaleY(1f)
-                .alpha(1f)
-                .setDuration(300)
-                .start();
         holder.title.setText(news.getTitle());
+        holder.description.setText(news.getDescription());
+        holder.source.setText("Source: " + news.getSource());
+        holder.location.setText("Location: " + news.getLocation());
+        holder.type.setText("Type: " + news.getType());
         holder.date.setText(news.getPubDate());
 
-        holder.itemView.setOnClickListener(v -> {
-            String url = news.getLink();
-            if (url != null && !url.isEmpty()) {
-                try {
-                    Intent intent = new Intent(Intent.ACTION_VIEW);
-                    intent.setData(Uri.parse(url));
-                    v.getContext().startActivity(intent);
-                } catch (Exception e) {
-                    Toast.makeText(v.getContext(), "Cannot open link", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
+        holder.severity.setText("Severity: " + news.getSeverity());
+
+        // Color severity
+        switch (news.getSeverity()) {
+            case "HIGH":
+                holder.severity.setTextColor(Color.RED);
+                break;
+            case "MEDIUM":
+                holder.severity.setTextColor(Color.parseColor("#FF9800"));
+                break;
+            case "LOW":
+                holder.severity.setTextColor(Color.GREEN);
+                break;
+            default:
+                holder.severity.setTextColor(Color.GRAY);
+        }
     }
 
     @Override
     public int getItemCount() {
-        return list != null ? list.size() : 0;
+        return list.size();
     }
 }

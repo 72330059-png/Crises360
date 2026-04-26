@@ -25,7 +25,7 @@ public class HomeActivity extends AppCompatActivity {
     // --- Variables for top Image Slideshow ---
     private ImageSwitcher imageSwitcher;
     // Ensure these image names exist in your res/drawable folder
-    private int[] slideshowImages = {R.drawable.image1, R.drawable.image2, R.drawable.image3};
+    private int[] slideshowImages = {R.drawable.image1, R.drawable.image2, R.drawable.image3,R.drawable.image4,R.drawable.image5,R.drawable.image6,R.drawable.image7,R.drawable.image8};
     private int currentSlideIndex = 0;
     private Handler slideshowHandler = new Handler();
     private final int SLIDE_DELAY = 5000; // Change every 5 seconds
