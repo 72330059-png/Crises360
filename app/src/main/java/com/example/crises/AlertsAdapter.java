@@ -50,36 +50,45 @@ public class AlertsAdapter extends RecyclerView.Adapter<AlertsAdapter.ViewHolder
 
         AlertModel alert = list.get(position);
 
-        holder.txtType.setText(alert.getType());
         holder.txtMessage.setText(alert.getMessage());
         holder.txtLocation.setText(alert.getLocation());
         holder.txtTime.setText(alert.getTime());
 
-        switch (alert.getType()) {
+        String type = alert.getType();
 
-            case "Danger":
-                holder.strip.setBackgroundColor(Color.RED);
-                holder.txtType.setText("🚨 Danger");
-                break;
+        if (type != null) {
+            type = type.trim().toLowerCase();
 
-            case "Safe":
-                holder.strip.setBackgroundColor(Color.GREEN);
-                holder.txtType.setText("🟢 Safe Zone");
-                break;
+            switch (type) {
 
-            case "Shelter":
-                holder.strip.setBackgroundColor(Color.BLUE);
-                holder.txtType.setText("🏠 Shelter");
-                break;
+                case "danger":
+                    setStyle(holder, Color.RED, "🚨 Danger");
+                    break;
 
-            default:
-                holder.strip.setBackgroundColor(Color.GRAY);
-                holder.txtType.setText("ℹ️ Info");
+                case "safe":
+                    setStyle(holder, Color.GREEN, "🟢 Safe Zone");
+                    break;
+
+                case "shelter":
+                    setStyle(holder, Color.BLUE, "🏠 Shelter");
+                    break;
+
+                default:
+                    setStyle(holder, Color.GRAY, "ℹ️ Info");
+                    break;
+            }
+        } else {
+            setStyle(holder, Color.GRAY, "ℹ️ Info");
         }
+    }
+
+    private void setStyle(ViewHolder holder, int color, String label) {
+        holder.strip.setBackgroundColor(color);
+        holder.txtType.setText(label);
     }
 
     @Override
     public int getItemCount() {
-        return list.size();
+        return list != null ? list.size() : 0;
     }
 }

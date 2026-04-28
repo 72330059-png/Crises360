@@ -21,7 +21,13 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 
@@ -59,18 +65,55 @@ public class Alerts extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         list = new ArrayList<>();
-        list.add(new AlertModel(1, "Danger", "Explosion reported", "Beirut", "2 min ago", "ACTIVE"));
-        list.add(new AlertModel(2, "Safe", "Area secured", "Hamra", "5 min ago", "ACTIVE"));
-        list.add(new AlertModel(3, "Shelter", "Shelter available", "Jounieh", "10 min ago", "ACTIVE"));
 
-        adapter = new AlertsAdapter(list);
-        recyclerView.setAdapter(adapter);
+        loadAlertsFromServer();
 
         initSwipe();
         initBottomNavigation();
     }
 
 
+    private void loadAlertsFromServer() {
+
+        String url = "http://10.0.2.2/crises_api/get_alerts.php";
+
+        JsonArrayRequest request = new JsonArrayRequest(Request.Method.GET, url, null,
+                response -> {
+
+                    try {
+
+                        list.clear();
+
+                        for (int i = 0; i < response.length(); i++) {
+
+                            JSONObject obj = response.getJSONObject(i);
+
+                            int id = obj.getInt("id");
+                            String type = obj.getString("type");
+                            String message = obj.getString("message");
+                            String location = obj.getString("location");
+                            String time = obj.getString("time");
+                            String status = obj.getString("status");
+
+                            list.add(new AlertModel(id, type, message, location, time, status));
+                        }
+
+                        adapter = new AlertsAdapter(list);
+                        recyclerView.setAdapter(adapter);
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                },
+                error -> error.printStackTrace()
+        );
+
+        RequestQueue queue = Volley.newRequestQueue(this);
+        queue.add(request);
+    }
+
+    // 🔥 SWIPE (UI only for now)
     private void initSwipe() {
 
         ItemTouchHelper.SimpleCallback swipe = new ItemTouchHelper.SimpleCallback(0,
@@ -87,14 +130,8 @@ public class Alerts extends AppCompatActivity {
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
 
                 int position = viewHolder.getAdapterPosition();
-                AlertModel item = list.get(position);
 
-                if (direction == ItemTouchHelper.RIGHT) {
-                    item.status = "DELETED";
-                } else {
-                    item.status = "ARCHIVED";
-                }
-
+                // ⚠️ UI remove only (DB update later)
                 list.remove(position);
                 adapter.notifyItemRemoved(position);
             }
@@ -107,35 +144,28 @@ public class Alerts extends AppCompatActivity {
 
                 View itemView = viewHolder.itemView;
                 Paint paint = new Paint();
-                Drawable icon;
 
                 if (dX > 0) {
 
                     paint.setColor(Color.parseColor("#FF3B30"));
                     c.drawRect(
-                            (float) itemView.getLeft(),
-                            (float) itemView.getTop(),
+                            itemView.getLeft(),
+                            itemView.getTop(),
                             itemView.getLeft() + dX,
-                            (float) itemView.getBottom(),
+                            itemView.getBottom(),
                             paint
                     );
-
-                    icon = ContextCompat.getDrawable(Alerts.this,
-                            android.R.drawable.ic_menu_delete);
 
                 } else {
 
                     paint.setColor(Color.parseColor("#007AFF"));
                     c.drawRect(
-                            (float) itemView.getRight() + dX,
-                            (float) itemView.getTop(),
-                            (float) itemView.getRight(),
-                            (float) itemView.getBottom(),
+                            itemView.getRight() + dX,
+                            itemView.getTop(),
+                            itemView.getRight(),
+                            itemView.getBottom(),
                             paint
                     );
-
-                    icon = ContextCompat.getDrawable(Alerts.this,
-                            android.R.drawable.ic_menu_save);
                 }
 
                 super.onChildDraw(c, recyclerView, viewHolder,
@@ -145,6 +175,7 @@ public class Alerts extends AppCompatActivity {
 
         new ItemTouchHelper(swipe).attachToRecyclerView(recyclerView);
     }
+
     private void initBottomNavigation() {
 
         bottomNav = findViewById(R.id.bottomNavigation);
