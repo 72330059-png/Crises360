@@ -15,7 +15,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class Services extends AppCompatActivity {
 
-    CardView quickCall, sheltersCard, sosCard;
+    CardView quickCall, sheltersCard, sosCard, cardHospitals;
     LinearLayout shelterOptions;
     TextView houses, schools;
 
@@ -24,6 +24,7 @@ public class Services extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_services);
 
+        initHospitals();
         initSOS();
         initQuickCall();
         initShelters();
@@ -104,6 +105,15 @@ public class Services extends AppCompatActivity {
         );
     }
 
+    private void initHospitals() {
+
+        cardHospitals = findViewById(R.id.cardHospitals);
+
+        cardHospitals.setOnClickListener(v -> {
+            Intent intent = new Intent(Services.this, Hospitals.class);
+            startActivity(intent);
+        });
+    }
     private void initBottomNav() {
 
         BottomNavigationView bottomNav = findViewById(R.id.bottomNavigation);
