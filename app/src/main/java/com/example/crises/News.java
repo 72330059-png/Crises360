@@ -1,6 +1,7 @@
 package com.example.crises;
 
 import android.os.Bundle;
+import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -30,6 +31,8 @@ public class News extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         list = new ArrayList<>();
+        adapter = new NewsAdapter(list);
+        recyclerView.setAdapter(adapter);
 
         loadNews();
     }
@@ -37,11 +40,14 @@ public class News extends AppCompatActivity {
     private void loadNews() {
 
         new Thread(() -> {
+
             try {
 
                 URL url = new URL("http://10.0.2.2/crises_api/get_news.php");
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("GET");
+                conn.setConnectTimeout(10000);
+                conn.setReadTimeout(10000);
 
                 BufferedReader br = new BufferedReader(
                         new InputStreamReader(conn.getInputStream())
@@ -73,13 +79,10 @@ public class News extends AppCompatActivity {
                     ));
                 }
 
-                runOnUiThread(() -> {
-                    adapter = new NewsAdapter(list);
-                    recyclerView.setAdapter(adapter);
-                });
+                runOnUiThread(() -> adapter.notifyDataSetChanged());
 
             } catch (Exception e) {
-                e.printStackTrace();
+                Log.e("NEWS_ERROR", e.getMessage());
             }
         }).start();
     }
