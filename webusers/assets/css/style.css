@@ -1,0 +1,85 @@
+:root {
+  --navy: #0F3A77;
+  --yellow: #FDC500;
+  --light-bg: #ffffff;
+  --border: #e3e3e3;
+}
+
+
+.activity-header {
+    margin-bottom: 6px;
+}
+
+.activity-title {
+    font-weight: 600;
+    font-size: 15px;
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+.activity-status {
+    min-width: 110px;
+}
+
+.burger-btn {
+    background: none;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+    color: var(--navy);
+}
+
+.crm-nav-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.crm-user-dropdown {
+    position: relative;
+}
+
+
+.dropdown-menu {
+    display: none;
+}
+
+.dropdown-menu.show-menu {
+    display: block;
+}
+
+
+.dropdown-menu {
+    position: absolute;
+    top: 30px;
+    right: 0;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    display: none;
+    width: 150px;
+}
+.crm-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.4);
+    justify-content: center;
+    align-items: center;
+    z-index: 99999;
+}
+
+.dropdown-menu li a {
+    display: block;
+    padding: 10px;
+    text-decoration: none;
+    color: var(--navy);
+}
+
+.dropdown-menu li a:hover {
+    background: #f2f2f2;
+}
+
