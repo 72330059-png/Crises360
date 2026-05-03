@@ -17,7 +17,7 @@ public class Services extends AppCompatActivity {
 
     CardView quickCall, sheltersCard, sosCard, cardHospitals, cardNeeds;
     LinearLayout shelterOptions;
-    TextView houses, schools;
+    TextView houses, publicShelters;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,16 +36,13 @@ public class Services extends AppCompatActivity {
         sosCard = findViewById(R.id.cardSOS);
 
         sosCard.setOnClickListener(v -> {
-            // OPEN NEW PAGE ONLY
             Intent intent = new Intent(Services.this, SOSActivity.class);
             startActivity(intent);
         });
     }
     private void initNeeds() {
         cardNeeds = findViewById(R.id.cardNeeds);
-
         cardNeeds.setOnClickListener(v -> {
-
             Intent intent = new Intent(Services.this, Needs.class);
             startActivity(intent);
         });
@@ -96,7 +93,7 @@ public class Services extends AppCompatActivity {
         sheltersCard = findViewById(R.id.cardShelters);
         shelterOptions = findViewById(R.id.shelterOptions);
         houses = findViewById(R.id.optionHouses);
-        schools = findViewById(R.id.optionSchools);
+        publicShelters = findViewById(R.id.optionPublicShelters);
 
         sheltersCard.setOnClickListener(v -> {
             shelterOptions.setVisibility(
@@ -110,8 +107,8 @@ public class Services extends AppCompatActivity {
                 startActivity(new Intent(this, Houses.class))
         );
 
-        schools.setOnClickListener(v ->
-                startActivity(new Intent(this, Schools.class))
+        publicShelters.setOnClickListener(v ->
+                startActivity(new Intent(this, PublicShelters.class))
         );
     }
 
