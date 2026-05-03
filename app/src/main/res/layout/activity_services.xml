@@ -130,14 +130,24 @@
                             android:background="?attr/selectableItemBackground"/>
 
                         <TextView
-                            android:id="@+id/optionSchools"
+                            android:id="@+id/optionPublicShelters"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="🏫 Schools"
+                            android:text="🏫 Public Shelters"
                             android:textSize="16sp"
                             android:padding="10dp"
                             android:textColor="#1E3A5F"
                             android:background="?attr/selectableItemBackground"/>
+
+                        <!-- Subtitle -->
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Schools • Universities • Institutions"
+                            android:textSize="12sp"
+                            android:textColor="#5B7A99"
+                            android:paddingStart="10dp"
+                            android:paddingBottom="8dp"/>
 
                     </LinearLayout>
 

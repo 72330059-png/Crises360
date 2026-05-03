@@ -27,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
             if (!isFinishing()) {
                 startActivity(new Intent(MainActivity.this, HomeActivity.class));
+                Glide.with(getApplicationContext()).clear(bg);
                 finish();
             }
         }, 2500);

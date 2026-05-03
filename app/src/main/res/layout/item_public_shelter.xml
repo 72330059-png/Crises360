@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="12dp"
+    card_view:cardCornerRadius="20dp"
+    card_view:cardElevation="8dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- STATUS BAR -->
+        <TextView
+            android:id="@+id/status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="AVAILABLE"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:padding="8dp"
+            android:gravity="center"/>
+
+        <!-- CONTENT -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="14dp">
+
+            <!-- NAME -->
+            <TextView
+                android:id="@+id/name"
+                android:text="Beirut Public School"
+                android:textSize="17sp"
+                android:textStyle="bold"
+                android:textColor="#1E2A38"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+            <!-- LOCATION -->
+            <TextView
+                android:id="@+id/location"
+                android:text="📍 Beirut"
+                android:textSize="13sp"
+                android:textColor="#5B7A99"
+                android:layout_marginTop="4dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <!-- CAPACITY -->
+            <TextView
+                android:id="@+id/capacity"
+                android:text="👥 150 / 200"
+                android:textSize="14sp"
+                android:layout_marginTop="8dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <!-- ROOMS -->
+            <TextView
+                android:id="@+id/rooms"
+                android:text="🛏 10 empty rooms"
+                android:textSize="13sp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <!-- BUTTONS -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="10dp">
+
+                <TextView
+
+                    android:layout_height="wrap_content"
+                    android:id="@+id/call"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:text="📞 CALL"
+                    android:gravity="center"
+                    android:padding="10dp"
+                    android:textStyle="bold"
+                    android:background="#E3F2FD"
+                    android:textColor="#1E3A5F"/>
+
+                <TextView
+                    android:layout_height="wrap_content"
+                    android:id="@+id/details"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:text="INFO"
+                    android:gravity="center"
+                    android:padding="10dp"
+                    android:textStyle="bold"
+                    android:background="#F1F8E9"
+                    android:textColor="#2E7D32"/>
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>
