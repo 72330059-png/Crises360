@@ -1,12 +1,11 @@
-package com.example.crises;
-
-import android.Manifest;
+package com.example.crises;import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.MotionEvent;
-import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -20,7 +19,6 @@ import androidx.core.app.ActivityCompat;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.tasks.OnSuccessListener;
 
 public class SOSActivity extends AppCompatActivity {
 
@@ -33,7 +31,6 @@ public class SOSActivity extends AppCompatActivity {
 
     private String latitude = "Unknown";
     private String longitude = "Unknown";
-
 
     private float x1, x2;
     private static final int MIN_DISTANCE = 150;
@@ -51,7 +48,7 @@ public class SOSActivity extends AppCompatActivity {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         setupSpinner();
-        getLocation();
+        new Handler(Looper.getMainLooper()).postDelayed(this::getLocation, 500);
 
         sendBtn.setOnClickListener(v -> sendSOS());
     }
@@ -63,11 +60,12 @@ public class SOSActivity extends AppCompatActivity {
     }
 
     private void getLocation() {
+        if (isFinishing() || isDestroyed()) return;
+
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 100);
             return;
         }
-
 
         fusedLocationClient.getLastLocation().addOnSuccessListener(this, location -> {
             if (location != null) {
@@ -77,6 +75,8 @@ public class SOSActivity extends AppCompatActivity {
             } else {
                 locationText.setText("⚠ Location not available. Turn on GPS.");
             }
+        }).addOnFailureListener(e -> {
+            locationText.setText("⚠ GPS Error: " + e.getLocalizedMessage());
         });
     }
 
@@ -113,7 +113,6 @@ public class SOSActivity extends AppCompatActivity {
         }
     }
 
-
     @Override
     public boolean dispatchTouchEvent(MotionEvent event) {
         switch (event.getAction()) {
@@ -124,11 +123,15 @@ public class SOSActivity extends AppCompatActivity {
                 x2 = event.getX();
                 float deltaX = x2 - x1;
                 if (deltaX > MIN_DISTANCE) {
-                    onBackPressed(); // Use system back logic for safety
+                    finish();
                     return true;
                 }
                 break;
         }
-        return super.dispatchTouchEvent(event);
+        try {
+            return super.dispatchTouchEvent(event);
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

@@ -39,15 +39,19 @@ public class HospitalAdapter extends RecyclerView.Adapter<HospitalAdapter.ViewHo
         holder.available.setText(String.valueOf(h.getAvailableBeds()));
         holder.occupied.setText(String.valueOf(h.getOccupiedBeds()));
 
-        holder.status.setText("Status: " + h.getStatus());
+        String status = h.getStatus();
+        holder.status.setText(String.format("Status: %s", status));
 
-        if (h.getStatus().equalsIgnoreCase("Available")) {
-            holder.status.setTextColor(0xFF4CAF50);
-        } else if (h.getStatus().equalsIgnoreCase("Full")) {
-            holder.status.setTextColor(0xFFF44336);
+        // Optimize color selection to prevent logic overhead during scroll
+        int color;
+        if ("Available".equalsIgnoreCase(status)) {
+            color = 0xFF4CAF50;
+        } else if ("Full".equalsIgnoreCase(status)) {
+            color = 0xFFF44336;
         } else {
-            holder.status.setTextColor(0xFFFF9800);
+            color = 0xFFFF9800;
         }
+        holder.status.setTextColor(color);
     }
 
     @Override
