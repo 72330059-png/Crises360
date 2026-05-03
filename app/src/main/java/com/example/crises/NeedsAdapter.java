@@ -53,14 +53,14 @@ public class NeedsAdapter extends RecyclerView.Adapter<NeedsAdapter.ViewHolder> 
         holder.status.setText(need.getStatus());
         holder.availability.setText(need.getAvailability());
 
-        // 🟢 STATUS COLOR
+
         if (need.getStatus().equalsIgnoreCase("OPEN")) {
             holder.status.setTextColor(Color.parseColor("#2E7D32"));
         } else {
             holder.status.setTextColor(Color.RED);
         }
 
-        // 📦 AVAILABILITY COLOR
+
         switch (need.getAvailability().toLowerCase()) {
             case "available":
                 holder.availability.setTextColor(Color.parseColor("#2E7D32"));
