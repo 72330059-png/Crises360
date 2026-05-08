@@ -15,7 +15,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class Services extends AppCompatActivity {
 
-    CardView quickCall, sheltersCard, sosCard, cardHospitals, cardNeeds;
+    CardView  sheltersCard, sosCard, cardHospitals, cardNeeds;
     LinearLayout shelterOptions;
     TextView houses, publicShelters;
 
@@ -26,7 +26,6 @@ public class Services extends AppCompatActivity {
 
         initHospitals();
         initSOS();
-        initQuickCall();
         initShelters();
         initBottomNav();
         initNeeds();
@@ -45,46 +44,6 @@ public class Services extends AppCompatActivity {
         cardNeeds.setOnClickListener(v -> {
             Intent intent = new Intent(Services.this, Needs.class);
             startActivity(intent);
-        });
-    }
-    private void initQuickCall() {
-
-        quickCall = findViewById(R.id.btnQuickCall);
-
-        quickCall.setOnClickListener(v -> {
-
-            String[] options = {
-                    "🚑 Ambulance (140)",
-                    "🚓 Police (112)",
-                    "🚒 Fire Brigade (175)"
-            };
-
-            new AlertDialog.Builder(this)
-                    .setTitle("Choose Emergency Service")
-                    .setItems(options, (dialog, which) -> {
-
-                        String number;
-
-                        switch (which) {
-                            case 0:
-                                number = "140";
-                                break;
-                            case 1:
-                                number = "112";
-                                break;
-                            case 2:
-                                number = "175";
-                                break;
-                            default:
-                                number = "112";
-                        }
-
-                        Intent intent = new Intent(Intent.ACTION_DIAL);
-                        intent.setData(Uri.parse("tel:" + number));
-                        startActivity(intent);
-
-                    })
-                    .show();
         });
     }
 

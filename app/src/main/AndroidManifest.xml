@@ -19,6 +19,9 @@
         android:theme="@style/Theme.Crises"
         android:usesCleartextTraffic="true">
         <activity
+            android:name=".Login"
+            android:exported="false" />
+        <activity
             android:name=".ShelterDetails"
             android:exported="false" />
         <activity

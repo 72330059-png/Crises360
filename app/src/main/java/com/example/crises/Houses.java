@@ -2,23 +2,35 @@ package com.example.crises;
 
 import android.os.Bundle;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import java.util.ArrayList;
 
 public class Houses extends AppCompatActivity {
+
+    RecyclerView recyclerView;
+    ArrayList<House> houseList;
+    HouseAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_houses);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
+
+        recyclerView = findViewById(R.id.recyclerHouses);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        houseList = new ArrayList<>();
+
+        // 🏡 Sample Data (Lebanon cities)
+        houseList.add(new House("Beirut", "2 Bedrooms • Sea view", "$800/month", "03123456"));
+        houseList.add(new House("Tripoli", "3 Bedrooms • Spacious apartment", "$600/month", "70111222"));
+        houseList.add(new House("Saida", "Studio • Near center", "$450/month", "76123456"));
+        houseList.add(new House("Zahle", "Villa • Quiet area", "$1000/month", "71123456"));
+
+        adapter = new HouseAdapter(this, houseList);
+        recyclerView.setAdapter(adapter);
     }
 }
