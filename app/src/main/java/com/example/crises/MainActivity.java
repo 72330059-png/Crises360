@@ -14,22 +14,24 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_main);}
 
+    @Override
+    protected void onPostResume() {
+        super.onPostResume();
         ImageView bg = findViewById(R.id.backgroundImage);
-        Glide.with(this)
-                .load(R.drawable.logo2)
-                .override(1080, 1080)
-                .diskCacheStrategy(DiskCacheStrategy.ALL)
-                .centerCrop()
-                .into(bg);
+        if (bg != null) {
+            Glide.with(this)
+                    .load(R.drawable.logo2)
+                    .override(800, 800)
+                    .into(bg);
+        }
 
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
             if (!isFinishing()) {
-                startActivity(new Intent(MainActivity.this, HomeActivity.class));
-                Glide.with(getApplicationContext()).clear(bg);
+                startActivity(new Intent(MainActivity.this, Login.class));
                 finish();
             }
-        }, 2500);
+        }, 2000);
     }
 }

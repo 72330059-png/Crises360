@@ -6,35 +6,42 @@
     android:layout_height="match_parent"
     android:background="#DDE6ED">
 
-    <ScrollView
+    <!-- MAIN CONTENT AREA -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/bottomNavigation"
-        android:clipToPadding="false">
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:layout_above="@id/bottomNavigation">
 
-        <LinearLayout
-            android:layout_width="match_parent"
+        <!-- Title -->
+        <TextView
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="20dp">
+            android:text="🗺️ Map"
+            android:textSize="24sp"
+            android:textColor="#27374D"
+            android:textStyle="bold"/>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Map"
-                android:textSize="24sp"
-                android:textColor="#27374D"
-                android:textStyle="bold"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="View your latest safety alerts here."
+            android:textColor="#526D82"
+            android:textSize="15sp"/>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="View your latest safety alerts here."
-                android:textColor="#526D82"
-                android:textSize="16sp"/>
-        </LinearLayout>
-    </ScrollView>
+        <!-- MAP -->
+        <WebView
+            android:id="@+id/webview"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginTop="12dp"/>
+
+    </LinearLayout>
+
+    <!-- BOTTOM NAVIGATION (FIXED) -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"

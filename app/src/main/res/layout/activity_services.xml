@@ -178,29 +178,7 @@
                     android:textColor="#1E3A5F"/>
             </androidx.cardview.widget.CardView>
 
-            <!-- ⚡ Quick Emergency -->
-            <androidx.cardview.widget.CardView
-                android:id="@+id/btnQuickCall"
-                android:layout_width="match_parent"
-                android:layout_height="80dp"
-                android:layout_marginTop="10dp"
-                android:clickable="true"
-                android:focusable="true"
-                android:foreground="?attr/selectableItemBackground"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="6dp"
-                app:cardBackgroundColor="#DCEBFF">
 
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center_vertical"
-                    android:paddingStart="20dp"
-                    android:text="⚡ Quick Emergency Call"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:textColor="#1E3A5F"/>
-            </androidx.cardview.widget.CardView>
 
         </LinearLayout>
     </ScrollView>

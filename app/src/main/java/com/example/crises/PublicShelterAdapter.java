@@ -76,7 +76,7 @@ public class PublicShelterAdapter extends RecyclerView.Adapter<PublicShelterAdap
             v.getContext().startActivity(intent);
         });
 
-        // 🔹 INFO BUTTON (OPEN DETAILS PAGE)
+
         holder.details.setOnClickListener(v -> {
 
             Intent i = new Intent(v.getContext(), ShelterDetails.class);

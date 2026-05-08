@@ -1,5 +1,6 @@
 package com.example.crises;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -24,23 +25,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 
 public class HomeActivity extends AppCompatActivity {
-
-    private TextView tipDetails;
-    private boolean isTipExpanded = false;
-
-    // 10 Life-Saving Safety Tips
-    private final String[] safetyTips = {
-            "FIRE: Touch doors with the back of your hand. If hot, fire is behind it; find another exit.",
-            "AIRSTRIKE: Lie flat on your stomach and keep your mouth slightly open to protect your eardrums.",
-            "FIRE: If your clothes catch fire, Stop, Drop, and Roll immediately. Do not run.",
-            "NETWORK: Use SMS/Texting instead of calls during disasters to keep emergency lines open.",
-            "EARTHQUAKE: If no table is near, sit against an interior wall away from glass and cover your head.",
-            "FLOOD: Avoid walking in moving water. Just 6 inches (15cm) can knock an adult down.",
-            "MEDICAL: Apply constant direct pressure to a wound with a clean cloth to stop severe bleeding.",
-            "AWARENESS: Identify at least two exits every time you enter a new building or public space.",
-            "BURNS: Run cool (not cold) water over a burn for 20 minutes. Avoid ice, butter, or ointments.",
-            "CONFLICT: Stay away from military bases or government buildings; these are high-risk targets."
-    };
+    CardView quickCall;
 
     @Override
     protected void attachBaseContext(Context newBase) {
@@ -57,7 +42,6 @@ public class HomeActivity extends AppCompatActivity {
 
         initTopAppBar();
         initGuidesSection();
-        initSafetyTips();
         initNewsSection();
         initBottomNavigation();
     }
@@ -107,42 +91,51 @@ public class HomeActivity extends AppCompatActivity {
         });
     }
 
-    private void initSafetyTips() {
-        CardView tipCard = findViewById(R.id.tipCard);
-        tipDetails = findViewById(R.id.tipDetails);
-
-        if (tipCard == null || tipDetails == null) return;
-
-        tipCard.setOnClickListener(v -> {
-            isTipExpanded = !isTipExpanded;
-
-            if (isTipExpanded) {
-                // Build a single string containing all tips
-                StringBuilder allTipsBuilder = new StringBuilder();
-                for (int i = 0; i < safetyTips.length; i++) {
-                    allTipsBuilder.append("• ").append(safetyTips[i]);
-                    // Add space between tips, but not after the last one
-                    if (i < safetyTips.length - 1) {
-                        allTipsBuilder.append("\n\n");
-                    }
-                }
-
-                tipDetails.setText(allTipsBuilder.toString());
-                tipDetails.setVisibility(View.VISIBLE);
-
-                Animation fadeIn = AnimationUtils.loadAnimation(this, android.R.anim.fade_in);
-                tipDetails.startAnimation(fadeIn);
-            } else {
-                tipDetails.setVisibility(View.GONE);
-            }
-        });
-    }
-
     private void initNewsSection() {
         CardView newsCard = findViewById(R.id.newsCard);
         if (newsCard != null) {
             newsCard.setOnClickListener(v -> startActivity(new Intent(this, News.class)));
         }
+    }
+    private void initQuickCall() {
+
+        quickCall = findViewById(R.id.btnQuickCall);
+
+        quickCall.setOnClickListener(v -> {
+
+            String[] options = {
+                    "🚑 Ambulance (140)",
+                    "🚓 Police (112)",
+                    "🚒 Fire Brigade (175)"
+            };
+
+            new AlertDialog.Builder(this)
+                    .setTitle("Choose Emergency Service")
+                    .setItems(options, (dialog, which) -> {
+
+                        String number;
+
+                        switch (which) {
+                            case 0:
+                                number = "140";
+                                break;
+                            case 1:
+                                number = "112";
+                                break;
+                            case 2:
+                                number = "175";
+                                break;
+                            default:
+                                number = "112";
+                        }
+
+                        Intent intent = new Intent(Intent.ACTION_DIAL);
+                        intent.setData(Uri.parse("tel:" + number));
+                        startActivity(intent);
+
+                    })
+                    .show();
+        });
     }
 
     private void initBottomNavigation() {
