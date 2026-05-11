@@ -1,0 +1,74 @@
+[
+    {
+        "expected_revenue": 600,
+        "cust_type": 1,
+        "wins": 2,
+        "lost": 1,
+        "activity": 8,
+        "source": 2,
+        "outcome": 0
+    },
+    {
+        "expected_revenue": 100,
+        "cust_type": 1,
+        "wins": 2,
+        "lost": 0,
+        "activity": 11,
+        "source": 3,
+        "outcome": 1
+    },
+    {
+        "expected_revenue": 230,
+        "cust_type": 2,
+        "wins": 2,
+        "lost": 1,
+        "activity": 6,
+        "source": 1,
+        "outcome": 0
+    },
+    {
+        "expected_revenue": 150,
+        "cust_type": 1,
+        "wins": 2,
+        "lost": 1,
+        "activity": 3,
+        "source": 2,
+        "outcome": 1
+    },
+    {
+        "expected_revenue": 500,
+        "cust_type": 2,
+        "wins": 2,
+        "lost": 1,
+        "activity": 2,
+        "source": 1,
+        "outcome": 1
+    },
+    {
+        "expected_revenue": 200,
+        "cust_type": 1,
+        "wins": 2,
+        "lost": 1,
+        "activity": 2,
+        "source": 2,
+        "outcome": 1
+    },
+    {
+        "expected_revenue": 600,
+        "cust_type": 1,
+        "wins": 2,
+        "lost": 0,
+        "activity": 1,
+        "source": 3,
+        "outcome": 1
+    },
+    {
+        "expected_revenue": 450,
+        "cust_type": 2,
+        "wins": 2,
+        "lost": 1,
+        "activity": 1,
+        "source": 1,
+        "outcome": 1
+    }
+]
