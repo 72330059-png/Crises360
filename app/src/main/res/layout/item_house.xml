@@ -1,0 +1,91 @@
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="10dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="6dp"
+    app:cardBackgroundColor="#FFFFFF">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="14dp">
+
+        <!-- City -->
+        <TextView
+            android:id="@+id/txtCity"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Beirut"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="#1E88E5"/>
+
+        <!-- Description -->
+        <TextView
+            android:id="@+id/txtDescription"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="2 Bedrooms • Sea view"
+            android:textColor="#6C757D"
+            android:layout_marginTop="4dp"/>
+
+        <!-- Price -->
+        <TextView
+            android:id="@+id/txtPrice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="$800 / month"
+            android:textStyle="bold"
+            android:textColor="#2E7D32"
+            android:layout_marginTop="6dp"/>
+
+        <!-- Phone -->
+        <TextView
+            android:id="@+id/txtPhone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="03123456"
+            android:textColor="#555555"
+            android:layout_marginTop="4dp"/>
+
+        <!-- Buttons Row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="12dp">
+
+            <!-- Call Button -->
+            <Button
+                android:id="@+id/btnCall"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Call"
+                android:backgroundTint="#1E88E5"
+                android:textColor="#FFFFFF"/>
+
+            <!-- Space -->
+            <Space
+                android:layout_width="8dp"
+                android:layout_height="wrap_content"/>
+
+            <!-- WhatsApp Button -->
+            <Button
+                android:id="@+id/btnWhatsApp"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Message"
+                android:backgroundTint="#25D366"
+                android:textColor="#FFFFFF"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>
