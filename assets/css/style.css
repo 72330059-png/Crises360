@@ -1,0 +1,362 @@
+:root {
+  --navy: #0F3A77;
+  --yellow: #FDC500;
+  --light-bg: #ffffff;
+  --border: #e3e3e3;
+}
+
+/* TOP NAVBAR */
+.top-navbar {
+    height: 60px;
+    background: var(--light-bg);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+     position: fixed;
+    top: 0;
+    left: 90px;   
+    right: 0;
+    height: 60px;
+}
+
+.activity-header {
+    margin-bottom: 6px;
+}
+
+.activity-title {
+    font-weight: 600;
+    font-size: 15px;
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+.activity-status {
+    min-width: 110px;
+}
+
+.burger-btn {
+    background: none;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+    color: var(--navy);
+}
+
+.crm-nav-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.crm-user-dropdown {
+    position: relative;
+}
+
+
+.dropdown-menu {
+    display: none;
+}
+
+.dropdown-menu.show-menu {
+    display: block;
+}
+
+
+.dropdown-menu {
+    position: absolute;
+    top: 30px;
+    right: 0;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    display: none;
+    width: 150px;
+}
+.crm-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.4);
+    justify-content: center;
+    align-items: center;
+    z-index: 99999;
+}
+
+.dropdown-menu li a {
+    display: block;
+    padding: 10px;
+    text-decoration: none;
+    color: var(--navy);
+}
+
+.dropdown-menu li a:hover {
+    background: #f2f2f2;
+}
+
+
+
+.crm-sidebar.expanded {
+    width: 165px;
+}
+
+.crm-sidebar.collapsed {
+    width: 70px;
+}
+
+
+
+.crm-sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.crm-sidebar li a {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 16px;
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+}
+
+
+
+.crm-sidebar li a:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.crm-sidebar.collapsed .title {
+    display: none;
+}
+.crm-user-dropdown {
+    position: relative;
+    z-index: 10000;
+}
+.crm-user-dropdown .dropdown-menu {
+    position: absolute;
+    right: 0;
+    top: 40px;
+    background: #fff;
+    padding: 10px;
+    border-radius: 6px;
+    box-shadow: 0 3px 15px rgba(0,0,0,0.2);
+}
+
+
+.admin-arrow.rotate {
+    transform: rotate(180deg);
+    transition: 0.3s;
+}
+
+.main-content {
+    margin-left: 90px;  
+    margin-top: 60px;   
+    padding: 20px;
+}
+
+.crm-sidebar.expanded ~ .main-content {
+    margin-left: 165px; 
+}
+
+.crm-sidebar.expanded ~ .top-nav {
+    left: 165px; 
+}
+.crm-toggle-btn {
+    background: none;   
+    color: var(--navy);
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;        
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+.crm-toggle-btn i {
+    color: var(--navy);      
+    font-size: 20px;
+}
+.crm-toggle-btn:hover {
+    opacity: 0.85;
+}
+/* ===== USER DROPDOWN MENU ===== */
+.dropdown-menu {
+    list-style: none;
+    margin: 0;
+    padding: 10px 0;
+    background: #ffffff;
+    border-radius: 14px;
+    border: 1px solid #e6e6e6;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.08);
+    min-width: 160px;
+    position: absolute;
+    top: 110%;
+    right: 0;
+    display: none;
+    z-index: 999;
+}
+
+/* show dropdown */
+.crm-user-dropdown.active .dropdown-menu {
+    display: block;
+}
+
+/* dropdown items */
+.dropdown-menu li a {
+    display: block;
+    padding: 10px 18px;
+    color: var(--navy);
+    font-size: 15px;
+    text-decoration: none;
+    transition: 0.2s ease;
+}
+
+/* hover effect */
+.dropdown-menu li a:hover {
+    background: #f3f8ff;
+    color: #0F3A77;
+}
+
+
+.dropdown-menu li {
+    list-style: none;
+}
+.crm-user-dropdown .dropdown-menu {
+    list-style: none;   
+    padding-left: 0;    
+    margin: 0;
+}
+
+.crm-user-dropdown .dropdown-menu li {
+    padding: 0;
+}
+/* Modal Background */
+.crm-modal {
+    display: none;
+    position: fixed;
+    z-index: 999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+ 
+    align-items: center;
+    justify-content: center;
+}
+
+/* Modal Box */
+.crm-modal-content {
+    background: #ffffff;
+    width: 450px;
+    padding: 25px 30px;
+    border-radius: 16px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    animation: fadeIn 0.3s ease;
+    position: relative;
+}
+
+/* Modal Title */
+.crm-modal-content h2 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--navy);
+    border-bottom: 3px solid var(--yellow);
+    padding-bottom: 8px;
+}
+
+/* Close Button */
+.close-modal {
+    position: absolute;
+    top: 12px;
+    right: 15px;
+    font-size: 26px;
+    cursor: pointer;
+    color: var(--navy);
+}
+
+/* Form Labels */
+#profileForm label {
+    font-weight: 600;
+    margin-top: 12px;
+    margin-bottom: 5px;
+    display: block;
+    color: var(--navy);
+}
+
+/* Inputs */
+#profileForm input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #dcdcdc;
+    margin-bottom: 8px;
+    background: #f8f8f8;
+    font-size: 15px;
+}
+
+/* Save Button */
+.crm-btn {
+    width: 100%;
+    background: var(--navy);
+    color: white;
+    padding: 12px;
+    border-radius: 10px;
+    border: none;
+    margin-top: 10px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.crm-btn:hover {
+    background: #06275a;
+}
+
+/* Fade Animation */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.crm-sidebar li.active a {
+    background: rgba(255,255,255,0.12);
+    border-left: 3px solid #FDC500;
+
+}
+.crm-sidebar li a {
+    transition: all 0.2s ease;
+}
+
+.crm-sidebar li a:hover {
+    background: rgba(255,255,255,0.10);
+    transform: translateX(3px);
+}
+.crm-sidebar.collapsed li a {
+    justify-content: center;
+}
+.submenu {
+    display: none;
+      padding-left: 0px;
+}
+
+.crm-sidebar .menu-section.clickable {
+    padding: 12px 20px;
+    cursor: pointer;
+}
+
+.crm-sidebar .menu-section.clickable:hover {
+    background: rgba(255,255,255,0.12);
+}
+
+
+
