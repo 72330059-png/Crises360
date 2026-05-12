@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Leaflet Map</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        #map {
+            height: 500px;
+            width: 100%;
+        }
+    </style>
+</head>
+<!-- //L is the main object that contains all Leaflet functions (map, marker, line, etc.) -->
+<!-- ///a route is Polyline:A line made of multiple coordinate points connected together -->
+<!-- zones are polygones -->
+
+<body>
+
+    <h2>Beirut Map</h2>
+
+    <div style="margin-bottom:10px; display:flex; gap:10px;">
+        <button onclick="showAll()" style="background:#3498db;color:white;padding:8px;">Show All</button>
+
+        <button onclick="hideAll()" style="background:#555;color:white;padding:8px;">Hide All</button>
+
+        <button onclick="showEmergency()" style="background:red;color:white;padding:8px;">Emergency 🚨</button>
+
+        <button onclick="showSafe()" style="background:green;color:white;padding:8px;">Safe Zones</button>
+    </div>
+
+    <div id="map"></div>
+
+
+
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <!-- //so here Leaflet creates a global variable called L -->
+
+    <script>
+        var map = L.map('map').setView([33.8938, 35.5018], 12);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        // ✅ icons
+        var policeIcon = L.icon({
+            iconUrl: 'https://cdn-icons-png.flaticon.com/512/149/149060.png',
+            iconSize: [30, 30]
+        });
+
+        var alertIcon = L.icon({
+            iconUrl: 'https://cdn-icons-png.flaticon.com/512/564/564619.png',
+            iconSize: [30, 30]
+        });
+
+        // ✅ route
+        var route = [
+            [33.8938, 35.5018],
+            [33.8800, 35.5200],
+            [33.8500, 35.5300]
+        ];
+
+        // ✅ layers
+        var policeLayer = L.layerGroup();
+        var alertLayer = L.layerGroup();
+        var routeLayer = L.layerGroup();
+        var zoneLayer = L.layerGroup();
+
+        // ✅ add elements
+        L.marker([33.8938, 35.5018], { icon: policeIcon })
+            .bindPopup("Police Unit")
+            .addTo(policeLayer);
+
+        L.marker([33.85, 35.53], { icon: alertIcon })
+            .bindPopup("Danger Alert")
+            .addTo(alertLayer);
+
+        L.polyline(route, { color: 'blue' })
+            .addTo(routeLayer);
+
+        L.circle([33.87, 35.50], {
+            color: 'green',
+            fillOpacity: 0.3,
+            radius: 1000
+        }).addTo(zoneLayer);
+
+        // ✅ add to map
+        policeLayer.addTo(map);
+        alertLayer.addTo(map);
+        routeLayer.addTo(map);
+        zoneLayer.addTo(map);
+
+        // ✅ layer control
+        var overlayMaps = {
+            "🚓 Police Units": policeLayer,
+            "⚠️ Alerts": alertLayer,
+            "🛣 Routes": routeLayer,
+            "🟢 Zones": zoneLayer
+        };
+
+        L.control.layers(null, overlayMaps).addTo(map);
+
+
+
+        function showAll() {
+            map.addLayer(policeLayer);
+            map.addLayer(alertLayer);
+            map.addLayer(routeLayer);
+            map.addLayer(zoneLayer);
+        }
+
+        function hideAll() {
+            map.removeLayer(policeLayer);
+            map.removeLayer(alertLayer);
+            map.removeLayer(routeLayer);
+            map.removeLayer(zoneLayer);
+        }
+
+        function showEmergency() {
+            hideAll(); // first clear everything
+            map.addLayer(alertLayer);
+        }
+
+        function showSafe() {
+            hideAll();
+            map.addLayer(zoneLayer);
+        }
+
+        map.on('click', function (e) {
+
+            var lat = e.latlng.lat;
+            var lng = e.latlng.lng;
+
+            // create new alert marker
+            var newAlert = L.marker([lat, lng], { icon: alertIcon })
+                .bindPopup("🚨 New Alert<br>Lat: " + lat.toFixed(4) + "<br>Lng: " + lng.toFixed(4));
+
+            // add to alert layer
+            newAlert.addTo(alertLayer);
+
+        });
+
+        // map.on('click', function (e) {
+
+        //     if (confirm("Add policeIcon here?")) {
+
+        //         var newAlert = L.marker(e.latlng, { icon: policeIcon })
+        //             .bindPopup("🚨 Confirmed Alert");
+
+        //         newAlert.addTo(policeLayer);
+        //     }
+
+        // });
+
+        //lat.toFixed(4):“Show this number with exactly 4 digits after the decimal point”
+    </script>
+
+
+
+</body>
+
+</html>
