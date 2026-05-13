@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F6F8FC">
+
+    <LinearLayout
+        android:id="@+id/header"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="12dp"
+        android:background="#F6F8FC">
+
+        <TextView
+            android:id="@+id/backBtn"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:text="←"
+            android:textSize="30sp"
+            android:textStyle="bold"
+            android:textColor="#1F2D3D"
+            android:gravity="center"
+            android:background="?android:attr/selectableItemBackgroundBorderless"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Settings"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="#1F2D3D"
+            android:layout_marginStart="12dp"/>
+    </LinearLayout>
+
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/header">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Notifications"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:textColor="#1F2D3D"
+                android:layout_marginBottom="10dp"/>
+
+            <Switch
+                android:id="@+id/switch_notifications"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Enable Notifications"/>
+
+            <Switch
+                android:id="@+id/switch_danger"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="🚨 Danger Alerts"/>
+
+            <Switch
+                android:id="@+id/switch_safe"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="🟢 Safe Zone Alerts"/>
+
+            <Switch
+                android:id="@+id/switch_sound"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="🔊 Sound"/>
+
+            <Switch
+                android:id="@+id/switch_vibration"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="📳 Vibration"/>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="20dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Language"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:textColor="#1F2D3D"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="10dp"/>
+
+            <RadioGroup
+                android:id="@+id/language_group"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <RadioButton
+                    android:id="@+id/lang_en"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="English"/>
+
+                <RadioButton
+                    android:id="@+id/lang_ar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Arabic"/>
+            </RadioGroup>
+
+        </LinearLayout>
+    </ScrollView>
+
+</RelativeLayout>
