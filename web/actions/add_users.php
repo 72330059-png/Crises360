@@ -1,35 +1,63 @@
-<?php 
-require_once("../class/index.class.php");
-$indexx = new index();
+
+<?php
+
+require_once("../class/users.class.php");
+
+$indexx = new users();
 
 header('Content-Type: application/json');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    $name = $_POST['name'];
-    $email = $_POST['email'];
+    $name = $indexx->clean($_POST['name']);
+    $email = $indexx->clean($_POST['email']);
     $password = $_POST['pass'];
-    $role = $_POST['role'];
+    $role = $indexx->clean($_POST['role']);
 
-    // Hash password
-    $hashed = password_hash($password, PASSWORD_DEFAULT);
 
-    // Check duplicate
-    $existing = $indexx->checkDuplicateuser($name, $email, $role);
+    if (!$indexx->validateEmail($email)) {
 
-    if (!empty($existing)) {
         echo json_encode([
             'status' => 'error',
-            'message' => 'A user with same name, email and role already exists.'
+            'message' => 'Invalid email'
         ]);
+
         exit;
     }
 
-    // Insert user
-    $indexx->insertuser($name, $email, $hashed, $role);
+  
+    $hashed = password_hash($password, PASSWORD_DEFAULT);
 
-    echo json_encode([
-        'status' => 'success',
-        'message' => 'User added successfully!'
-    ]);
+      $existing = $indexx->checkDuplicateuserinadd($name, $email, $role);
+
+    if (!empty($existing)) {
+
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'User already exists.'
+        ]);
+
+        exit;
+    }
+
+    $result = $indexx->insertuser(
+        $name,
+        $email,
+        $hashed,
+        $role
+    );
+
+    if ($result) {
+
+        echo json_encode([
+            'status' => 'success',
+            'message' => 'User added successfully!'
+        ]);
+    } else {
+
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Insert failed'
+        ]);
+    }
 }

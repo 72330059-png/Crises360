@@ -1,12 +1,15 @@
+
 <?php 
-require_once("../class/index.class.php");
-$indexx = new index();
+require_once("../class/users.class.php");
+$indexx = new users();
 
 header('Content-Type: application/json');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+///id- name- pass ...
 
-    $id = $_POST['id'];
+    // $id = $_POST['id'];
+    $id = intval($_POST['id']);
     $name = $_POST['name'];
     $email = $_POST['email'];
     // $password = $_POST['pass'];
@@ -18,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // $hashed = password_hash($password, PASSWORD_DEFAULT);
 
     // Check duplicate BUT exclude the same user (id != id)
-    $existing = $indexx->checkDuplicateuserUpdate($name, $email, $role, $id);
+    $existing = $indexx->checkDuplicateuser($name, $email, $role, $id);
 
     if (!empty($existing)) {
         echo json_encode([

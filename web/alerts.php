@@ -1,13 +1,20 @@
 <?php
 session_start();
-require_once("class/DAL.class.php");
+require_once("class/alerts.class.php");
 
 if (!isset($_SESSION['logged_in']) || $_SESSION['role'] !== 'admin') {
     header("Location: login.php");
     exit;
 }
 
-$dal = new DAL();
+$alerts = new alert();
+
+$allallerts = $alerts->getAllAlerts();
+$total = $alerts->totalAlerts();
+$sentToday = $alerts->sentTodayAlerts();
+$pending = $alerts->pendingAlerts();
+// // $resolved = $incident->resolvedIncidents();
+$critical = $alerts->criticalAlerts();
 ?>
 <!DOCTYPE html>
 <html>
@@ -38,7 +45,7 @@ $dal = new DAL();
                     </div>
                     <div class="card-content">
                         <span class="card-title">Total Alerts</span>
-                        <span class="card-value">210</span>
+                        <span class="card-value"><?php echo $total; ?></span>
                         <span class="card-subtext">All time</span>
                     </div>
                 </div>
@@ -51,7 +58,7 @@ $dal = new DAL();
                     </div>
                     <div class="card-content">
                         <span class="card-title">Sent Today</span>
-                        <span class="card-value">18</span>
+                        <span class="card-value"><?php echo $sentToday; ?></span>
                         <span class="card-subtext">Successful</span>
                     </div>
                 </div>
@@ -64,13 +71,13 @@ $dal = new DAL();
                     </div>
                     <div class="card-content">
                         <span class="card-title">Pending</span>
-                        <span class="card-value">45</span>
+                        <span class="card-value"><?php echo $pending; ?></span>
                         <span class="card-subtext">Scheduled</span>
                     </div>
                 </div>
             </div>
 
-            <div class="col">
+            <!-- <div class="col">
                 <div class="dashboard-card">
                     <div class="card-icon" style="background: #f4f7fe; color: #4318ff;">
                         <i class="fa-solid fa-users"></i>
@@ -81,7 +88,7 @@ $dal = new DAL();
                         <span class="card-subtext">Total reach</span>
                     </div>
                 </div>
-            </div>
+            </div> -->
 
             <div class="col">
                 <div class="dashboard-card">
@@ -90,7 +97,7 @@ $dal = new DAL();
                     </div>
                     <div class="card-content">
                         <span class="card-title">Critical</span>
-                        <span class="card-value">9</span>
+                        <span class="card-value"><?php echo $critical; ?></span>
                         <span class="card-subtext">Emergency</span>
                     </div>
                 </div>
@@ -134,241 +141,104 @@ $dal = new DAL();
                 <table class="table align-middle" id="alertTable">
                     <thead>
                         <tr>
-                            <th>ID</th>
+                            <!-- <th>ID</th> -->
                             <th>Alert Message</th>
                             <th>Severity</th>
                             <th>Region</th>
-                            <th>Recipients</th>
+                            <!-- <th>Recipients</th> -->
                             <th>Status</th>
                             <th>Date</th>
-                            <th class="text-end">Actions</th>
+                            <th class="text-center">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>#501</td>
-                            <td>
-                                <i class="fa-solid fa-circle-exclamation me-2" style="color: #ee5d50;"></i>
-                                <span style="font-weight:700;">Evacuate area immediately</span>
-                            </td>
-                            <td class="status-text text-high">Critical</td>
-                            <td>Beirut</td>
-                            <td><i class="fa-solid fa-users me-1" style="font-size: 12px; color: #a3adc2;"></i> 1,240</td>
-                            <td><span class="status-text text-resolved">Sent</span></td>
-                            <td>2026-04-28</td>
-                            <td class="text-end">
-                                <i class="fa-regular fa-eye text-muted me-2" style="cursor:pointer"></i>
-                                <i class="fa-solid fa-trash text-danger" style="cursor:pointer"></i>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>#502</td>
-                            <td>
-                                <i class="fa-solid fa-circle-info me-2" style="color: #ffb547;"></i>
-                                <span style="font-weight:700;">Heavy rain expected</span>
-                            </td>
-                            <td class="status-text text-medium">Warning</td>
-                            <td>Tripoli</td>
-                            <td><i class="fa-solid fa-users me-1" style="font-size: 12px; color: #a3adc2;"></i> 8,500</td>
-                            <td><span class="status-text text-investigating" style="color: #111c44 !important;">Pending</span></td>
-                            <td>2026-04-27</td>
-                            <td class="text-end">
-                                <i class="fa-regular fa-eye text-muted me-2" style="cursor:pointer"></i>
-                                <i class="fa-solid fa-trash text-danger" style="cursor:pointer"></i>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>#501</td>
-                            <td>
-                                <i class="fa-solid fa-circle-exclamation me-2" style="color: #ee5d50;"></i>
-                                <span style="font-weight:700;">Evacuate area immediately</span>
-                            </td>
-                            <td class="status-text text-high">Critical</td>
-                            <td>Beirut</td>
-                            <td><i class="fa-solid fa-users me-1" style="font-size: 12px; color: #a3adc2;"></i> 1,240</td>
-                            <td><span class="status-text text-resolved">Sent</span></td>
-                            <td>2026-04-28</td>
-                            <td class="text-end">
-                                <i class="fa-regular fa-eye text-muted me-2" style="cursor:pointer"></i>
-                                <i class="fa-solid fa-trash text-danger" style="cursor:pointer"></i>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>#502</td>
-                            <td>
-                                <i class="fa-solid fa-circle-info me-2" style="color: #ffb547;"></i>
-                                <span style="font-weight:700;">Heavy rain expected</span>
-                            </td>
-                            <td class="status-text text-medium">Warning</td>
-                            <td>Tripoli</td>
-                            <td><i class="fa-solid fa-users me-1" style="font-size: 12px; color: #a3adc2;"></i> 8,500</td>
-                            <td><span class="status-text text-investigating" style="color: #111c44 !important;">Pending</span></td>
-                            <td>2026-04-27</td>
-                            <td class="text-end">
-                                <i class="fa-regular fa-eye text-muted me-2" style="cursor:pointer"></i>
-                                <i class="fa-solid fa-trash text-danger" style="cursor:pointer"></i>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>#501</td>
-                            <td>
-                                <i class="fa-solid fa-circle-exclamation me-2" style="color: #ee5d50;"></i>
-                                <span style="font-weight:700;">Evacuate area immediately</span>
-                            </td>
-                            <td class="status-text text-high">Critical</td>
-                            <td>Beirut</td>
-                            <td><i class="fa-solid fa-users me-1" style="font-size: 12px; color: #a3adc2;"></i> 1,240</td>
-                            <td><span class="status-text text-resolved">Sent</span></td>
-                            <td>2026-04-28</td>
-                            <td class="text-end">
-                                <i class="fa-regular fa-eye text-muted me-2" style="cursor:pointer"></i>
-                                <i class="fa-solid fa-trash text-danger" style="cursor:pointer"></i>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>#502</td>
-                            <td>
-                                <i class="fa-solid fa-circle-info me-2" style="color: #ffb547;"></i>
-                                <span style="font-weight:700;">Heavy rain expected</span>
-                            </td>
-                            <td class="status-text text-medium">Warning</td>
-                            <td>Tripoli</td>
-                            <td><i class="fa-solid fa-users me-1" style="font-size: 12px; color: #a3adc2;"></i> 8,500</td>
-                            <td><span class="status-text text-investigating" style="color: #111c44 !important;">Pending</span></td>
-                            <td>2026-04-27</td>
-                            <td class="text-end">
-                                <i class="fa-regular fa-eye text-muted me-2" style="cursor:pointer"></i>
-                                <i class="fa-solid fa-trash text-danger" style="cursor:pointer"></i>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>#501</td>
-                            <td>
-                                <i class="fa-solid fa-circle-exclamation me-2" style="color: #ee5d50;"></i>
-                                <span style="font-weight:700;">Evacuate area immediately</span>
-                            </td>
-                            <td class="status-text text-high">Critical</td>
-                            <td>Beirut</td>
-                            <td><i class="fa-solid fa-users me-1" style="font-size: 12px; color: #a3adc2;"></i> 1,240</td>
-                            <td><span class="status-text text-resolved">Sent</span></td>
-                            <td>2026-04-28</td>
-                            <td class="text-end">
-                                <i class="fa-regular fa-eye text-muted me-2" style="cursor:pointer"></i>
-                                <i class="fa-solid fa-trash text-danger" style="cursor:pointer"></i>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>#502</td>
-                            <td>
-                                <i class="fa-solid fa-circle-info me-2" style="color: #ffb547;"></i>
-                                <span style="font-weight:700;">Heavy rain expected</span>
-                            </td>
-                            <td class="status-text text-medium">Warning</td>
-                            <td>Tripoli</td>
-                            <td><i class="fa-solid fa-users me-1" style="font-size: 12px; color: #a3adc2;"></i> 8,500</td>
-                            <td><span class="status-text text-investigating" style="color: #111c44 !important;">Pending</span></td>
-                            <td>2026-04-27</td>
-                            <td class="text-end">
-                                <i class="fa-regular fa-eye text-muted me-2" style="cursor:pointer"></i>
-                                <i class="fa-solid fa-trash text-danger" style="cursor:pointer"></i>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>#501</td>
-                            <td>
-                                <i class="fa-solid fa-circle-exclamation me-2" style="color: #ee5d50;"></i>
-                                <span style="font-weight:700;">Evacuate area immediately</span>
-                            </td>
-                            <td class="status-text text-high">Critical</td>
-                            <td>Beirut</td>
-                            <td><i class="fa-solid fa-users me-1" style="font-size: 12px; color: #a3adc2;"></i> 1,240</td>
-                            <td><span class="status-text text-resolved">Sent</span></td>
-                            <td>2026-04-28</td>
-                            <td class="text-end">
-                                <i class="fa-regular fa-eye text-muted me-2" style="cursor:pointer"></i>
-                                <i class="fa-solid fa-trash text-danger" style="cursor:pointer"></i>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>#502</td>
-                            <td>
-                                <i class="fa-solid fa-circle-info me-2" style="color: #ffb547;"></i>
-                                <span style="font-weight:700;">Heavy rain expected</span>
-                            </td>
-                            <td class="status-text text-medium">Warning</td>
-                            <td>Tripoli</td>
-                            <td><i class="fa-solid fa-users me-1" style="font-size: 12px; color: #a3adc2;"></i> 8,500</td>
-                            <td><span class="status-text text-investigating" style="color: #111c44 !important;">Pending</span></td>
-                            <td>2026-04-27</td>
-                            <td class="text-end">
-                                <i class="fa-regular fa-eye text-muted me-2" style="cursor:pointer"></i>
-                                <i class="fa-solid fa-trash text-danger" style="cursor:pointer"></i>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>#501</td>
-                            <td>
-                                <i class="fa-solid fa-circle-exclamation me-2" style="color: #ee5d50;"></i>
-                                <span style="font-weight:700;">Evacuate area immediately</span>
-                            </td>
-                            <td class="status-text text-high">Critical</td>
-                            <td>Beirut</td>
-                            <td><i class="fa-solid fa-users me-1" style="font-size: 12px; color: #a3adc2;"></i> 1,240</td>
-                            <td><span class="status-text text-resolved">Sent</span></td>
-                            <td>2026-04-28</td>
-                            <td class="text-end">
-                                <i class="fa-regular fa-eye text-muted me-2" style="cursor:pointer"></i>
-                                <i class="fa-solid fa-trash text-danger" style="cursor:pointer"></i>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>#502</td>
-                            <td>
-                                <i class="fa-solid fa-circle-info me-2" style="color: #ffb547;"></i>
-                                <span style="font-weight:700;">Heavy rain expected</span>
-                            </td>
-                            <td class="status-text text-medium">Warning</td>
-                            <td>Tripoli</td>
-                            <td><i class="fa-solid fa-users me-1" style="font-size: 12px; color: #a3adc2;"></i> 8,500</td>
-                            <td><span class="status-text text-investigating" style="color: #111c44 !important;">Pending</span></td>
-                            <td>2026-04-27</td>
-                            <td class="text-end">
-                                <i class="fa-regular fa-eye text-muted me-2" style="cursor:pointer"></i>
-                                <i class="fa-solid fa-trash text-danger" style="cursor:pointer"></i>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>#501</td>
-                            <td>
-                                <i class="fa-solid fa-circle-exclamation me-2" style="color: #ee5d50;"></i>
-                                <span style="font-weight:700;">Evacuate area immediately</span>
-                            </td>
-                            <td class="status-text text-high">Critical</td>
-                            <td>Beirut</td>
-                            <td><i class="fa-solid fa-users me-1" style="font-size: 12px; color: #a3adc2;"></i> 1,240</td>
-                            <td><span class="status-text text-resolved">Sent</span></td>
-                            <td>2026-04-28</td>
-                            <td class="text-end">
-                                <i class="fa-regular fa-eye text-muted me-2" style="cursor:pointer"></i>
-                                <i class="fa-solid fa-trash text-danger" style="cursor:pointer"></i>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>#502</td>
-                            <td>
-                                <i class="fa-solid fa-circle-info me-2" style="color: #ffb547;"></i>
-                                <span style="font-weight:700;">Heavy rain expected</span>
-                            </td>
-                            <td class="status-text text-medium">Warning</td>
-                            <td>Tripoli</td>
-                            <td><i class="fa-solid fa-users me-1" style="font-size: 12px; color: #a3adc2;"></i> 8,500</td>
-                            <td><span class="status-text text-investigating" style="color: #111c44 !important;">Pending</span></td>
-                            <td>2026-04-27</td>
-                            <td class="text-end">
-                                <i class="fa-regular fa-eye text-muted me-2" style="cursor:pointer"></i>
-                                <i class="fa-solid fa-trash text-danger" style="cursor:pointer"></i>
-                            </td>
-                        </tr>
+
+                        <?php
+                        $data = $alerts->getAllAlerts();
+
+                        foreach ($data as $row) {
+
+                            if ($row['severity'] == 'Critical') {
+
+                                // $icon = "fa-circle-exclamation";
+                                // $iconColor = "#ee5d50";
+                                $severityClass = "text-danger";
+                            } elseif ($row['severity'] == 'Warning') {
+
+                                // $icon = "fa-triangle-exclamation";
+                                // $iconColor = "#ffb547";
+                                $severityClass = "text-warning";
+                            } else {
+
+                                // $icon = "fa-circle-info";
+                                // $iconColor = "#4318ff";
+                                $severityClass = "text-success";
+                            }
+
+                            if ($row['status'] == 'Sent') {
+
+                                $statusClass = "text-success";
+                            } else {
+
+                                $statusClass = "text-primary";
+                            }
+                        ?>
+
+                            <tr>
+
+                                <!-- <td>#<?= $row['id'] ?></td> -->
+
+                                <td>
+                               
+
+                                    <span style="font-weight:700;">
+                                        <?= $row['alert_message'] ?>
+                                    </span>
+                                </td>
+
+                                <td class="status-text <?= $severityClass ?>">
+                                    <?= $row['severity'] ?>
+                                </td>
+
+                                <td>
+                                    <?= $row['region'] ?>
+                                </td>
+
+                                <!-- <td>
+                                    <i class="fa-solid fa-users me-1"
+                                        style="font-size: 12px; color: #a3adc2;"></i>
+
+                                    <?= number_format($row['recepients_count']) ?>
+                                </td> -->
+
+                                <td>
+                                    <span class="status-text <?= $statusClass ?>">
+                                        <?= $row['status'] ?>
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <?= $row['created_at'] ?>
+                                </td>
+
+                                <td class="text-center">
+
+                                    <i class="fa fa-edit text-muted me-2 editBtn"
+                                        style="cursor:pointer;"
+                                        data-id="<?php echo $row['id']; ?>">
+                                    </i>
+
+                                    <i class="fa fa-trash text-danger deleteBtn"
+                                        style="cursor:pointer;"
+                                        data-id="<?php echo $row['id']; ?>">
+                                    </i>
+
+                                </td>
+
+                            </tr>
+
+                        <?php } ?>
+
                     </tbody>
                 </table>
             </div>

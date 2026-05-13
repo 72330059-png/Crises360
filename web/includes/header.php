@@ -10,6 +10,16 @@ $obj->execute("
 ");
 ?>
 
+
+<!-- Bootstrap -->
+<!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"> -->
+
+<!-- FontAwesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+<!-- DataTables -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -27,6 +37,10 @@ $obj->execute("
 <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.4/main.min.css' rel='stylesheet' />
 
 <style>
+    footer {
+        text-align: center;
+    }
+
     .badge.bg-danger {
         font-size: 0.7rem;
         vertical-align: middle;
@@ -1015,5 +1029,54 @@ $obj->execute("
         color: #1b2559;
         font-weight: 700;
         margin-bottom: 2px;
+    }
+
+    #addIncidentModal .modal-content {
+        border-radius: 20px;
+        border: none;
+        padding: 10px;
+    }
+
+    #addIncidentModal .modal-header {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    #addIncidentModal .modal-title {
+        color: #1b2559;
+        font-weight: 700;
+    }
+
+    #addIncidentModal .modal-body {
+        padding-top: 10px;
+    }
+
+    #addIncidentModal .form-label {
+        font-size: 14px;
+        font-weight: 600;
+        color: #1b2559;
+        margin-bottom: 6px;
+    }
+
+    #addIncidentModal .form-control,
+    #addIncidentModal .form-select {
+        border-radius: 12px;
+        padding: 10px 14px;
+        font-size: 14px;
+    }
+
+    #addIncidentModal textarea {
+        resize: none;
+    }
+
+    #addIncidentModal .modal-footer {
+        border-top: none;
+        padding-top: 0;
+    }
+
+    #addIncidentModal .btn {
+        border-radius: 12px;
+        padding: 8px 18px;
+        font-weight: 600;
     }
 </style>

@@ -62,6 +62,10 @@ $dal = new DAL();
             font-size: 12px;
         }
 
+        #alertstablep thead {
+            display: none;
+        }
+
         iframe {
             width: 100%;
             height: 350px;
@@ -214,7 +218,7 @@ $dal = new DAL();
             color: #7c3aed !important;
         }
 
-                .db-safe-isolation .condition-row {
+        .db-safe-isolation .condition-row {
             border-bottom: 1px solid #f1f5f9;
             padding-bottom: 15px;
         }
@@ -222,6 +226,128 @@ $dal = new DAL();
         .db-safe-isolation .condition-row:last-child {
             border-bottom: none;
             padding-bottom: 0;
+        }
+
+        /* CARD */
+        .alerts-card {
+            background: #fff;
+            border-radius: 28px;
+            padding: 28px;
+        }
+
+        /* TABLE */
+        .alerts-table {
+            margin-bottom: 0;
+            border-collapse: separate;
+
+        }
+
+        /* REMOVE BOOTSTRAP */
+        .alerts-table tr,
+        .alerts-table td {
+            border: none !important;
+            background: transparent !important;
+        }
+
+
+        /* ROW */
+        .alerts-table tbody tr {
+            transition: 0.2s;
+        }
+
+        /* .alerts-table tbody tr:hover {
+            transform: translateX(3px);
+        } */
+
+        /* ICON TD */
+        .alert-icon-td {
+            width: 80px;
+            padding-right: 0 !important;
+        }
+
+        /* ICON */
+        .alert-icon {
+            width: 58px;
+            height: 58px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        /* COLORS */
+        .danger-alert {
+            background: #fff1f2;
+            color: #ef4444;
+        }
+
+        .warning-alert {
+            background: #fff7ed;
+            color: #f97316;
+        }
+
+        .orange-alert {
+            background: #fff7ed;
+            color: #ea580c;
+        }
+
+        .safe-alert {
+            background: #ecfdf5;
+            color: #10b981;
+        }
+
+        /* TEXT */
+        .alert-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 4px;
+        }
+
+        .alert-subtext {
+            font-size: 14px;
+            color: #94a3b8;
+        }
+
+        /* PAGINATION */
+        .alerts-pagination {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .alerts-pagination button {
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            background: #fff;
+            color: #64748b;
+        }
+
+        .active-page {
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            background: #eff6ff;
+            color: #2563eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        #alertstablep {
+            width: 100% !important;
+        }
+
+        #alertstablep td {
+            padding-top: 16px !important;
+            padding-bottom: 16px !important;
+            vertical-align: middle;
         }
     </style>
 </head>
@@ -325,182 +451,248 @@ $dal = new DAL();
 
             <!-- MAP -->
             <div class="col-md-8">
-                <div class="modern-card ">
-                    <h6 class="fw-bold mb-3">Live Map Overview</h6>
-                    <iframe
-                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d106063.05364177573!2d35.41695423871216!3d33.88921107567781!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x151f17215882853f%3A0x7fa32e49c8959d2a!2sBeirut!5e0!3m2!1sen!2slb!4v1714400000000!5m2!1sen!2slb"
-                        class="db-map-frame"
-                        style="border:0;"
-                        allowfullscreen=""
-                        loading="lazy">
-                    </iframe>
+                <div class="modern-card">
+                    <h6 class="fw-bold mb-3">Active Police Operations</h6>
+                    <div class="table-responsive">
+                        <table class="table align-middle" id="policeTable">
+                            <thead>
+                                <tr>
+                                    <th>Operation</th>
+                                    <th>Region</th>
+                                    <th>Units</th>
+                                    <th>Status</th>
+                                    <th>Started</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                <tr>
+                                    <td class="fw-bold">Downtown Security</td>
+                                    <td>Beirut</td>
+                                    <td>8</td>
+                                    <td class="status-warning">In Progress</td>
+                                    <td>May 18</td>
+                                </tr>
+
+                                <tr>
+                                    <td class="fw-bold">Road Clearance</td>
+                                    <td>Bekaa</td>
+                                    <td>6</td>
+                                    <td class="status-safe">Completed</td>
+                                    <td>May 18</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Downtown Security</td>
+                                    <td>Beirut</td>
+                                    <td>8</td>
+                                    <td class="status-warning">In Progress</td>
+                                    <td>May 18</td>
+                                </tr>
+
+                                <tr>
+                                    <td class="fw-bold">Road Clearance</td>
+                                    <td>Bekaa</td>
+                                    <td>6</td>
+                                    <td class="status-safe">Completed</td>
+                                    <td>May 18</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Downtown Security</td>
+                                    <td>Beirut</td>
+                                    <td>8</td>
+                                    <td class="status-warning">In Progress</td>
+                                    <td>May 18</td>
+                                </tr>
+
+                                <tr>
+                                    <td class="fw-bold">Road Clearance</td>
+                                    <td>Bekaa</td>
+                                    <td>6</td>
+                                    <td class="status-safe">Completed</td>
+                                    <td>May 18</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Road Clearance</td>
+                                    <td>Bekaa</td>
+                                    <td>6</td>
+                                    <td class="status-safe">Completed</td>
+                                    <td>May 18</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Downtown Security</td>
+                                    <td>Beirut</td>
+                                    <td>8</td>
+                                    <td class="status-warning">In Progress</td>
+                                    <td>May 18</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Road Clearance</td>
+                                    <td>Bekaa</td>
+                                    <td>6</td>
+                                    <td class="status-safe">Completed</td>
+                                    <td>May 18</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Downtown Security</td>
+                                    <td>Beirut</td>
+                                    <td>8</td>
+                                    <td class="status-warning">In Progress</td>
+                                    <td>May 18</td>
+                                </tr>
+
+                                <tr>
+                                    <td class="fw-bold">Road Clearance</td>
+                                    <td>Bekaa</td>
+                                    <td>6</td>
+                                    <td class="status-safe">Completed</td>
+                                    <td>May 18</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
             <!-- RIGHT SIDE -->
             <div class="col-md-4">
-                <!-- <div class="modern-card db-safe-isolation mb-4">
+
+                <div class="modern-card alerts-card">
+
+                    <!-- HEADER -->
                     <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h6 class="fw-bold mb-0">Road Conditions</h6>
-                        <a href="#" class="small text-decoration-none">View All</a>
+
+                        <h6 class="fw-bold mb-0">
+                            Recent Alerts Sent
+                        </h6>
+
+
                     </div>
 
-                    <div class="condition-row d-flex align-items-center mb-4">
-                        <div class="status-icon-box bg-safe">
-                            <i class="bi bi-shield-check"></i>
-                        </div>
-                        <div class="condition-text flex-grow-1 ms-3">
-                            <span class="d-block fw-bold mb-0">Beirut — Downtown</span>
-                            <span class="subtext">Updated 10 min ago</span>
-                        </div>
-                        <span class="status-label status-safe text-end">Open</span>
+                    <!-- TABLE -->
+                    <div class="table-responsive">
+
+                        <table class="table alerts-table align-middle" id="alertstablep">
+
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+
+                                <!-- ROW -->
+                                <tr>
+
+                                    <td class="alert-icon-td">
+
+                                        <div class="alert-icon danger-alert">
+                                            <i class="fa-solid fa-triangle-exclamation"></i>
+                                        </div>
+
+                                    </td>
+
+                                    <td>
+
+                                        <div class="alert-title">
+                                            Road blocked on Airport Road
+                                        </div>
+
+                                        <div class="alert-subtext">
+                                            Target: All Civil Units • 10m ago
+                                        </div>
+
+                                    </td>
+
+                                </tr>
+
+                                <!-- ROW -->
+                                <tr>
+
+                                    <td class="alert-icon-td">
+
+                                        <div class="alert-icon warning-alert">
+                                            <i class="fa-solid fa-bullhorn"></i>
+                                        </div>
+
+                                    </td>
+
+                                    <td>
+
+                                        <div class="alert-title">
+                                            Evacuation advised in Dahieh
+                                        </div>
+
+                                        <div class="alert-subtext">
+                                            Target: Sector 7 Residents • 25m ago
+                                        </div>
+
+                                    </td>
+
+                                </tr>
+
+                                <!-- ROW -->
+                                <tr>
+
+                                    <td class="alert-icon-td">
+
+                                        <div class="alert-icon orange-alert">
+                                            <i class="fa-solid fa-car-burst"></i>
+                                        </div>
+
+                                    </td>
+
+                                    <td>
+
+                                        <div class="alert-title">
+                                            Traffic congestion in Jounieh
+                                        </div>
+
+                                        <div class="alert-subtext">
+                                            Target: Logistics Teams • 40m ago
+                                        </div>
+
+                                    </td>
+
+                                </tr>
+
+                                <!-- ROW -->
+                                <tr>
+
+                                    <td class="alert-icon-td">
+
+                                        <div class="alert-icon safe-alert">
+                                            <i class="fa-solid fa-circle-check"></i>
+                                        </div>
+
+                                    </td>
+
+                                    <td>
+
+                                        <div class="alert-title">
+                                            Route 1 safe update
+                                        </div>
+
+                                        <div class="alert-subtext">
+                                            Target: General Public • 1h ago
+                                        </div>
+
+                                    </td>
+
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
                     </div>
 
-                    <div class="condition-row d-flex align-items-center mb-4">
-                        <div class="status-icon-box bg-warning">
-                            <i class="bi bi-exclamation-triangle"></i>
-                        </div>
-                        <div class="condition-text flex-grow-1 ms-3">
-                            <span class="d-block fw-bold mb-0">Airport Road</span>
-                            <span class="subtext">Updated 15 min ago</span>
-                        </div>
-                        <span class="status-label status-warning text-end">Heavy Traffic</span>
-                    </div>
-
-                    <div class="condition-row d-flex align-items-center">
-                        <div class="status-icon-box bg-danger">
-                            <i class="bi bi-x-circle"></i>
-                        </div>
-                        <div class="condition-text flex-grow-1 ms-3">
-                            <span class="d-block fw-bold mb-0">Bekaa Highway</span>
-                            <span class="subtext">Updated 5 min ago</span>
-                        </div>
-                        <span class="status-label status-danger text-end">Blocked</span>
-                    </div>
-                </div>
-
-                <div class="modern-card db-safe-isolation">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h6 class="fw-bold mb-0">Evacuation Routes</h6>
-                        <a href="#" class="small text-decoration-none">View All</a>
-                    </div>
-
-                    <div class="condition-row d-flex align-items-center mb-4">
-                        <div class="status-icon-box bg-safe">
-                            <i class="bi bi-shield-check"></i>
-                        </div>
-                        <div class="condition-text flex-grow-1 ms-3">
-                            <span class="d-block fw-bold mb-0">Route 1</span>
-                            <span class="subtext">Beirut -> Downtown</span>
-                        </div>
-                        <span class="status-label status-safe text-end">Safe</span>
-                    </div>
-
-                    <div class="condition-row d-flex align-items-center mb-4">
-                        <div class="status-icon-box bg-warning">
-                            <i class="bi bi-exclamation-triangle"></i>
-                        </div>
-                        <div class="condition-text flex-grow-1 ms-3">
-                            <span class="d-block fw-bold mb-0">Route 2</span>
-                            <span class="subtext">Beirut -> Zahle</span>
-                        </div>
-                        <span class="status-label status-warning text-end">Dangerous</span>
-                    </div>
-
-                </div> -->
-                <div class="modern-card db-safe-isolation">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h6 class="fw-bold mb-0">Recent Alerts Sent</h6>
-                        <a href="#" class="small text-decoration-none">View all</a>
-                    </div>
-
-                    <div class="condition-row d-flex align-items-center mb-4">
-                        <div class="status-icon-box bg-danger">
-                            <i class="fa-solid fa-triangle-exclamation"></i>
-                        </div>
-                        <div class="condition-text flex-grow-1 ms-3">
-                            <span class="d-block fw-bold mb-0">Road blocked on Airport Road</span>
-                            <span class="subtext">Target: All Civil Units • 10m ago</span>
-                        </div>
-                    </div>
-
-                    <div class="condition-row d-flex align-items-center mb-4">
-                        <div class="status-icon-box bg-warning">
-                            <i class="fa-solid fa-bullhorn"></i>
-                        </div>
-                        <div class="condition-text flex-grow-1 ms-3">
-                            <span class="d-block fw-bold mb-0">Evacuation advised in Dahieh</span>
-                            <span class="subtext">Target: Sector 7 Residents • 25m ago</span>
-                        </div>
-                    </div>
-
-                    <div class="condition-row d-flex align-items-center mb-4">
-                        <div class="status-icon-box bg-warning">
-                            <i class="fa-solid fa-car-burst"></i>
-                        </div>
-                        <div class="condition-text flex-grow-1 ms-3">
-                            <span class="d-block fw-bold mb-0">Traffic congestion in Jounieh</span>
-                            <span class="subtext">Target: Logistics Teams • 40m ago</span>
-                        </div>
-                    </div>
-
-                    <div class="condition-row d-flex align-items-center">
-                        <div class="status-icon-box bg-safe">
-                            <i class="fa-solid fa-circle-check"></i>
-                        </div>
-                        <div class="condition-text flex-grow-1 ms-3">
-                            <span class="d-block fw-bold mb-0">Route 1 safe update</span>
-                            <span class="subtext">Target: General Public • 1h ago</span>
-                        </div>
-                    </div>
                 </div>
             </div>
 
         </div>
 
-        <!-- BOTTOM SECTION -->
-        <div class="row g-3 mt-4">
 
-            <!-- TABLE -->
-            <div class="col-md">
-                <div class="modern-card">
-                    <h6 class="fw-bold mb-3">Active Police Operations</h6>
-
-                    <table class="table align-middle">
-                        <thead>
-                            <tr>
-                                <th>Operation</th>
-                                <th>Region</th>
-                                <th>Units</th>
-                                <th>Status</th>
-                                <th>Started</th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-                            <tr>
-                                <td class="fw-bold">Downtown Security</td>
-                                <td>Beirut</td>
-                                <td>8</td>
-                                <td class="status-warning">In Progress</td>
-                                <td>May 18</td>
-                            </tr>
-
-                            <tr>
-                                <td class="fw-bold">Road Clearance</td>
-                                <td>Bekaa</td>
-                                <td>6</td>
-                                <td class="status-safe">Completed</td>
-                                <td>May 18</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-         
-
-        </div>
 
     </div>
 

@@ -9,18 +9,19 @@ if (!isset($_SESSION['logged_in'])) {
 <html lang="en">
 <?php
 require_once('class/DAL.class.php');
-require_once('class/index.class.php');
+require_once('class/users.class.php');
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-$index = new Index;
+$index = new users;
 $indexx = $index->getallusers();
 $roles = $index->getEnumValues("users", "role");
 
 ?>
 
 <?php include('includes/header.php'); ?>
+
 
 
 <div class="modal fade" id="edituserModal" tabindex="-1">
@@ -83,6 +84,7 @@ $roles = $index->getEnumValues("users", "role");
 
             </div>
             <div class="modal-body">
+                <!-- //data:name=doua passthru+123 -->
                 <form id="addForm" action="actions/add_users.php" method="POST" enctype="multipart/form-data">
                     <div class="input-group mb-3">
                         <div class="input-group-prepend">
@@ -216,6 +218,7 @@ $roles = $index->getEnumValues("users", "role");
                 }
 
             }, 'json');
+            ////name:jad,pass:rana,ro
         });
     </script>
 

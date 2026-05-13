@@ -1,6 +1,7 @@
 
-<?php 
-require_once('../class/index.class.php');
+
+<?php
+require_once('../class/users.class.php');
 header('Content-Type: application/json');
 session_start();
 
@@ -13,17 +14,24 @@ $name  = trim($_POST['name'] ?? '');
 $email = trim($_POST['email'] ?? '');
 $rawPassword = trim($_POST['profilePassword'] ?? '');
 
-if (empty($name) || empty($email)) {
+if ($name === '' || $email === '') {
     echo json_encode(['status' => 'error', 'message' => 'All fields are required']);
     exit;
 }
 
-$index = new Index();
+$index = new users();
 
-/* 🔥 ONLY hash if password is provided */
+
 $password = null;
 if ($rawPassword !== '') {
     $password = password_hash($rawPassword, PASSWORD_DEFAULT);
+}
+if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    echo json_encode([
+        'status' => 'error',
+        'message' => 'Invalid email format'
+    ]);
+    exit;
 }
 
 $updated = $index->updateAdmin($_SESSION['id'], $name, $email, $password);

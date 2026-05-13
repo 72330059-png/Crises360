@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Leaflet Map</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        #map {
+            height: 500px;
+            width: 100%;
+        }
+    </style>
+</head>
+<!-- //L is the main object that contains all Leaflet functions (map, marker, line, etc.) -->
+<!-- ///a route is Polyline:A line made of multiple coordinate points connected together -->
+<!-- zones are polygones -->
+
+<body>
+
+    <h2>Beirut Map</h2>
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script> //so here Leaflet creates a global variable called
+    L
+
+    <script>
+        var map = L.map('map').setView([33.8938, 35.5018], 12);///“Create a map inside <div id="map">” [33.8938, 35.5018] → Beirut 📍12 → zoom level
+        //Show Beirut at zoom 12”
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+        //“Load the visual map images (tiles) from OpenStreetMap” 
+        //Leaflet asks:
+        //👉 “Give me tiles for Beirut at zoom 12”
+        //OpenStreetMap sends: Map data
+        //👉 small images like puzzle pieces
+        //Leaflet assembles them → full map
+        //“Hey OpenStreetMap, give me the small square images (tiles) for this area, and I will display them.”
+        //Tiles are small square images that together form the full map.
+        var marker = L.marker([33.8938, 35.5018]).addTo(map); //👉 Create a marker at Beirut amd 👉 Put it on the map
+
+        marker.bindPopup("Police Unit - Beirut Center").openPopup();  //👉 When you click → show message
+        L.marker([33.8200, 35.4880]).addTo(map)
+            .bindPopup("Airport");
+
+        L.marker([33.8500, 35.5300]).addTo(map)
+            .bindPopup("Dahieh Alert");
+
+        ///nb are Coordinates (Latitude, Longitude) Latitude (up/down 🌍) and Longitude (left/right 🌍)
+        //if i wana know cordinates: appers on console 
+        map.on('click', function (e) { console.log(e.latlng); });
+        //if we wana see then on screen not console:
+        map.on('click', function (e) {
+            alert("Coordinates: " + e.latlng.lat + ", " + e.latlng.lng);
+        });
+        var route = [
+            [33.8938, 35.5018], // Beirut center
+            [33.8800, 35.5200],
+            [33.8600, 35.5300],
+            [33.8500, 35.5300]  // Dahieh
+        ];
+        var route2 = [
+            [33.864, 35.560], // Beirut center
+            [33.867, 35.553],
+            [33.874, 35.540],
+            [33.885, 35.546]
+        ];
+        var route3 = [
+            [33.8938, 35.5018],
+            [33.8900, 35.5050],
+            [33.8850, 35.5100],
+            [33.8800, 35.5200],
+            [33.8700, 35.5250],
+            [33.8600, 35.5300],
+            [33.8500, 35.5300]
+        ];
+        L.polyline(route, {
+            color: 'blue',
+            weight: 5
+        }).addTo(map);
+        L.polyline(route3, { color: 'green', weight: 5 }).addTo(map);
+        L.polyline(route2, {
+            color: 'red', weight: 7
+        }).addTo(map);
+
+        var safeZone = [
+            [33.89, 35.50],
+            [33.88, 35.52],
+            [33.86, 35.51],
+            [33.87, 35.49]
+        ];
+
+        L.polygon(safeZone, {
+            color: 'green',        // border
+            fillColor: 'green',    // inside
+            fillOpacity: 0.3       // transparency
+        }).addTo(map)
+            .bindPopup("Safe Area");
+
+        var dangerZone = [
+            [33.88, 35.54],
+            [33.87, 35.56],
+            [33.85, 35.55],
+            [33.86, 35.53]
+        ];
+
+        L.polygon(dangerZone, {
+            color: 'red',
+            fillColor: 'red',
+            fillOpacity: 0.4
+        }).addTo(map)
+            .bindPopup("Danger Area ⚠️");
+
+
+        var safeCircle = L.circle([33.87, 35.50], {
+            color: 'yellow',
+            fillColor: 'yellow',
+            fillOpacity: 0.3,
+            radius: 1000   // meters (1km)
+        }).addTo(map);
+
+        safeCircle.bindPopup("Safe Zone (1km)");
+
+
+        var blockedRoad = [
+            [33.85, 35.55],
+            [33.87, 35.54]
+            // [33.82, 35.53]
+        ];
+
+        L.polyline(blockedRoad, {
+            color: 'red',
+            weight: 6,
+            dashArray: '10, 10' // 🔥 dashed line
+        }).addTo(map)
+            .bindPopup("Blocked Road 🚫");
+
+            var policeIcon = L.icon({
+    iconUrl: 'https://cdn-icons-png.flaticon.com/512/484/484167.png',
+    iconSize: [30, 30]
+});
+
+
+L.marker([33.8938, 35.5018], { icon: policeIcon })
+  .addTo(map)
+  .bindPopup("Police Unit");
+
+
+
+  var alertIcon = L.icon({
+    iconUrl: 'https://cdn-icons-png.flaticon.com/512/564/564619.png',
+    iconSize: [30, 30]
+});
+
+L.marker([33.85, 35.53], { icon: alertIcon })
+  .addTo(map)
+  .bindPopup("Danger Alert");
+
+
+  var policeIcon = L.divIcon({
+    html: '<i class="fa-solid fa-car" style="color:blue; font-size:20px;"></i>',
+    className: '',   // important: remove default styles
+    iconSize: [20, 20]
+});
+
+L.marker([33.8538, 35.5018], { icon: policeIcon })
+  .addTo(map)
+  .bindPopup("Police Unit 🚓");
+
+
+  var alertIcon = L.divIcon({
+    html: '<i class="fa-solid fa-triangle-exclamation" style="color:red; font-size:22px;"></i>',
+    className: '',
+    iconSize: [20, 20]
+});
+
+L.marker([33.85, 35.53], { icon: alertIcon })
+  .addTo(map)
+  .bindPopup("Danger Alert ⚠️");
+
+
+
+
+
+  function getColor(status) {
+    if (status === "danger") return "red";
+    if (status === "safe") return "green";
+    return "orange";
+}
+
+var dynamicIcon = L.divIcon({
+    html: `<i class="fa-solid fa-circle" style="color:${getColor("danger")}; font-size:18px;"></i>`,
+    className: ''
+});
+
+    </script>
+
+
+
+</body>
+
+</html>

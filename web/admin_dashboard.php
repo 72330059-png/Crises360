@@ -15,11 +15,9 @@ $dal = new DAL();
 
 <head>
     <title>Admin Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"> -->
     <?php include('includes/header.php'); ?>
-    <style>
-      
-    </style>
+   
 
 </head>
 

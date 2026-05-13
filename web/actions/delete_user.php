@@ -1,5 +1,6 @@
+
 <?php
-require_once('../class/index.class.php');
+require_once('../class/users.class.php');
 header('Content-Type: application/json');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -10,15 +11,15 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 $userId = intval($_POST['id'] ?? 0);
 
 if ($userId <= 0) {
-    echo json_encode(['status' => 'error', 'message' => 'Phone ID missing']);
+    echo json_encode(['status' => 'error', 'message' => 'user ID missing']);
     exit;
 }
 
-$info = new Index();
+$info = new users();
 $result = $info->deleteuser($userId);
 
 if ($result === true) {
-    echo json_encode(['status' => 'success', 'message' => 'Phone deleted successfully']);
+    echo json_encode(['status' => 'success', 'message' => 'user deleted successfully']);
 } else {
     echo json_encode(['status' => 'error', 'message' => 'Failed to delete phone']);
 }

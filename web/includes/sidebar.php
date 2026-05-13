@@ -71,12 +71,12 @@
                             <span class="title">Police</span>
                         </a>
                     </li>
-                    <li class="<?php echo (basename($_SERVER['PHP_SELF']) == 'teams.php') ? 'active' : ''; ?>">
+                    <!-- <li class="<?php echo (basename($_SERVER['PHP_SELF']) == 'teams.php') ? 'active' : ''; ?>">
                         <a href="teams.php" title="teams">
                             <i class="fa fa-users-cog"></i>
                             <span class="title">Response Teams</span>
                         </a>
-                    </li>
+                    </li> -->
                 </ul>
             </li>
 
