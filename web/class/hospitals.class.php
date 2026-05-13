@@ -4,38 +4,30 @@ require_once("DAL.class.php");
 
 class hospital extends DAL
 {
-
- 
-
     public function getAllHospitals()
     {
-        $sql = "SELECT 
-                    h.*,
-                    (h.total_beds - h.available_beds) AS occupied_beds,
+        $sql = "SELECT
+                h.*,
+                o.name,o.location,
 
-                    (
-                        SELECT COUNT(*)
-                        FROM hospital_teams ht
-                        WHERE ht.hospital_id = h.id
-                    ) AS total_teams
+                (h.total_beds - h.available_beds) AS occupied_beds,
 
-                FROM hospitals h
-                ORDER BY h.updated_at DESC";
+                (
+                    SELECT COUNT(*)
+                    FROM hospital_teams ht
+                    WHERE ht.hospital_id = h.id
+                ) AS total_teams
+
+            FROM hospitals h
+
+            INNER JOIN organizations o
+            ON h.organization_id = o.id
+
+            WHERE o.type = 'hospital'
+
+            ORDER BY h.updated_at DESC";
 
         return $this->getdata($sql);
-    }
-
-
-    public function getHospitalById($id)
-    {
-        $sql = "SELECT *,
-                    (total_beds - available_beds) AS occupied_beds
-                FROM hospitals
-                WHERE id = ?";
-
-        $data = $this->getdata($sql, [$id]);
-
-        return $data ? $data[0] : null;
     }
 
 
@@ -202,7 +194,7 @@ class hospital extends DAL
 
     public function totalAvailableICU()
     {
-        $sql = "SELECT SUM(available_icu) total
+        $sql = "SELECT SUM(available_icu_beds) total
                 FROM hospitals";
 
         $data = $this->getdata($sql);
@@ -211,19 +203,18 @@ class hospital extends DAL
     }
 
 
-    public function hospitalsAtCapacity()
+    public function availableHospitals()
     {
         $sql = "SELECT COUNT(*) total
-                FROM hospitals
-                WHERE available_beds <= 10";
+            FROM hospitals
+            WHERE hospital_status = 'Stable'";
 
         $data = $this->getdata($sql);
 
         return $data[0]['total'];
     }
 
-
-// teams
+    // teams
 
     public function getHospitalTeams($hospital_id)
     {
@@ -324,7 +315,7 @@ class hospital extends DAL
     }
 
 
-//   teams
+    //   teams
 
     public function totalTeams($hospital_id)
     {
@@ -387,5 +378,18 @@ class hospital extends DAL
         $data = $this->getdata($sql, [$hospital_id]);
 
         return $data[0]['total'];
+    }
+
+    public function getHospitalById($id)
+    {
+        $sql = "SELECT hospitals.*, organizations.name
+            FROM hospitals
+            JOIN organizations
+            ON hospitals.organization_id = organizations.id
+            WHERE hospitals.id = ?";
+
+        $data = $this->getdata($sql, [$id]);
+
+        return $data[0];
     }
 }
