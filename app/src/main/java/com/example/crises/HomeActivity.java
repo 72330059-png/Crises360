@@ -39,7 +39,8 @@ public class HomeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_home);
-
+        
+        initQuickCall();
         initTopAppBar();
         initGuidesSection();
         initNewsSection();
@@ -51,7 +52,7 @@ public class HomeActivity extends AppCompatActivity {
         ImageButton settingsBtn = findViewById(R.id.settingsBtn);
 
         if (notificationBtn != null) {
-            notificationBtn.setOnClickListener(v -> startActivity(new Intent(this, Notifications.class)));
+            notificationBtn.setOnClickListener(v -> startActivity(new Intent(this, Tips.class)));
         }
         if (settingsBtn != null) {
             settingsBtn.setOnClickListener(v -> startActivity(new Intent(this, Settings.class)));

@@ -66,7 +66,7 @@
             android:name=".Settings"
             android:exported="false" />
         <activity
-            android:name=".Notifications"
+            android:name=".Tips"
             android:exported="false" />
         <activity
             android:name=".Services"
