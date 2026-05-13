@@ -1,14 +1,25 @@
 <?php
 session_start();
-require_once("class/DAL.class.php");
+require_once("class/hospitals.class.php");
 
 if (!isset($_SESSION['logged_in']) || $_SESSION['role'] !== 'admin') {
     header("Location: login.php");
     exit;
 }
+$hospital = new hospital();
 
-$dal = new DAL();
-$hospital_name = "Rafic Hariri University Hospital";
+if (!isset($_GET['hospital_id'])) {
+    header("Location: hospitals.php");
+    exit;
+}
+$hospital_id = $_GET['hospital_id'];
+$hospital_data = $hospital->getHospitalById($hospital_id);
+$hospital_name = $hospital_data['name'];
+$total_teams = $hospital->totalTeams($hospital_id);
+$available_teams = $hospital->availableTeams($hospital_id);
+$mission_teams = $hospital->onMissionTeams($hospital_id);
+$support_teams = $hospital->teamsNeedingSupport($hospital_id);
+$teams = $hospital->getHospitalTeams($hospital_id);
 ?>
 
 <!DOCTYPE html>
@@ -177,19 +188,17 @@ $hospital_name = "Rafic Hariri University Hospital";
                 <h2 class="fw-bold mt-2" style="color: #1B2559;"><?= $hospital_name ?></h2>
                 <p style="color: #A3AED0; font-size: 14px; margin: 0;">Manage response teams and mission status</p>
             </div>
-            <button class="btn btn-add-team">
-                <i class="fa-solid fa-plus me-2"></i> Add Team
-            </button>
+
         </div>
 
-        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-3 mb-4">
+        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3 mb-4">
 
             <div class="col">
                 <div class="stat-card">
                     <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
                     <div>
                         <div class="stat-label">Total Teams</div>
-                        <div class="stat-value">4</div>
+                        <div class="stat-value"><?= $total_teams ?></div>
                     </div>
                 </div>
             </div>
@@ -201,7 +210,7 @@ $hospital_name = "Rafic Hariri University Hospital";
                     </div>
                     <div>
                         <div class="stat-label">Available</div>
-                        <div class="stat-value">1</div>
+                        <div class="stat-value"><?= $available_teams ?></div>
                     </div>
                 </div>
             </div>
@@ -213,19 +222,7 @@ $hospital_name = "Rafic Hariri University Hospital";
                     </div>
                     <div>
                         <div class="stat-label">On Mission</div>
-                        <div class="stat-value">1</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col">
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fa-solid fa-clock-rotate-left"></i>
-                    </div>
-                    <div>
-                        <div class="stat-label">Avg Response</div>
-                        <div class="stat-value">18 min</div>
+                        <div class="stat-value"><?= $mission_teams ?></div>
                     </div>
                 </div>
             </div>
@@ -237,7 +234,7 @@ $hospital_name = "Rafic Hariri University Hospital";
                     </div>
                     <div>
                         <div class="stat-label">Teams Needing Support</div>
-                        <div class="stat-value">1</div>
+                        <div class="stat-value"><?= $support_teams ?></div>
                     </div>
                 </div>
             </div>
@@ -251,38 +248,20 @@ $hospital_name = "Rafic Hariri University Hospital";
                     <thead>
                         <tr>
                             <th>Team Name</th>
-                            <th>Leader</th>
-                            <th>Specialization</th>
                             <th>Status</th>
                             <th>Members</th>
-                            <th class="text-end">Actions</th>
+                            <th>Current Location</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td class="fw-bold">Medical Response Team A</td>
-                            <td>Dr. Hassan Khaled</td>
-                            <td>Trauma Care</td>
-                            <td class="status-available">Available</td>
-                            <td class="fw-bold">8</td>
-                            <td class="text-end">
-                                <button class="action-btn"><i class="fa-solid fa-eye"></i></button>
-                                <button class="action-btn"><i class="fa-solid fa-pen"></i></button>
-                                <button class="action-btn" style="color: #EE5D50;"><i class="fa-solid fa-trash"></i></button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="fw-bold">Emergency Transport B</td>
-                            <td>Dr. Maya Fares</td>
-                            <td>Critical Care</td>
-                            <td class="status-mission">On Mission</td>
-                            <td class="fw-bold">6</td>
-                            <td class="text-end">
-                                <button class="action-btn"><i class="fa-solid fa-eye"></i></button>
-                                <button class="action-btn"><i class="fa-solid fa-pen"></i></button>
-                                <button class="action-btn" style="color: #EE5D50;"><i class="fa-solid fa-trash"></i></button>
-                            </td>
-                        </tr>
+                        <?php foreach ($teams as $t) { ?>
+                            <tr>
+                                <td><?= $t['team_name'] ?></td>
+                                <td><?= $t['status'] ?></td>
+                                <td><?= $t['members_count'] ?></td>
+                                <td><?= $t['current_location'] ?></td>
+                            </tr>
+                        <?php } ?>
                     </tbody>
                 </table>
             </div>
