@@ -139,7 +139,7 @@ public class Account extends AppCompatActivity {
                                         clipboard.setPrimaryClip(clip);
 
                                         Toast.makeText(this, "Credentials copied to clipboard", Toast.LENGTH_SHORT).show();
-                                        finish(); // Close the activity
+                                        finish();
                                     })
                                     .show();
 
