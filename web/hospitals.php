@@ -1,24 +1,26 @@
 <?php
 session_start();
-require_once("class/DAL.class.php");
+require_once("class/hospitals.class.php");
 
 if (!isset($_SESSION['logged_in']) || $_SESSION['role'] !== 'admin') {
     header("Location: login.php");
     exit;
 }
 
-$dal = new DAL();
+$hospital = new hospital();
+$totalHospitals = $hospital->totalHospitals();
+$totalAvailableBeds = $hospital->totalAvailableBeds();
+$totalOccupiedBeds = $hospital->totalOccupiedBeds();
+$occupancyRate = $hospital->occupancyRate();
+$totalAvailableICU = $hospital->totalAvailableICU();
+$hospitalsAvailable = $hospital->availableHospitals();
+$allHospitals = $hospital->getAllHospitals();
 ?>
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <title>Hospitals Management | Admin</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
-
     <?php include('includes/header.php'); ?>
 
     <style>
@@ -68,7 +70,7 @@ $dal = new DAL();
         }
 
         .btn-add-hospital {
-            background: #05CD99;
+            background: #3771c3;
             color: white;
             border-radius: 12px;
             padding: 0 20px;
@@ -215,11 +217,12 @@ $dal = new DAL();
 
             </div>
             <div class="d-flex gap-2 align-items-center">
-                <select class="form-select filter-select">
-                    <option>All Regions</option>
-                </select>
-                <select class="form-select filter-select">
-                    <option>All Statuses</option>
+
+                <select class="form-select filter-select" id="statushospital">
+                    <option value="">All Statuses</option>
+                    <option value="Safe">Safe</option>
+                    <option value="Warning">Warning</option>
+                    <option value="Dangerous">Dangerous</option>
                 </select>
                 <button class="btn btn-add-hospital">
                     <i class="fa-solid fa-plus me-2"></i> Add Hospital
@@ -231,37 +234,37 @@ $dal = new DAL();
             <div class="col">
                 <div class="stat-card">
                     <div class="stat-label">Total Hospitals</div>
-                    <div class="stat-value">42</div>
+                    <div class="stat-value"><?= $totalHospitals ?></div>
                 </div>
             </div>
             <div class="col">
                 <div class="stat-card">
                     <div class="stat-label">Available Beds</div>
-                    <div class="stat-value">1,245</div>
+                    <div class="stat-value"><?= $totalAvailableBeds ?></div>
                 </div>
             </div>
             <div class="col">
                 <div class="stat-card">
                     <div class="stat-label">Occupied Beds</div>
-                    <div class="stat-value">2,885</div>
+                    <div class="stat-value"><?= $totalOccupiedBeds ?></div>
                 </div>
             </div>
             <div class="col">
                 <div class="stat-card">
                     <div class="stat-label">Occupancy Rate</div>
-                    <div class="stat-value">70%</div>
+                    <div class="stat-value"><?= $occupancyRate ?>%</div>
                 </div>
             </div>
             <div class="col">
                 <div class="stat-card">
                     <div class="stat-label">ICU Beds Available</div>
-                    <div class="stat-value">156</div>
+                    <div class="stat-value"><?= $totalAvailableICU ?></div>
                 </div>
             </div>
             <div class="col">
                 <div class="stat-card">
                     <div class="stat-label">Hospitals at Capacity</div>
-                    <div class="stat-value">4</div>
+                    <div class="stat-value"><?= $hospitalsAvailable ?></div>
                 </div>
             </div>
         </div>
@@ -274,7 +277,7 @@ $dal = new DAL();
                         <tr>
                             <th>Hospital Name</th>
                             <th>Location</th>
-                            <th>Region</th>
+                            <!-- <th>Region</th> -->
                             <th>Total Beds</th>
                             <th>Occupied</th>
                             <th>Available</th>
@@ -285,67 +288,77 @@ $dal = new DAL();
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td class="fw-bold">Rafic Hariri University Hospital</td>
-                            <td>Beirut</td>
-                            <td>Beirut</td>
-                            <td>350</td>
-                            <td>280</td>
-                            <td>70</td>
-                            <td class="status-high">High Occupancy</td>
-                            <td>May 18, 2025 11:10 AM</td>
-                            <td><a href="#" class="teams-badge"><i class="fa-solid fa-users me-1"></i> 4</a></td>
-                            <td class="text-end">
-                                <button class="action-btn"><i class="fa-solid fa-eye"></i></button>
-                                <button class="action-btn"><i class="fa-solid fa-pen"></i></button>
-                                <button class="action-btn delete-btn"><i class="fa-solid fa-trash"></i></button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="fw-bold">Tripoli Governmental Hospital</td>
-                            <td>Al Mina</td>
-                            <td>North</td>
-                            <td>220</td>
-                            <td>210</td>
-                            <td>10</td>
-                            <td class="status-at-capacity">At Capacity</td>
-                            <td>May 18, 2025 11:10 AM</td>
-                            <td><a href="#" class="teams-badge"><i class="fa-solid fa-users me-1"></i> 3</a></td>
-                            <td class="text-end">
-                                <button class="action-btn"><i class="fa-solid fa-eye"></i></button>
-                                <button class="action-btn"><i class="fa-solid fa-pen"></i></button>
-                                <button class="action-btn delete-btn"><i class="fa-solid fa-trash"></i></button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="fw-bold">Hotel Dieu de France</td>
-                            <td>Achrafieh</td>
-                            <td>Beirut</td>
-                            <td>400</td>
-                            <td>100</td>
-                            <td>300</td>
-                            <td class="status-low">Available</td>
-                            <td>May 18, 2025 11:10 AM</td>
-                            <td><a href="#" class="teams-badge"><i class="fa-solid fa-users me-1"></i> 8</a></td>
-                            <td class="text-end">
-                                <button class="action-btn"><i class="fa-solid fa-eye"></i></button>
-                                <button class="action-btn"><i class="fa-solid fa-pen"></i></button>
-                                <button class="action-btn delete-btn"><i class="fa-solid fa-trash"></i></button>
-                            </td>
-                        </tr>
+
+                        <?php foreach ($allHospitals as $h): ?>
+
+                            <?php
+
+                            if ($h['hospital_status'] == 'Warning') {
+                                $statusClass = "status-medium";
+                            } elseif ($h['hospital_status'] == 'Dangerous') {
+                                $statusClass = "status-high";
+                            } else {
+                                $statusClass = "status-low";
+                            }
+
+                            ?>
+
+                            <tr>
+
+                                <td class="fw-bold">
+                                    <?= $h['name'] ?? 'Hospital' ?>
+                                </td>
+
+                                <td><?= $h['location'] ?></td>
+
+                                <td><?= $h['total_beds'] ?></td>
+
+                                <td><?= $h['occupied_beds'] ?></td>
+
+                                <td><?= $h['available_beds'] ?></td>
+
+                                <td class="<?= $statusClass ?>">
+                                    <?= $h['hospital_status'] ?>
+                                </td>
+
+                                <td>
+                                    <?= date('M d, Y h:i A', strtotime($h['updated_at'])) ?>
+                                </td>
+                                <td data-id="<?= $h['id'] ?>">
+                                    <a href="hospital_teams.php?hospital_id=<?= $h['id'] ?>" class="teams-badge">
+                                        <i class="fa-solid fa-users me-1"></i>
+                                        <?= $h['total_teams'] ?>
+                                    </a>
+                                </td>
+
+                                <td class="text-end">
+
+                                    <button class="action-btn">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </button>
+
+                                    <button class="action-btn">
+                                        <i class="fa-solid fa-pen"></i>
+                                    </button>
+
+                                    <button class="action-btn delete-btn">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+
+                                </td>
+
+                            </tr>
+
+                        <?php endforeach; ?>
+
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
-
-    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
     <script>
         $(document).ready(function() {
-            $('#hospitalsTable').DataTable({
+            var table = $('#hospitalsTable').DataTable({
                 pageLength: 7,
                 dom: 'rt<"d-flex justify-content-between align-items-center"ip>',
                 language: {
@@ -355,6 +368,13 @@ $dal = new DAL();
                         next: ">"
                     }
                 }
+            });
+            $('#statushospital').on('change', function() {
+
+                var status = $(this).val();
+
+                table.column(5).search(status).draw();
+
             });
         });
     </script>
