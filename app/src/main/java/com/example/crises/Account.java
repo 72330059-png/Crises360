@@ -13,15 +13,22 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
+
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Account extends AppCompatActivity {
+
+    EditText etName, etId, etPhone, etDob, etFather, etMother, etCountry, etPlace;
+    AutoCompleteTextView spGender, spStatus, spBlood;
 
     @Override
     protected void attachBaseContext(Context newBase) {
@@ -35,110 +42,155 @@ public class Account extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_account);
-        View mainView = findViewById(R.id.main);
-        if (mainView != null) {
-            ViewCompat.setOnApplyWindowInsetsListener(mainView, (v, insets) -> {
-                Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-                v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-                return insets;
-            });
-        }
 
-        // Setup the Dropdowns
+        initViews();
         setupDropdowns();
-
-        // Setup the Calendar
         setupCalendar();
-
-        //  Save Button
-        View btnSave = findViewById(R.id.btnSave);
-        if (btnSave != null) {
-            btnSave.setOnClickListener(v -> {
-                Toast.makeText(this, "Profile Updated Successfully!", Toast.LENGTH_SHORT).show();
-
-            });
-        }
-
-
         initBottomNavigation();
+
+        findViewById(R.id.btnSave).setOnClickListener(v -> sendDataToDatabase());
+    }
+
+    private void initViews() {
+        etName = findViewById(R.id.etName);
+        etId = findViewById(R.id.etId);
+        etPhone = findViewById(R.id.etPhone);
+        etDob = findViewById(R.id.etDob);
+        etFather = findViewById(R.id.etFather);
+        etMother = findViewById(R.id.etMother);
+        etCountry = findViewById(R.id.etCountry);
+        etPlace = findViewById(R.id.etPlace);
+
+        spGender = findViewById(R.id.spGender);
+        spStatus = findViewById(R.id.spStatus);
+        spBlood = findViewById(R.id.spBlood);
     }
 
     private void setupDropdowns() {
+
         String[] genders = {"Male", "Female", "Other"};
-        ArrayAdapter<String> genderAdapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_list_item_1, genders);
-        AutoCompleteTextView genderDropdown = findViewById(R.id.spGender);
-        if (genderDropdown != null) {
-            genderDropdown.setAdapter(genderAdapter);
-        }
+        spGender.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, genders));
 
+        String[] status = {"Single", "Married", "Divorced", "Widowed"};
+        spStatus.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, status));
 
-        String[] statusList = {"Single", "Married", "Divorced", "Widowed"};
-        ArrayAdapter<String> statusAdapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_list_item_1, statusList);
-        AutoCompleteTextView statusDropdown = findViewById(R.id.spStatus);
-        if (statusDropdown != null) {
-            statusDropdown.setAdapter(statusAdapter);
-        }
-
-        String[] bloodGroups = {"A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"};
-        ArrayAdapter<String> bloodAdapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_list_item_1, bloodGroups);
-        AutoCompleteTextView bloodDropdown = findViewById(R.id.spBlood);
-        if (bloodDropdown != null) {
-            bloodDropdown.setAdapter(bloodAdapter);
-        }
-
-
+        String[] blood = {"A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"};
+        spBlood.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, blood));
     }
 
     private void setupCalendar() {
-        EditText etDob = findViewById(R.id.etDob);
-        if (etDob == null) return;
         etDob.setOnClickListener(v -> {
-            final Calendar c = Calendar.getInstance();
-            int year = c.get(Calendar.YEAR);
-            int month = c.get(Calendar.MONTH);
-            int day = c.get(Calendar.DAY_OF_MONTH);
+            Calendar c = Calendar.getInstance();
 
-            DatePickerDialog datePickerDialog = new DatePickerDialog(this,
-                    (view, selectedYear, selectedMonth, selectedDay) -> {
-                        String date = selectedDay + "/" + (selectedMonth + 1) + "/" + selectedYear;
-                        etDob.setText(date);
-                    }, year, month, day);
-            datePickerDialog.getDatePicker().setMaxDate(System.currentTimeMillis());
-            datePickerDialog.show();
+            DatePickerDialog dialog = new DatePickerDialog(this,
+                    (view, y, m, d) -> {
+                        // Use String.format to ensure months and days have leading zeros (e.g., 05 instead of 5)
+                        // Format: YYYY-MM-DD
+                        String formattedDate = String.format("%d-%02d-%02d", y, (m + 1), d);
+                        etDob.setText(formattedDate);
+                    },
+                    c.get(Calendar.YEAR),
+                    c.get(Calendar.MONTH),
+                    c.get(Calendar.DAY_OF_MONTH));
+
+            dialog.getDatePicker().setMaxDate(System.currentTimeMillis());
+            dialog.show();
         });
+    }
+
+    private void sendDataToDatabase() {
+        String name = etName.getText().toString().trim();
+        String phone = etPhone.getText().toString().trim();
+
+        // 1. Local Validation
+        if (name.isEmpty() || phone.isEmpty()) {
+            Toast.makeText(this, "⚠️ Please enter name and phone", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String url = "http://10.0.2.2/crises_api/add_members.php";
+
+        StringRequest request = new StringRequest(Request.Method.POST, url,
+                response -> {
+                    android.util.Log.d("SERVER_RESPONSE", response);
+
+                    try {
+                        org.json.JSONObject jsonObject = new org.json.JSONObject(response);
+                        String status = jsonObject.getString("status");
+                        String message = jsonObject.getString("message");
+
+                        if (status.equals("success")) {
+                            // 2. Extract the new credentials from PHP
+                            String generatedUser = jsonObject.getString("username");
+                            String generatedPass = jsonObject.getString("password");
+
+                            // 3. Show an AlertDialog so the user can see/copy their credentials
+                            new androidx.appcompat.app.AlertDialog.Builder(this)
+                                    .setTitle("Registration Successful")
+                                    .setMessage("Account created!\n\nPlease save your login details:\n\n" +
+                                            "Username: " + generatedUser + "\n" +
+                                            "Password: " + generatedPass)
+                                    .setCancelable(false) // User must click OK
+                                    .setPositiveButton("Copy & Finish", (dialog, which) -> {
+                                        // Copy to clipboard (Optional but helpful)
+                                        android.content.ClipboardManager clipboard = (android.content.ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                                        android.content.ClipData clip = android.content.ClipData.newPlainText("Crises Credentials",
+                                                "User: " + generatedUser + " Pass: " + generatedPass);
+                                        clipboard.setPrimaryClip(clip);
+
+                                        Toast.makeText(this, "Credentials copied to clipboard", Toast.LENGTH_SHORT).show();
+                                        finish(); // Close the activity
+                                    })
+                                    .show();
+
+                        } else {
+                            Toast.makeText(this, "❌ " + message, Toast.LENGTH_LONG).show();
+                        }
+                    } catch (org.json.JSONException e) {
+                        Toast.makeText(this, "Format Error: " + response, Toast.LENGTH_LONG).show();
+                    }
+                },
+                error -> {
+                    android.util.Log.e("VOLLEY_ERROR", error.toString());
+                    Toast.makeText(this, "📡 Connection Error!", Toast.LENGTH_LONG).show();
+                }
+        ) {
+            @Override
+            protected Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<>();
+                params.put("full_name", name);
+                params.put("phone", phone);
+                params.put("national_id", etId.getText().toString().trim());
+                params.put("gender", spGender.getText().toString().trim());
+                params.put("dob", etDob.getText().toString().trim());
+                params.put("family_status", spStatus.getText().toString().trim());
+                params.put("blood_group", spBlood.getText().toString().trim());
+                params.put("father_name", etFather.getText().toString().trim());
+                params.put("mother_name", etMother.getText().toString().trim());
+                params.put("country", etCountry.getText().toString().trim());
+                params.put("place_of_birth", etPlace.getText().toString().trim());
+                return params;
+            }
+        };
+
+        Volley.newRequestQueue(this).add(request);
     }
 
     private void initBottomNavigation() {
         BottomNavigationView bottomNav = findViewById(R.id.bottomNavigation);
-        if (bottomNav == null) return;
 
         bottomNav.setSelectedItemId(R.id.nav_profile);
 
         bottomNav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
-            if (id == R.id.nav_profile) return true;
 
-            Intent intent = null;
-            if (id == R.id.nav_home) {
-                intent = new Intent(this, HomeActivity.class);
-            } else if (id == R.id.nav_alerts) {
-                intent = new Intent(this, Alerts.class);
-            } else if (id == R.id.nav_map) {
-                intent = new Intent(this, Map.class);
-            } else if (id == R.id.nav_service) {
-                intent = new Intent(this, Services.class);
-            }
+            if (id == R.id.nav_home) startActivity(new Intent(this, HomeActivity.class));
+            else if (id == R.id.nav_alerts) startActivity(new Intent(this, Alerts.class));
+            else if (id == R.id.nav_map) startActivity(new Intent(this, Map.class));
+            else if (id == R.id.nav_service) startActivity(new Intent(this, Services.class));
+            else return true;
 
-            if (intent != null) {
-                intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                startActivity(intent);
-                overridePendingTransition(0, 0); // No jump animation
-                return true;
-            }
-            return false;
+            return true;
         });
     }
 }
