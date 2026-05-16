@@ -10,18 +10,25 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import org.json.JSONObject;
+
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.Scanner;
+
 public class Login extends AppCompatActivity {
 
-    EditText etEmail, etPassword;
+    EditText etUser, etPassword;
     Button btnLogin;
-    TextView  btnRegister;
+    TextView btnRegister;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        etEmail = findViewById(R.id.etEmail);
+        etUser = findViewById(R.id.etUser);
         etPassword = findViewById(R.id.etPassword);
         btnLogin = findViewById(R.id.btnLogin);
         btnRegister = findViewById(R.id.btnRegister);
@@ -29,34 +36,71 @@ public class Login extends AppCompatActivity {
         // 🔐 LOGIN
         btnLogin.setOnClickListener(v -> {
 
-            String email = etEmail.getText().toString().trim();
+            String username = etUser.getText().toString().trim();
             String password = etPassword.getText().toString().trim();
 
-            // ❗ check empty fields
-            if (TextUtils.isEmpty(email) || TextUtils.isEmpty(password)) {
+            if (TextUtils.isEmpty(username) || TextUtils.isEmpty(password)) {
                 Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            // ✅ SIMPLE VALIDATION (later DB/Firebase)
-            if (email.equals("admin") && password.equals("1234")) {
+            new Thread(() -> {
+                try {
 
-                Toast.makeText(this, "Login Successful", Toast.LENGTH_SHORT).show();
+                    URL url = new URL("http://10.0.2.2/crises_api/login.php"); // change this
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
-                // 👉 OPEN HOME
-                Intent intent = new Intent(Login.this, HomeActivity.class);
-                startActivity(intent);
-                finish();
+                    conn.setRequestMethod("POST");
+                    conn.setDoOutput(true);
 
-            } else {
+                    String data = "username=" + username + "&password=" + password;
 
-                Toast.makeText(this, "Invalid credentials", Toast.LENGTH_SHORT).show();
-            }
+                    OutputStream os = conn.getOutputStream();
+                    os.write(data.getBytes());
+                    os.flush();
+                    os.close();
+
+                    Scanner scanner = new Scanner(conn.getInputStream());
+                    StringBuilder response = new StringBuilder();
+
+                    while (scanner.hasNext()) {
+                        response.append(scanner.nextLine());
+                    }
+
+                    JSONObject json = new JSONObject(response.toString());
+
+                    runOnUiThread(() -> {
+
+                        try {
+                            if (json.getString("status").equals("success")) {
+
+                                Toast.makeText(this, "Login Successful", Toast.LENGTH_SHORT).show();
+
+                                Intent intent = new Intent(Login.this, HomeActivity.class);
+                                intent.putExtra("username", username);
+                                startActivity(intent);
+                                finish();
+
+                            } else {
+                                Toast.makeText(this,
+                                        json.getString("message"),
+                                        Toast.LENGTH_SHORT).show();
+                            }
+
+                        } catch (Exception e) {
+                            Toast.makeText(this, "Parsing error", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+
+                } catch (Exception e) {
+                    runOnUiThread(() ->
+                            Toast.makeText(this, "Server error: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                    );
+                }
+            }).start();
         });
 
-        // 🆕 NEW MEMBER
         btnRegister.setOnClickListener(v -> {
-
             Intent intent = new Intent(Login.this, Account.class);
             startActivity(intent);
         });

@@ -1,19 +1,15 @@
 package com.example.crises;
 
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
-import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.ImageButton;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.core.content.FileProvider;
@@ -25,6 +21,8 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 
 public class HomeActivity extends AppCompatActivity {
+
+    String username;
     CardView quickCall;
 
     @Override
@@ -39,7 +37,20 @@ public class HomeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_home);
-        
+
+        // 🔥 GET USERNAME (SAFE METHOD)
+        username = getIntent().getStringExtra("username");
+
+        if (username == null || username.isEmpty()) {
+            SharedPreferences sp = getSharedPreferences("user", MODE_PRIVATE);
+            username = sp.getString("username", "");
+        }
+
+        if (!username.isEmpty()) {
+            SharedPreferences sp = getSharedPreferences("user", MODE_PRIVATE);
+            sp.edit().putString("username", username).apply();
+        }
+
         initQuickCall();
         initTopAppBar();
         initGuidesSection();
@@ -47,43 +58,58 @@ public class HomeActivity extends AppCompatActivity {
         initBottomNavigation();
     }
 
+    // ---------------- TOP BAR ----------------
     private void initTopAppBar() {
+
         ImageButton notificationBtn = findViewById(R.id.notificationBtn);
         ImageButton settingsBtn = findViewById(R.id.settingsBtn);
 
         if (notificationBtn != null) {
-            notificationBtn.setOnClickListener(v -> startActivity(new Intent(this, Tips.class)));
+            notificationBtn.setOnClickListener(v ->
+                    startActivity(new Intent(this, Tips.class)));
         }
+
         if (settingsBtn != null) {
-            settingsBtn.setOnClickListener(v -> startActivity(new Intent(this, Settings.class)));
+            settingsBtn.setOnClickListener(v ->
+                    startActivity(new Intent(this, Settings.class)));
         }
     }
 
+    // ---------------- GUIDE PDF ----------------
     private void initGuidesSection() {
+
         CardView guideCard = findViewById(R.id.guideCard);
         if (guideCard == null) return;
 
         guideCard.setOnClickListener(v -> {
+
             try {
                 File file = new File(getCacheDir(), "Emergency.pdf");
+
                 if (!file.exists()) {
                     InputStream is = getAssets().open("Emergency.pdf");
                     FileOutputStream os = new FileOutputStream(file);
+
                     byte[] buffer = new byte[1024];
                     int length;
+
                     while ((length = is.read(buffer)) > 0) {
                         os.write(buffer, 0, length);
                     }
-                    os.flush();
+
                     os.close();
                     is.close();
                 }
 
-                Uri uri = FileProvider.getUriForFile(this, getPackageName() + ".provider", file);
+                Uri uri = FileProvider.getUriForFile(
+                        this,
+                        getPackageName() + ".provider",
+                        file
+                );
+
                 Intent intent = new Intent(Intent.ACTION_VIEW);
                 intent.setDataAndType(uri, "application/pdf");
                 intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
                 startActivity(intent);
 
             } catch (Exception e) {
@@ -92,12 +118,17 @@ public class HomeActivity extends AppCompatActivity {
         });
     }
 
+    // ---------------- NEWS ----------------
     private void initNewsSection() {
+
         CardView newsCard = findViewById(R.id.newsCard);
         if (newsCard != null) {
-            newsCard.setOnClickListener(v -> startActivity(new Intent(this, News.class)));
+            newsCard.setOnClickListener(v ->
+                    startActivity(new Intent(this, News.class)));
         }
     }
+
+    // ---------------- QUICK CALL ----------------
     private void initQuickCall() {
 
         quickCall = findViewById(R.id.btnQuickCall);
@@ -117,17 +148,10 @@ public class HomeActivity extends AppCompatActivity {
                         String number;
 
                         switch (which) {
-                            case 0:
-                                number = "140";
-                                break;
-                            case 1:
-                                number = "112";
-                                break;
-                            case 2:
-                                number = "175";
-                                break;
-                            default:
-                                number = "112";
+                            case 0: number = "140"; break;
+                            case 1: number = "112"; break;
+                            case 2: number = "175"; break;
+                            default: number = "112";
                         }
 
                         Intent intent = new Intent(Intent.ACTION_DIAL);
@@ -139,27 +163,45 @@ public class HomeActivity extends AppCompatActivity {
         });
     }
 
+    // ---------------- BOTTOM NAV ----------------
     private void initBottomNavigation() {
+
         BottomNavigationView bottomNav = findViewById(R.id.bottomNavigation);
         if (bottomNav == null) return;
+
         bottomNav.setSelectedItemId(R.id.nav_home);
 
         bottomNav.setOnItemSelectedListener(item -> {
+
             int id = item.getItemId();
+
             if (id == R.id.nav_home) return true;
 
             Intent intent = null;
-            if (id == R.id.nav_alerts) intent = new Intent(this, Alerts.class);
-            else if (id == R.id.nav_map) intent = new Intent(this, Map.class);
-            else if (id == R.id.nav_service) intent = new Intent(this, Services.class);
-            else if (id == R.id.nav_profile) intent = new Intent(this, Account.class);
+
+            if (id == R.id.nav_alerts) {
+                intent = new Intent(this, Alerts.class);
+
+            } else if (id == R.id.nav_map) {
+                intent = new Intent(this, Map.class);
+
+            } else if (id == R.id.nav_service) {
+                intent = new Intent(this, Services.class);
+
+            } else if (id == R.id.nav_profile) {
+
+                intent = new Intent(HomeActivity.this, Account.class);
+
+                // 🔥 SAFE USERNAME PASSING
+                intent.putExtra("username", username);
+            }
 
             if (intent != null) {
-                intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                 startActivity(intent);
                 overridePendingTransition(0, 0);
                 return true;
             }
+
             return false;
         });
     }
