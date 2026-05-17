@@ -276,6 +276,7 @@
             "info": true,
             "lengthChange": false,
             "pageLength": 10,
+            "order":[],
             "responsive": true,
             "dom": 'rt<"d-flex justify-content-between align-items-center mt-3"ip>',
             "columnDefs": [{
