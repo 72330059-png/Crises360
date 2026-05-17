@@ -75,7 +75,7 @@ public class Alerts extends AppCompatActivity {
 
     private void loadAlertsFromServer() {
 
-        String url = "http://10.0.2.2/crises_api/get_alerts.php";
+        String url = "http://10.0.2.2/crises_api/get_alerts.php?user_id=" + getUserId();
 
         JsonArrayRequest request = new JsonArrayRequest(Request.Method.GET, url, null,
                 response -> {
@@ -89,13 +89,12 @@ public class Alerts extends AppCompatActivity {
                             JSONObject obj = response.getJSONObject(i);
 
                             int id = obj.getInt("id");
-                            String type = obj.getString("type");
                             String message = obj.getString("message");
-                            String location = obj.getString("location");
+                            String location = obj.getString("region");
                             String time = obj.getString("time");
-                            String status = obj.getString("status");
+                            String severity = obj.getString("severity");
 
-                            list.add(new AlertModel(id, type, message, location, time, status));
+                            list.add(new AlertModel(id, severity, message, location, time));
                         }
 
                         adapter = new AlertsAdapter(list);
@@ -112,8 +111,10 @@ public class Alerts extends AppCompatActivity {
         RequestQueue queue = Volley.newRequestQueue(this);
         queue.add(request);
     }
-
-    // 🔥 SWIPE (UI only for now)
+    private String getUserId() {
+        SharedPreferences prefs = getSharedPreferences("user", MODE_PRIVATE);
+        return String.valueOf(prefs.getInt("user_id", -1));
+    }
     private void initSwipe() {
 
         ItemTouchHelper.SimpleCallback swipe = new ItemTouchHelper.SimpleCallback(0,

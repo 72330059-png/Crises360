@@ -51,40 +51,10 @@ public class AlertsAdapter extends RecyclerView.Adapter<AlertsAdapter.ViewHolder
         AlertModel alert = list.get(position);
 
         holder.txtMessage.setText(alert.getMessage());
-        holder.txtLocation.setText(alert.getLocation());
+        holder.txtLocation.setText("📍 " + alert.getLocation());
         holder.txtTime.setText(alert.getTime());
-
-        String type = alert.getType();
-
-        if (type != null) {
-            type = type.trim().toLowerCase();
-
-            switch (type) {
-
-                case "danger":
-                    setStyle(holder, Color.RED, "🚨 Danger");
-                    break;
-
-                case "safe":
-                    setStyle(holder, Color.GREEN, "🟢 Safe Zone");
-                    break;
-
-                case "shelter":
-                    setStyle(holder, Color.BLUE, "🏠 Shelter");
-                    break;
-
-                default:
-                    setStyle(holder, Color.GRAY, "ℹ️ Info");
-                    break;
-            }
-        } else {
-            setStyle(holder, Color.GRAY, "ℹ️ Info");
-        }
-    }
-
-    private void setStyle(ViewHolder holder, int color, String label) {
-        holder.strip.setBackgroundColor(color);
-        holder.txtType.setText(label);
+        holder.txtType.setText("🚨 Alert");
+        holder.strip.setBackgroundColor(Color.parseColor("#526D82"));
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.example.crises;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.widget.Button;
@@ -33,7 +34,7 @@ public class Login extends AppCompatActivity {
         btnLogin = findViewById(R.id.btnLogin);
         btnRegister = findViewById(R.id.btnRegister);
 
-        // 🔐 LOGIN
+
         btnLogin.setOnClickListener(v -> {
 
             String username = etUser.getText().toString().trim();
@@ -47,7 +48,7 @@ public class Login extends AppCompatActivity {
             new Thread(() -> {
                 try {
 
-                    URL url = new URL("http://10.0.2.2/crises_api/login.php"); // change this
+                    URL url = new URL("http://10.0.2.2/crises_api/login.php");
                     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
                     conn.setRequestMethod("POST");
@@ -72,9 +73,18 @@ public class Login extends AppCompatActivity {
                     runOnUiThread(() -> {
 
                         try {
+
                             if (json.getString("status").equals("success")) {
 
+                                int userId = json.getInt("user_id");
+
+                                SharedPreferences prefs = getSharedPreferences("user", MODE_PRIVATE);
+                                prefs.edit()
+                                        .putInt("user_id", userId)
+                                        .apply();
+
                                 Toast.makeText(this, "Login Successful", Toast.LENGTH_SHORT).show();
+
 
                                 Intent intent = new Intent(Login.this, HomeActivity.class);
                                 intent.putExtra("username", username);
@@ -101,7 +111,10 @@ public class Login extends AppCompatActivity {
         });
 
         btnRegister.setOnClickListener(v -> {
+
             Intent intent = new Intent(Login.this, Account.class);
+            intent.putExtra("mode", "register");
+
             startActivity(intent);
         });
     }

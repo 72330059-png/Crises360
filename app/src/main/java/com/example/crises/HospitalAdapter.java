@@ -1,5 +1,6 @@
 package com.example.crises;
 
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -40,17 +41,18 @@ public class HospitalAdapter extends RecyclerView.Adapter<HospitalAdapter.ViewHo
         holder.occupied.setText(String.valueOf(h.getOccupiedBeds()));
 
         String status = h.getStatus();
-        holder.status.setText(String.format("Status: %s", status));
+        holder.status.setText("Status: " + status);
 
-        // Optimize color selection to prevent logic overhead during scroll
         int color;
-        if ("Available".equalsIgnoreCase(status)) {
-            color = 0xFF4CAF50;
-        } else if ("Full".equalsIgnoreCase(status)) {
-            color = 0xFFF44336;
+
+        if (status.equalsIgnoreCase("Safe")) {
+            color = Color.GREEN;
+        } else if (status.equalsIgnoreCase("Warning")) {
+            color = Color.parseColor("#FFA500");
         } else {
-            color = 0xFFFF9800;
+            color = Color.RED; // Dangerous
         }
+
         holder.status.setTextColor(color);
     }
 
