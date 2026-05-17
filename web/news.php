@@ -51,12 +51,36 @@ $catStyles = [
             transition: all 0.2s ease;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
+
+        .modal-dialog {
+            margin: 1.75rem auto;
+        }
+
+        .modal-content {
+            border-radius: 20px;
+        }
+
+        .modal-body {
+            overflow-x: hidden;
+        }
+
+        .modal input:not([type="checkbox"]),
+        .modal textarea,
+        .modal select {
+            width: 100%;
+            max-width: 100%;
+        }
+
+        body.modal-open {
+            overflow: hidden;
+            padding-right: 0 !important;
+        }
     </style>
 </head>
 
 <?php foreach ($allnews as $row) { ?>
     <div class="modal fade" id="viewNewsModal<?= $row['id'] ?>" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog  modal-dialog-centered " style="max-width: 850px;">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
             <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
 
                 <div class="row g-0">
@@ -110,9 +134,13 @@ $catStyles = [
                         </div>
 
                         <div class="modal-footer border-0 px-4 pb-4 pt-0 d-flex justify-content-start">
-                            <a href="generate_doc.php?id=<?= $row['id'] ?>" class="btn btn-light rounded-3 px-3 py-2 border fw-semibold shadow-sm">
-                                <i class="fa-solid fa-file-word text-primary me-2"></i>
-                                Download as Word
+                            <a href="view_news.php?id=<?= $row['id'] ?>"
+                                target="_blank"
+                                class="btn btn-light rounded-3 px-3 py-2 border fw-semibold shadow-sm">
+
+                                <i class="fa-solid fa-file-pdf text-danger me-2"></i>
+                                View / Print Article
+
                             </a>
 
                             <button type="button" class="btn btn-dark rounded-3 px-4 py-2 fw-semibold ms-auto shadow-sm" data-bs-dismiss="modal">
@@ -128,7 +156,6 @@ $catStyles = [
 <?php } ?>
 
 <body>
-
     <?php include('includes/sidebar.php'); ?>
     <?php include('includes/nav.php'); ?>
     <div class="main-content">
@@ -210,7 +237,7 @@ $catStyles = [
             </div>
 
             <div class="filter-group-item ms-3">
-                <select id="statusFilter" class="form-select filter-control">
+                <select id="statusFilternews" class="form-select filter-control">
                     <option selected>All Statuses</option>
                     <option>Published</option>
                     <option>Draft</option>
@@ -226,7 +253,10 @@ $catStyles = [
                 <i class="fa-solid fa-rotate-left me-1"></i>
                 Reset
             </button>
-            <button class="btn btn-add-navy ms-auto">
+
+            <button class="btn btn-add-navy ms-auto"
+                data-bs-toggle="modal"
+                data-bs-target="#addNewsModal">
                 <i class="fa-solid fa-plus me-1"></i> Publish News
             </button>
         </div>
@@ -311,15 +341,20 @@ $catStyles = [
                                                 data-bs-target="#viewNewsModal<?= $row['id'] ?>">
                                             </i>
 
-                                            <!-- EDIT -->
-                                            <i class="fa fa-edit text-muted me-3 editBtnnews"
+                                            <i class="fa fa-edit text-muted me-3 editNewsBtn"
                                                 style="cursor:pointer;"
-
-                                                data-id="<?= $row['id'] ?>">
+                                                data-id="<?= $row['id'] ?>"
+                                                data-title="<?= htmlspecialchars($row['title']) ?>"
+                                                data-content="<?= htmlspecialchars($row['content']) ?>"
+                                                data-category="<?= $row['category'] ?>"
+                                                data-type="<?= $row['type'] ?>"
+                                                data-status="<?= $row['status'] ?>"
+                                                data-featured="<?= $row['featured'] ?>"
+                                                data-date="<?= !empty($row['publish_date']) ? date('Y-m-d', strtotime($row['publish_date'])) : '' ?>">
                                             </i>
 
                                             <!-- DELETE -->
-                                            <i class="fa fa-trash text-danger deleteBtn"
+                                            <i class="fa fa-trash text-danger deleteNewsBtn"
                                                 style="cursor:pointer;"
                                                 data-id="<?= $row['id'] ?>">
                                             </i>
@@ -414,6 +449,425 @@ $catStyles = [
         </div>
 
     </div>
+    <div class="modal fade" id="addNewsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered ">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Publish News</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+
+                <div class="modal-body">
+
+
+                    <input type="text" id="newsTitle" class="form-control mb-2" placeholder="News Title">
+
+
+                    <textarea id="newsContent" class="form-control mb-2" placeholder="News Content" rows="4"></textarea>
+
+
+                    <select id="newsCategory" class="form-control mb-2" required>
+                        <option value="">Select Category</option>
+
+                        <option value="Weather">Weather</option>
+                        <option value="Traffic">Traffic</option>
+                        <option value="Safety">Safety</option>
+                        <option value="Medical">Medical</option>
+                        <option value="Infrastructure">Infrastructure</option>
+                        <option value="General">General</option>
+                        <option value="Tech">Tech</option>
+                        <option value="Sports">Sports</option>
+                        <option value="Politics">Politics</option>
+                        <option value="Economy">Economy</option>
+                    </select>
+
+                    <select id="newsType" class="form-control mb-2">
+                        <option value="News">News</option>
+                        <option value="Article">Article</option>
+                    </select>
+
+                    <select id="newsStatus" class="form-control mb-2">
+                        <option value="Published">Published</option>
+                        <option value="Draft">Draft</option>
+                    </select>
+
+                    <div class="form-check mb-2">
+                        <input type="checkbox" id="newsFeatured" class="form-check-input">
+                        <label class="form-check-label" for="newsFeatured">
+                            Featured News
+                        </label>
+                    </div>
+
+                    <input type="date" id="newsDate" class="form-control mb-2">
+
+                    <input type="file" id="newsImage" class="form-control mb-3">
+
+                    <button type="button" id="saveNewsBtn" class="btn btn-success w-100">
+                        Save News
+                    </button>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="updateNewsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered ">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Update News</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+
+                    <!-- hidden ID -->
+                    <input type="hidden" id="updateNewsId">
+
+                    <input type="text" id="updateNewsTitle" class="form-control mb-2" placeholder="News Title">
+
+                    <textarea id="updateNewsContent" class="form-control mb-2" rows="4"></textarea>
+
+                    <select id="updateNewsCategory" class="form-control mb-2">
+                        <option>Weather</option>
+                        <option>Traffic</option>
+                        <option>Safety</option>
+                        <option>Medical</option>
+                        <option>Infrastructure</option>
+                        <option>General</option>
+                        <option>Tech</option>
+                        <option>Sports</option>
+                        <option>Politics</option>
+                        <option>Economy</option>
+                    </select>
+                    <select id="updateNewsType" class="form-control mb-2">
+                        <option value="News">News</option>
+                        <option value="Article">Article</option>
+                    </select>
+
+                    <select id="updateNewsStatus" class="form-control mb-2">
+                        <option>Published</option>
+                        <option>Draft</option>
+                    </select>
+
+                    <div class="form-check mb-2">
+                        <input type="checkbox" id="updateNewsFeatured" class="form-check-input">
+                        <label class="form-check-label">Featured</label>
+                    </div>
+
+                    <input type="date" id="updateNewsDate" class="form-control mb-2">
+
+                    <input type="file" id="updateNewsImage" class="form-control mb-3">
+
+                    <button type="button" id="updateNewsBtn" class="btn btn-primary w-100">
+                        Update News
+                    </button>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <script>
+        $(document).ready(function() {
+
+            $('#saveNewsBtn').click(function() {
+
+                let formData = new FormData();
+
+                formData.append('title', $('#newsTitle').val());
+                formData.append('content', $('#newsContent').val());
+                formData.append('category', $('#newsCategory').val());
+                formData.append('type', $('#newsType').val());
+                formData.append('status', $('#newsStatus').val());
+                formData.append('featured', $('#newsFeatured').is(':checked') ? 1 : 0);
+                formData.append('publish_date', $('#newsDate').val());
+
+                let image = $('#newsImage')[0].files[0];
+                if (image) {
+                    formData.append('image', image);
+                }
+
+                $.ajax({
+                    url: 'actions/add_news.php',
+                    type: 'POST',
+                    data: formData,
+                    processData: false, 
+                    contentType: false, 
+                    dataType: 'json',
+
+                    success: function(response) {
+
+                        console.log(response);
+
+                        if (response.status === 'success') {
+                            $('#addNewsModal').modal('hide');
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success',
+                                text: response.message,
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+
+                            setTimeout(() => {
+                                location.reload();
+                            }, 1500);
+
+                        } else {
+
+                            Swal.fire(
+                                'Error',
+                                response.message,
+                                'error'
+                            );
+                        }
+                    },
+
+                    error: function() {
+                        Swal.fire(
+                            'Error',
+                            'Something went wrong!',
+                            'error'
+                        );
+                    }
+                });
+
+            });
+
+        });
+
+        $(document).on('click', '.deleteNewsBtn', function() {
+
+            let id = $(this).data('id');
+
+            Swal.fire({
+                title: 'Delete News?',
+                text: "This action cannot be undone",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Delete'
+            }).then((result) => {
+
+                if (result.isConfirmed) {
+
+                    $.ajax({
+                        url: 'actions/delete_news.php',
+                        type: 'POST',
+                        data: {
+                            id: id
+                        },
+                        dataType: 'json',
+
+                        success: function(response) {
+
+                            if (response.status === 'success') {
+
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Deleted!',
+                                    text: response.message,
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                });
+
+                                $('.deleteNewsBtn[data-id="' + id + '"]').closest('tr').fadeOut();
+
+                            } else {
+
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: response.message
+                                });
+                            }
+                        }
+                    });
+
+                }
+
+            });
+
+        });
+
+        $(document).on('click', '.editNewsBtn', function() {
+
+            $('#updateNewsId').val($(this).data('id'));
+
+            $('#updateNewsTitle').val($(this).data('title'));
+            $('#updateNewsContent').val($(this).data('content'));
+            $('#updateNewsCategory').val($(this).data('category'));
+            $('#updateNewsType').val($(this).data('type'));
+            $('#updateNewsStatus').val($(this).data('status'));
+            $('#updateNewsDate').val($(this).data('date'));
+
+            $('#updateNewsFeatured').prop('checked', $(this).data('featured') == 1);
+
+            let modal = new bootstrap.Modal(document.getElementById('updateNewsModal'));
+            modal.show();
+        });
+
+        $(document).on('click', '#updateNewsBtn', function() {
+
+            let formData = new FormData();
+
+            formData.append('id', $('#updateNewsId').val());
+            formData.append('title', $('#updateNewsTitle').val());
+            formData.append('content', $('#updateNewsContent').val());
+            formData.append('category', $('#updateNewsCategory').val());
+            formData.append('type', $('#updateNewsType').val());
+            formData.append('status', $('#updateNewsStatus').val());
+            formData.append('featured', $('#updateNewsFeatured').is(':checked') ? 1 : 0);
+            formData.append('publish_date', $('#updateNewsDate').val());
+
+            let image = $('#updateNewsImage')[0].files[0];
+            if (image) {
+                formData.append('image', image);
+            }
+
+            $.ajax({
+                url: 'actions/update_news.php',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                dataType: 'json',
+
+                success: function(response) {
+
+                    if (response.status === 'success') {
+
+                        $('#updateNewsModal').modal('hide');
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: response.message,
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1500);
+
+                    } else {
+
+                        Swal.fire(
+                            'Error',
+                            response.message,
+                            'error'
+                        );
+                    }
+                }
+            });
+
+        });
+    </script>
+
+    <script>
+        function applyNewsFilters() {
+
+            let status = document.getElementById('statusFilternews').value.toLowerCase();
+
+            let date = document.getElementById('newsDateFilter').value;
+
+            let rows = document.querySelectorAll("#newsTable tbody tr");
+
+            rows.forEach(row => {
+
+                let rowStatus = row.querySelector("td:nth-child(4)")
+                    .textContent.trim().toLowerCase();
+
+                let rowDate = row.getAttribute("data-date");
+
+                let show = true;
+
+                if (
+                    status !== "all statuses" &&
+                    rowStatus !== status
+                ) {
+                    show = false;
+                }
+
+                if (
+                    date !== "" &&
+                    rowDate !== date
+                ) {
+                    show = false;
+                }
+
+                row.style.display = show ? "" : "none";
+            });
+        }
+
+      
+        document.getElementById('statusFilternews')
+            .addEventListener('change', applyNewsFilters);
+
+        document.getElementById('newsDateFilter')
+            .addEventListener('change', applyNewsFilters);
+
+   
+        document.getElementById('resetFilters')
+            .addEventListener('click', function() {
+
+                document.getElementById('statusFilternews').value = 'All Statuses';
+
+                document.getElementById('newsDateFilter').value = '';
+
+                applyNewsFilters();
+            });
+    </script>
+    <script>
+        document.querySelectorAll('.category-filter').forEach(card => {
+
+            card.addEventListener('click', function() {
+
+                let category = this.getAttribute('data-category').toLowerCase();
+
+                let rows = document.querySelectorAll('#newsTable tbody tr');
+
+                rows.forEach(row => {
+
+                    let rowCategory = row.querySelector('td:nth-child(2)')
+                        .textContent.trim().toLowerCase();
+
+                    if (rowCategory === category) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+
+                });
+
+            });
+
+        });
+    </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     <?php include('includes/script.php'); ?>
 </body>
 
