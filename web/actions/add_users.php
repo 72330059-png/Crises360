@@ -14,7 +14,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = $_POST['pass'];
     $role = $indexx->clean($_POST['role']);
 
-
+// var_dump($name,$email,$password,$role);
+// exit;
     if (!$indexx->validateEmail($email)) {
 
         echo json_encode([
