@@ -53,7 +53,7 @@ $capacity =
     $shelter->clean($_POST['capacity'] ?? '');
 
 
-// VALIDATION
+
 
 if (
     empty($shelter_name) ||
@@ -68,10 +68,6 @@ if (
 
     exit;
 }
-
-
-// if no organization selected
-// require new municipality fields
 
 if (
     empty($organization_id)

@@ -52,7 +52,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     } else {
 
-        // RETURN REAL SQL ERROR
         echo json_encode([
             "success" => false,
             "message" => $result

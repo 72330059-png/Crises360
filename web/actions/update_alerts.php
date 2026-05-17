@@ -4,8 +4,6 @@ session_start();
 header('Content-Type: application/json');
 
 require_once("../class/alerts.class.php");
-
-/* ---------------- AUTH CHECK ---------------- */
 if (!isset($_SESSION['logged_in'])) {
     echo json_encode([
         'status' => 'error',
@@ -13,8 +11,6 @@ if (!isset($_SESSION['logged_in'])) {
     ]);
     exit;
 }
-
-/* ---------------- REQUEST METHOD ---------------- */
 if ($_SERVER['REQUEST_METHOD'] != 'POST') {
     echo json_encode([
         'status' => 'error',
@@ -22,17 +18,12 @@ if ($_SERVER['REQUEST_METHOD'] != 'POST') {
     ]);
     exit;
 }
-
 $alert = new alert();
-
-/* ---------------- GET DATA ---------------- */
 $id       = $alert->clean($_POST['id'] ?? '');
 $message  = $alert->clean($_POST['alert_message'] ?? '');
 $severity = $alert->clean($_POST['severity'] ?? '');
 $region   = $alert->clean($_POST['region'] ?? '');
 $status   = $alert->clean($_POST['status'] ?? 'Pending');
-
-/* ---------------- VALIDATION ---------------- */
 if (
     empty($id) ||
     empty($message) ||
@@ -46,11 +37,8 @@ if (
     ]);
     exit;
 }
-
-/* ---------------- VALID VALUES ---------------- */
 $allowedSeverity = ['Info', 'Warning', 'Critical'];
 $allowedStatus   = ['Pending', 'Sent'];
-
 if (!in_array($severity, $allowedSeverity)) {
     echo json_encode([
         'status' => 'error',
@@ -58,7 +46,6 @@ if (!in_array($severity, $allowedSeverity)) {
     ]);
     exit;
 }
-
 if (!in_array($status, $allowedStatus)) {
     echo json_encode([
         'status' => 'error',
@@ -66,8 +53,6 @@ if (!in_array($status, $allowedStatus)) {
     ]);
     exit;
 }
-
-/* ---------------- UPDATE ---------------- */
 $result = $alert->updateAlert(
     $id,
     $message,
@@ -75,8 +60,6 @@ $result = $alert->updateAlert(
     $region,
     $status
 );
-
-/* ---------------- RESPONSE ---------------- */
 if ($result) {
     echo json_encode([
         'status' => 'success',
