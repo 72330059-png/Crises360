@@ -8,6 +8,14 @@ class alert extends DAL
     // =========================
     // GET ALL ALERTS
     // =========================
+    public function getRegions()
+    {
+        $sql = "SELECT DISTINCT region
+            FROM alerts
+            ORDER BY region ASC";
+
+        return $this->getdata($sql);
+    }
     public function getAllAlerts()
     {
         $sql = "SELECT * 
@@ -46,33 +54,17 @@ class alert extends DAL
     // =========================
     // INSERT ALERT
     // =========================
-    public function insertAlert(
-        $alert_message,
-        $severity,
-        $region,
-        $recepients_count,
-        $status,
-        $alert_date
-    ) {
-
+    public function insertAlert($alert_message, $severity, $region, $status)
+    {
         $sql = "INSERT INTO alerts
-                (
-                    alert_message,
-                    severity,
-                    region,
-                    recepients_count,
-                    status,
-                    alert_date
-                )
-                VALUES (?, ?, ?, ?, ?, ?)";
+                (alert_message, severity, region, status)
+                VALUES (?, ?, ?, ?)";
 
         return $this->executeSafe($sql, [
             $alert_message,
             $severity,
             $region,
-            $recepients_count,
-            $status,
-            $alert_date
+            $status
         ]);
     }
 
@@ -80,32 +72,20 @@ class alert extends DAL
     // =========================
     // UPDATE ALERT
     // =========================
-    public function updateAlert(
-        $id,
-        $alert_message,
-        $severity,
-        $region,
-        $recepients_count,
-        $status,
-        $alert_date
-    ) {
-
+    public function updateAlert($id, $alert_message, $severity, $region, $status)
+    {
         $sql = "UPDATE alerts
                 SET alert_message = ?,
                     severity = ?,
                     region = ?,
-                    recepients_count = ?,
-                    status = ?,
-                    alert_date = ?
+                    status = ?
                 WHERE id = ?";
 
         return $this->executeSafe($sql, [
             $alert_message,
             $severity,
             $region,
-            $recepients_count,
             $status,
-            $alert_date,
             $id
         ]);
     }

@@ -5,7 +5,7 @@ require_once("DAL.class.php");
 class incident extends DAL
 {
 
-   
+
     public function getAllIncidents()
     {
         $sql = "SELECT * FROM incidents ORDER BY reported_at DESC";
@@ -13,7 +13,7 @@ class incident extends DAL
         return $this->getdata($sql);
     }
 
-  
+
     public function getIncidentById($id)
     {
         $sql = "SELECT * FROM incidents WHERE id = ?";
@@ -38,40 +38,32 @@ class incident extends DAL
         ]);
     }
 
- 
-public function updateDescription($id, $description)
-{
-    $sql = "UPDATE incidents
+
+    public function updateDescription($id, $description)
+    {
+        $sql = "UPDATE incidents
             SET description = ?
             WHERE id = ?";
 
-    return $this->executeSafe($sql, [
-        $description,
-        $id
-    ]);
-}
+        return $this->executeSafe($sql, [
+            $description,
+            $id
+        ]);
+    }
 
     public function updateIncident($id, $name, $location, $severity, $status)
     {
-        $sql = "UPDATE incidents
-                SET incident_name = ?,
-                    location = ?,
-                    severity = ?,
-                    status = ?
-                 
-                WHERE id = ?";
-
+        $sql = "UPDATE incidents SET incident_name = ?, location = ?, severity = ?, status = ?  WHERE id = ?";
         return $this->executeSafe($sql, [
             $name,
             $location,
             $severity,
             $status,
-        
             $id
         ]);
     }
 
-  
+
     public function deleteIncident($id)
     {
         $sql = "DELETE FROM incidents WHERE id = ?";
@@ -79,7 +71,7 @@ public function updateDescription($id, $description)
         return $this->executeSafe($sql, [$id]);
     }
 
-  
+
     public function totalIncidents()
     {
         $sql = "SELECT COUNT(*) total FROM incidents";
@@ -89,7 +81,7 @@ public function updateDescription($id, $description)
         return $data[0]['total'];
     }
 
-   
+
     public function activeIncidents()
     {
         $sql = "SELECT COUNT(*) total
@@ -101,7 +93,7 @@ public function updateDescription($id, $description)
         return $data[0]['total'];
     }
 
-  
+
     public function inProgressIncidents()
     {
         $sql = "SELECT COUNT(*) total
@@ -113,7 +105,7 @@ public function updateDescription($id, $description)
         return $data[0]['total'];
     }
 
-  
+
     public function resolvedIncidents()
     {
         $sql = "SELECT COUNT(*) total
@@ -125,7 +117,7 @@ public function updateDescription($id, $description)
         return $data[0]['total'];
     }
 
-  
+
     public function criticalIncidents()
     {
         $sql = "SELECT COUNT(*) total
