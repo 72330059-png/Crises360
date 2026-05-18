@@ -84,7 +84,7 @@ $allHospitals = $hospital->getAllHospitals();
         }
 
         .btn-add-hospital:hover {
-            background: #04b88a;
+            background: #ddc15a;
             color: white;
         }
 
@@ -203,6 +203,71 @@ $allHospitals = $hospital->getAllHospitals();
         }
     </style>
 </head>
+<div class="modal fade" id="addHospitalModal" tabindex="-1">
+    <!-- <div class="modal-dialog modal-lg" style="margin-top: 3rem; margin-bottom: 3rem;"> -->
+    <div class="modal-dialog modal-dialog-centered modal-lg my-5">
+        <div class="modal-content rounded-4 shadow">
+
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">Add Hospital</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body py-4">
+                <form id="addHospitalForm">
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Hospital Name</label>
+                            <input type="text" id="hospitalName" class="form-control" placeholder="Enter hospital name">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Location</label>
+                            <input type="text" id="hospitalLocation" class="form-control" placeholder="Enter location">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Email</label>
+                            <input type="email" id="hospitalEmail" class="form-control" placeholder="Enter email" autocomplete="off">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Password</label>
+                            <input type="password" id="hospitalPassword" class="form-control" placeholder="Enter password" autocomplete="new-password">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Total Beds</label>
+                            <input type="number" id="totalBeds" class="form-control" placeholder="Total beds">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Status</label>
+                            <select id="hospitalStatus" class="form-select">
+                                <option value="Safe">Safe</option>
+                                <option value="Warning">Warning</option>
+                                <option value="Dangerous">Dangerous</option>
+                            </select>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+
+            <div class="modal-footer border-0 pt-0">
+                <button class="btn btn-light px-4" data-bs-dismiss="modal">
+                    Cancel
+                </button>
+                <button id="saveHospitalBtn" class="btn btn-primary px-4">
+                    Save Hospital
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
 
 <body>
 
@@ -211,6 +276,7 @@ $allHospitals = $hospital->getAllHospitals();
 
     <div class="main-content">
         <div class="d-flex justify-content-between align-items-center mb-4">
+
             <div>
                 <h2 class="fw-bold" style="color: #1B2559;">Hospitals Management</h2>
                 <p style="color: #A3AED0; font-size: 14px;">Monitor hospitals, capacity, and medical resources</p>
@@ -224,9 +290,9 @@ $allHospitals = $hospital->getAllHospitals();
                     <option value="Warning">Warning</option>
                     <option value="Dangerous">Dangerous</option>
                 </select>
-                <button class="btn btn-add-hospital">
-                    <i class="fa-solid fa-plus me-2"></i> Add Hospital
-                </button>
+                <button class="btn btn-add-hospital"
+                    data-bs-toggle="modal"
+                    data-bs-target="#addHospitalModal">Add Hospital</button>
             </div>
         </div>
 
@@ -333,16 +399,8 @@ $allHospitals = $hospital->getAllHospitals();
 
                                 <td class="text-end">
 
-                                    <button class="action-btn">
-                                        <i class="fa-solid fa-eye"></i>
-                                    </button>
-
-                                    <button class="action-btn">
-                                        <i class="fa-solid fa-pen"></i>
-                                    </button>
-
-                                    <button class="action-btn delete-btn">
-                                        <i class="fa-solid fa-trash"></i>
+                                    <button class="action-btn deleteHospitalBtn" data-id="<?= $h['org_id'] ?>">
+                                        <i class="fa fa-trash text-danger"></i>
                                     </button>
 
                                 </td>
@@ -361,6 +419,7 @@ $allHospitals = $hospital->getAllHospitals();
             var table = $('#hospitalsTable').DataTable({
                 pageLength: 7,
                 dom: 'rt<"d-flex justify-content-between align-items-center"ip>',
+                order: [],
                 language: {
                     info: "Showing _START_ to _END_ of _TOTAL_ results",
                     paginate: {
@@ -377,7 +436,125 @@ $allHospitals = $hospital->getAllHospitals();
 
             });
         });
+        $(document).ready(function() {
+
+            $('#saveHospitalBtn').click(function() {
+
+                let name = $('#hospitalName').val();
+                let email = $('#hospitalEmail').val();
+                let password = $('#hospitalPassword').val();
+                let location = $('#hospitalLocation').val();
+                let totalBeds = $('#totalBeds').val();
+                let status = $('#hospitalStatus').val();
+
+                $.ajax({
+                    url: 'actions/add_hospitals.php',
+                    type: 'POST',
+                    data: {
+                        name: name,
+                        location: location,
+                        email: email,
+                        password: password,
+                        total_beds: totalBeds,
+                        hospital_status: status
+                    },
+                    dataType: 'json',
+
+                    success: function(response) {
+
+                        console.log(response);
+
+                        if (response.success) {
+                            let modal = bootstrap.Modal.getInstance(
+                                document.getElementById('addHospitalModal')
+                            );
+                            modal.hide();
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success',
+                                text: response.message,
+                                timer: 1500,
+                                showConfirmButton: false
+                            }).then(() => {
+                                // Explicitly use window to bypass the name conflict
+                                window.location.reload();
+                            });
+                        } else {
+
+                            Swal.fire(
+                                'Error',
+                                response.message,
+                                'error'
+                            );
+                        }
+                    },
+
+                    error: function() {
+                        Swal.fire(
+                            'Error',
+                            'Something went wrong!',
+                            'error'
+                        );
+                    }
+                });
+
+            });
+
+        });
+
+        $(document).on('click', '.deleteHospitalBtn', function() {
+
+            let id = $(this).data('id');
+
+            Swal.fire({
+                title: 'Delete Hospital?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Delete'
+            }).then((result) => {
+
+                if (result.isConfirmed) {
+
+                    $.ajax({
+                        url: 'actions/delete_hospitals.php',
+                        type: 'POST',
+                        data: {
+                            id: id
+                        },
+                        dataType: 'json',
+                        success: function(response) {
+
+                            if (response.success) {
+
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Deleted!',
+                                    text: response.message,
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                });
+
+                                setTimeout(() => {
+                                    location.reload();
+                                }, 1500);
+
+                            } else {
+
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: response.message
+                                });
+                            }
+                        }
+                    });
+                }
+            });
+        });
     </script>
+
     <?php include('includes/script.php'); ?>
 
 </body>

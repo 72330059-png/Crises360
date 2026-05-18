@@ -15,6 +15,7 @@ $sentToday = $alerts->sentTodayAlerts();
 $pending = $alerts->pendingAlerts();
 // // $resolved = $incident->resolvedIncidents();
 $critical = $alerts->criticalAlerts();
+$regions = $alerts->getRegions();
 ?>
 <!DOCTYPE html>
 <html>
@@ -23,6 +24,79 @@ $critical = $alerts->criticalAlerts();
     <title>Alerts Management</title>
     <?php include('includes/header.php'); ?>
 </head>
+
+<div class="modal fade" id="addAlertModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-md">
+        <div class="modal-content rounded-4">
+
+            <!-- HEADER -->
+            <div class="modal-header">
+                <h5 class="modal-title">Send Emergency Alert</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <!-- BODY -->
+            <div class="modal-body">
+
+                <form id="addAlertForm">
+
+                    <!-- ALERT MESSAGE -->
+                    <div class="mb-3">
+                        <label class="form-label">Alert Message</label>
+                        <textarea
+                            id="alert_message"
+                            class="form-control"
+                            placeholder="Write alert message..."></textarea>
+                    </div>
+
+                    <!-- SEVERITY -->
+                    <div class="mb-3">
+                        <label class="form-label">Severity</label>
+                        <select id="severity" class="form-select">
+                            <option value="">Select Severity</option>
+                            <option value="Info">Info</option>
+                            <option value="Warning">Warning</option>
+                            <option value="Critical">Critical</option>
+                        </select>
+                    </div>
+
+                    <!-- REGION -->
+                    <div class="mb-3">
+                        <label class="form-label">Region</label>
+                        <input
+                            type="text"
+                            id="region"
+                            class="form-control"
+                            placeholder="e.g. Beirut, Mount Lebanon">
+                    </div>
+
+                    <!-- STATUS -->
+                    <div class="mb-3">
+                        <label class="form-label">Status</label>
+                        <select id="status" class="form-select">
+                            <option value="Pending">Pending</option>
+                            <option value="Sent">Sent</option>
+                        </select>
+                    </div>
+
+                </form>
+
+            </div>
+
+            <!-- FOOTER -->
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">
+                    Cancel
+                </button>
+
+                <button id="saveAlertBtn" class="btn btn-primary">
+                    Send Alert
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
 
 <body>
 
@@ -111,28 +185,40 @@ $critical = $alerts->criticalAlerts();
             </div>
 
             <div class="filter-group-item">
-                <select class="form-select filter-control">
-                    <option selected>All Regions</option>
-                    <option>Beirut</option>
-                    <option>Mount Lebanon</option>
+                <select id="regionFilter" class="form-select filter-control">
+                    <option value="">All Regions</option>
+                    <?php foreach ($regions as $row): ?>
+                        <option value="<?= $row['region'] ?>">
+                            <?= $row['region'] ?>
+                        </option>
+                    <?php endforeach; ?>
                 </select>
             </div>
 
             <div class="filter-group-item">
-                <select class="form-select filter-control">
-                    <option selected>All Statuses</option>
+                <select id="statusFilter" class="form-select filter-control">
+                    <option value="">All Statuses</option>
                     <option>Sent</option>
                     <option>Pending</option>
                 </select>
             </div>
 
             <div class="filter-group-item position-relative">
-                <input type="text" class="form-control filter-control" placeholder="Date" onfocus="(this.type='date')">
-                <i class="fa-regular fa-calendar position-absolute" style="right:12px; top:12px; color:#a3adc2; pointer-events:none;"></i>
+                <input type="date"
+                    id="dateFilter"
+                    class="form-control filter-control">
+                <i class="fa-regular fa-calendar position-absolute"
+                    style="right:12px; top:12px; color:#a3adc2; pointer-events:none;">
+                </i>
             </div>
 
-            <button class="btn btn-add-navy">
-                <i class="fa-solid fa-bullhorn"></i> Send Alert
+            <button
+                class="btn btn-add-navy"
+                data-bs-toggle="modal"
+                data-bs-target="#addAlertModal">
+
+                <i class="fa-solid fa-bullhorn"></i>
+                Send Alert
             </button>
         </div>
 
@@ -154,9 +240,8 @@ $critical = $alerts->criticalAlerts();
                     <tbody>
 
                         <?php
-                        $data = $alerts->getAllAlerts();
 
-                        foreach ($data as $row) {
+                        foreach ($allallerts  as $row) {
 
                             if ($row['severity'] == 'Critical') {
 
@@ -188,19 +273,17 @@ $critical = $alerts->criticalAlerts();
 
                                 <!-- <td>#<?= $row['id'] ?></td> -->
 
-                                <td>
-                               
-
+                                <td class="alert-message">
                                     <span style="font-weight:700;">
                                         <?= $row['alert_message'] ?>
                                     </span>
                                 </td>
 
-                                <td class="status-text <?= $severityClass ?>">
+                                <td class=" alert-severity status-text <?= $severityClass ?>">
                                     <?= $row['severity'] ?>
                                 </td>
 
-                                <td>
+                                <td class="alert-region">
                                     <?= $row['region'] ?>
                                 </td>
 
@@ -211,7 +294,7 @@ $critical = $alerts->criticalAlerts();
                                     <?= number_format($row['recepients_count']) ?>
                                 </td> -->
 
-                                <td>
+                                <td class="alert-status">
                                     <span class="status-text <?= $statusClass ?>">
                                         <?= $row['status'] ?>
                                     </span>
@@ -223,12 +306,12 @@ $critical = $alerts->criticalAlerts();
 
                                 <td class="text-center">
 
-                                    <i class="fa fa-edit text-muted me-2 editBtn"
+                                    <i class="fa fa-edit text-muted me-2 editAlertsBtn"
                                         style="cursor:pointer;"
                                         data-id="<?php echo $row['id']; ?>">
                                     </i>
 
-                                    <i class="fa fa-trash text-danger deleteBtn"
+                                    <i class="fa fa-trash text-danger deleteAlertsBtn"
                                         style="cursor:pointer;"
                                         data-id="<?php echo $row['id']; ?>">
                                     </i>
@@ -245,7 +328,242 @@ $critical = $alerts->criticalAlerts();
         </div>
     </div>
     <?php include('includes/script.php'); ?>
+    <script>
+        $(document).ready(function() {
 
+            var table = $('#alertTable').DataTable({
+                pageLength: 7,
+                order: [
+                    [4, 'desc']
+                ],
+                dom: 'rt<"d-flex justify-content-between"ip>',
+                language: {
+                    info: "Showing _START_ to _END_ of _TOTAL_ results",
+                    paginate: {
+                        previous: "<",
+                        next: ">"
+                    }
+                }
+            });
+
+            // SEARCH
+            $('#alertSearch').on('keyup', function() {
+
+                table.search(this.value).draw();
+
+            });
+
+            // REGION FILTER
+            $('#regionFilter').on('change', function() {
+
+                table.column(2).search(this.value).draw();
+
+            });
+
+            // STATUS FILTER
+            $('#statusFilter').on('change', function() {
+
+                table.column(3).search(this.value).draw();
+
+            });
+
+            // DATE FILTER
+            $('#dateFilter').on('change', function() {
+
+                table.column(4).search(this.value).draw();
+
+            });
+
+        });
+        $('#saveAlertBtn').click(function() {
+
+            let alert_message = $('#alert_message').val();
+            let severity = $('#severity').val();
+            let region = $('#region').val();
+            let status = $('#status').val();
+
+            $.ajax({
+                url: 'actions/add_alerts.php',
+                type: 'POST',
+                data: {
+                    alert_message: alert_message,
+                    severity: severity,
+                    region: region,
+                    status: status
+                },
+                dataType: 'json',
+
+                success: function(response) {
+
+                    if (response.status === 'success') {
+                        $('#addAlertModal').modal('hide');
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: response.message,
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+
+                        setTimeout(() => location.reload(), 1500);
+
+                    } else {
+
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: response.message
+                        });
+                    }
+                }
+            });
+
+        });
+        $(document).on('click', '.deleteAlertsBtn', function() {
+
+            let id = $(this).data('id');
+
+            Swal.fire({
+                title: 'Delete Alerts?',
+                text: "This action cannot be undone",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Delete'
+            }).then((result) => {
+
+                if (result.isConfirmed) {
+
+                    $.ajax({
+                        url: 'actions/delete_alerts.php',
+                        type: 'POST',
+                        data: {
+                            id: id
+                        },
+                        dataType: 'json',
+
+                        success: function(response) {
+
+                            if (response.status === 'success') {
+
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Deleted!',
+                                    text: response.message,
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                });
+
+                                $('.deleteAlertsBtn[data-id="' + id + '"]').closest('tr').fadeOut();
+
+                            } else {
+
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: response.message
+                                });
+                            }
+                        }
+                    });
+
+                }
+
+            });
+
+        });
+        // update 
+
+        $(document).on('click', '.editAlertsBtn', function() {
+
+            let row = $(this).closest('tr');
+
+            let message = row.find('.alert-message').text().trim();
+            let severity = row.find('.alert-severity').text().trim();
+            let region = row.find('.alert-region').text().trim();
+            let status = row.find('.alert-status').text().trim();
+
+
+            row.find('.alert-message').html(` <input type="text" class="form-control edit-alert-message" value="${message}"> `);
+
+            row.find('.alert-severity').html(` <select class="form-select edit-alert-severity">
+            <option ${severity == 'Info' ? 'selected' : ''}>Info</option>
+            <option ${severity == 'Warning' ? 'selected' : ''}>Warning</option>
+            <option ${severity == 'Critical' ? 'selected' : ''}>Critical</option>
+            </select> `);
+
+            row.find('.alert-region').html(`<input type="text" class="form-control edit-alert-region" value="${region}">`);
+
+            row.find('.alert-status').html(` <select class="form-select edit-alert-status">
+            <option ${status == 'Sent' ? 'selected' : ''}>Sent</option>
+            <option ${status == 'Pending' ? 'selected' : ''}>Pending</option>
+            </select>`);
+
+            // Replace buttons
+            row.find('td:last').html(`<button class="btn btn-success btn-sm saveAlertBtn" data-id="${$(this).data('id')}">Save</button>
+            <button class="btn btn-secondary btn-sm cancelAlertBtn" data-id="${$(this).data('id')}">Cancel</button>`);
+
+        });
+
+        $(document).on('click', '.saveAlertBtn', function() {
+
+            let row = $(this).closest('tr');
+
+            let id = row.find('.cancelAlertBtn').data('id');
+
+            let message = row.find('.edit-alert-message').val();
+            let severity = row.find('.edit-alert-severity').val();
+            let region = row.find('.edit-alert-region').val();
+            let status = row.find('.edit-alert-status').val();
+
+            $.ajax({
+
+                url: 'actions/update_alerts.php',
+
+                type: 'POST',
+
+                data: {
+                    id: id,
+                    alert_message: message,
+                    severity: severity,
+                    region: region,
+                    status: status
+                },
+
+                dataType: 'json',
+
+                success: function(response) {
+
+                    if (response.status === 'success') {
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Updated!',
+                            text: response.message,
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+
+                        window.location.reload();
+
+                    } else {
+
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: response.message
+                        });
+                    }
+                }
+
+            });
+
+        });
+        $(document).on('click', '.cancelAlertBtn', function() {
+            location.reload();
+        });
+    </script>
 
 </body>
 

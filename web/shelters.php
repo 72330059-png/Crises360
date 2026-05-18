@@ -1,13 +1,33 @@
 <?php
 session_start();
-require_once("class/DAL.class.php");
+require_once("class/municipality.class.php");
 
 if (!isset($_SESSION['logged_in']) || $_SESSION['role'] !== 'admin') {
     header("Location: login.php");
     exit;
 }
+$mun = new muni();
+$shelters = $mun->getAllShelters();
+$totalShelters = $mun->totalShelters();
+$totalCapacity = $mun->totalCapacity();
+$totalOccupied = $mun->totalOccupied();
+$availableCapacity = $mun->availableCapacity();
+$occupancyRate = $mun->getOccupancyRate();
+$topNeeds = $mun->topNeeds();
+$totalDonations = $mun->totalDonations();
+$municipalities = $mun->getAllmuni();
+$totalAidEntries = $mun->totalAidEntries();
 
-$dal = new DAL();
+$chartData = $mun->donationChartData();
+
+$labels = [];
+$totals = [];
+foreach ($chartData as $row) {
+    $labels[] = ucfirst($row['donation_type']);
+    $totals[] = $row['total'];
+}
+
+
 ?>
 
 <!DOCTYPE html>
@@ -15,15 +35,7 @@ $dal = new DAL();
 
 <head>
     <title>Shelters Management</title>
-
-    <!-- CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <?php include('includes/header.php'); ?>
-
     <style>
         body {
             background: #F4F7FE;
@@ -51,13 +63,15 @@ $dal = new DAL();
         }
 
         .btn-add {
-            background: #07a77d;
+            background: #1B2559;
+            ;
+
             color: white;
             border-radius: 12px;
             height: 40px;
             padding: 0 20px;
             font-weight: 700;
-            width: 450px;
+            width: 170px;
         }
 
         .info-footer {
@@ -94,38 +108,7 @@ $dal = new DAL();
             font-weight: 700;
         }
 
-        /* Subtle Action Buttons */
-        .action-btn {
-            border: none;
-            background: transparent;
-            color: #7a839d;
-            /* A soft, muted grey-blue that matches the headers */
-            padding: 2px;
-            border-radius: 8px;
-            transition: all 0.2s ease;
-            font-size: 0.9rem;
-            margin: 0 2px;
-        }
-
-        /* Hover effects - subtle and less aggressive */
-        .action-btn:hover {
-            background-color: #f4f7fe;
-            /* Very light background on hover */
-            color: #4318ff;
-            /* Your primary theme blue */
-        }
-
-        /* Specific soft red for trash hover only */
-        .action-btn.btn-delete:hover {
-            background-color: #fff5f5;
-            color: #ee5d50;
-        }
-
-        /* Specific soft green for view/eye hover */
-        .action-btn.btn-view:hover {
-            background-color: #f0fdf4;
-            color: #05cd99;
-        }
+       
 
         .table thead th {
             color: #A3AED0;
@@ -208,9 +191,187 @@ $dal = new DAL();
             background-color: #0081ff !important;
         }
 
-        /* Match your blue */
+        .filter-select {
+            border-radius: 12px;
+            border: 1px solid #E9EDF7;
+            height: 45px;
+        }
     </style>
 </head>
+<!-- ADD SHELTER MODAL -->
+
+<div class="modal fade" id="addShelterModal" tabindex="-1">
+
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+
+        <div class="modal-content border-0 rounded-4">
+
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold">
+                    Add Shelter
+                </h5>
+
+                <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal">
+                </button>
+            </div>
+
+            <div class="modal-body">
+
+                <form id="addShelterForm">
+
+                    <!-- ORGANIZATION -->
+
+                    <div class="mb-3">
+
+                        <label class="form-label fw-semibold">
+                            Select Municipality
+                        </label>
+
+                        <select
+                            name="organization_id"
+                            id="organizationSelect"
+                            class="form-select">
+
+                            <option value="">
+                                Select Municipality
+                            </option>
+
+                            <option value="new">
+                                Add New Municipality
+                            </option>
+
+                            <?php
+                            foreach ($municipalities as $org):  ?>
+                                <option value="<?= $org['id'] ?>">
+                                    <?= $org['name'] ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <!-- NEW MUNICIPALITY FIELDS -->
+
+                    <div id="municipalityFields">
+
+                        <div class="row">
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">
+                                    Municipality Name
+                                </label>
+
+                                <input type="text"
+                                    name="organization_name"
+                                    class="form-control">
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">
+                                    Municipality Location
+                                </label>
+
+                                <input type="text"
+                                    name="organization_location"
+                                    class="form-control">
+                            </div>
+
+                        </div>
+
+                        <div class="row">
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">
+                                    Municipality Email
+                                </label>
+
+                                <input type="email"
+                                    name="organization_email"
+                                    class="form-control">
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">
+                                    Municipality Password
+                                </label>
+
+                                <input type="password"
+                                    name="organization_password"
+                                    class="form-control">
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <!-- SHELTER -->
+
+                    <hr>
+
+                    <div class="row">
+
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label">
+                                Shelter Name
+                            </label>
+
+                            <input type="text"
+                                name="shelter_name"
+                                class="form-control"
+                                required>
+
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label">
+                                Shelter Location
+                            </label>
+
+                            <input type="text"
+                                name="location"
+                                class="form-control"
+                                required>
+
+                        </div>
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Capacity
+                        </label>
+
+                        <input type="number"
+                            name="capacity"
+                            class="form-control"
+                            required>
+
+                    </div>
+
+                    <div class="text-end">
+
+                        <button type="submit"
+                            class="btn btn-success px-4">
+
+                            Add Shelter
+
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
 
 <body>
 
@@ -226,22 +387,64 @@ $dal = new DAL();
                 <p class="text-muted small">Monitor and manage shelters and capacities</p>
             </div>
 
-            <div class="d-flex gap-2">
-                <select class="form-select filter-select">
-                    <option>All Regions</option>
+            <div class="d-flex align-items-center gap-3">
+
+                <input
+                    type="text"
+                    id="customSearch"
+                    class="form-control filter-select"
+                    placeholder="Search shelters..."
+                    style="width:220px;">
+
+                <select id="regionFilter" class="form-select filter-select" style="width:180px;">
+                    <option value="">All Regions</option>
+
+                    <?php
+                    $regions = [];
+                    foreach ($shelters as $row) {
+                        if (!in_array($row['location'], $regions)) {
+                            $regions[] = $row['location'];
+                        }
+                    }
+                    foreach ($regions as $region):
+                    ?>
+                        <option value="<?= $region ?>">
+                            <?= $region ?>
+                        </option>
+                    <?php endforeach; ?>
                 </select>
 
-                <select class="form-select filter-select">
-                    <option>All Statuses</option>
+                <select id="statusFilter" class="form-select filter-select" style="width:180px;">
+                    <option value="">All Statuses</option>
+
+                    <?php
+                    $statuses = [];
+                    foreach ($shelters as $row) {
+                        if (!in_array($row['status'], $statuses)) {
+                            $statuses[] = $row['status'];
+                        }
+                    }
+                    foreach ($statuses as $status):
+                    ?>
+                        <option value="<?= $status ?>">
+                            <?= ucfirst($status) ?>
+                        </option>
+                    <?php endforeach; ?>
                 </select>
 
-                <button class="btn btn-add">
-                    <i class="fa-solid fa-plus me-2"></i> Add Shelter
+                <button class="btn btn-add"
+                    data-bs-toggle="modal"
+                    data-bs-target="#addShelterModal">
+
+                    <i class="fa-solid fa-plus me-2"></i>
+                    Add Shelter
+
                 </button>
+
             </div>
         </div>
 
-        <!-- STATS -->
+
         <div class="row g-3 mb-4">
 
 
@@ -253,8 +456,7 @@ $dal = new DAL();
                     </div>
                     <div class="card-content">
                         <span class="card-title">Total Shelters</span>
-                        <span class="card-value">56</span>
-                        <span class="card-subtext"> All Regions</span>
+                        <span class="card-value"><?= $totalShelters ?></span>
                     </div>
                 </div>
             </div>
@@ -266,8 +468,7 @@ $dal = new DAL();
                     </div>
                     <div class="card-content">
                         <span class="card-title">Available Capacity</span>
-                        <span class="card-value">3,245</span>
-                        <span class="card-subtext"> People</span>
+                        <span class="card-value"><?= $availableCapacity ?></span>
                     </div>
                 </div>
             </div>
@@ -279,8 +480,7 @@ $dal = new DAL();
                     </div>
                     <div class="card-content">
                         <span class="card-title">Current Occupancy</span>
-                        <span class="card-value">2,155</span>
-                        <span class="card-subtext"> People</span>
+                        <span class="card-value"><?= $totalOccupied ?></span>
                     </div>
                 </div>
             </div>
@@ -292,16 +492,12 @@ $dal = new DAL();
                     </div>
                     <div class="card-content">
                         <span class="card-title">Occupancy Rate</span>
-                        <span class="card-value">66%</span>
-                        <span class="card-subtext"> Average</span>
+                        <span class="card-value"><?= $occupancyRate ?>%</span>
                     </div>
                 </div>
             </div>
 
 
-
-
-            <!-- MAIN CONTENT -->
             <div class="row g-4">
 
                 <!-- TABLE -->
@@ -314,156 +510,123 @@ $dal = new DAL();
                                 <tr>
                                     <th>Name</th>
                                     <th>Location</th>
+                                    <th>Municipality</th>
                                     <th>Capacity</th>
                                     <th>Occupied</th>
                                     <th>Status</th>
                                     <th class="text-end">Actions</th>
                                 </tr>
                             </thead>
-
                             <tbody>
-                                <tr>
-                                    <td class="fw-bold">Beirut Central Shelter</td>
-                                    <td>Beirut</td>
-                                    <td>500</td>
-                                    <td>420</td>
-                                    <td><span class="status-medium">Near Full</span></td>
-                                    <td class="text-end text-nowrap">
-                                        <button class="action-btn btn-view" title="View Details">
-                                            <i class="fa-regular fa-eye"></i>
-                                        </button>
 
-                                        <button class="action-btn btn-edit" title="Edit">
-                                            <i class="fa-regular fa-pen-to-square"></i>
-                                        </button>
+                                <?php foreach ($shelters as $row): ?>
 
-                                        <button class="action-btn btn-delete" title="Delete">
-                                            <i class="fa-regular fa-trash-can"></i>
-                                        </button>
-                                    </td>
-                                </tr>
+                                    <tr>
 
-                                <tr>
-                                    <td class="fw-bold">Sidon High School</td>
-                                    <td>Sidon</td>
-                                    <td>300</td>
-                                    <td>295</td>
-                                    <td><span class="status-high">Critical</span></td>
-                                    <td class="text-end text-nowrap">
-                                        <button class="action-btn btn-view" title="View Details">
-                                            <i class="fa-regular fa-eye"></i>
-                                        </button>
+                                        <td class="fw-bold">
+                                            <?= $row['shelter_name'] ?>
+                                        </td>
 
-                                        <button class="action-btn btn-edit" title="Edit">
-                                            <i class="fa-regular fa-pen-to-square"></i>
-                                        </button>
+                                        <td>
+                                            <?= $row['location'] ?>
+                                        </td>
 
-                                        <button class="action-btn btn-delete" title="Delete">
-                                            <i class="fa-regular fa-trash-can"></i>
-                                        </button>
-                                    </td>
-                                </tr>
+                                        <td>
+                                            <?= $row['organization_name'] ?>
+                                        </td>
+                                        <td>
+                                            <?= $row['capacity'] ?>
+                                        </td>
 
-                                <tr>
-                                    <td class="fw-bold">Tripoli Community Center</td>
-                                    <td>Tripoli</td>
-                                    <td>450</td>
-                                    <td>150</td>
-                                    <td><span class="status-low">Available</span></td>
-                                    <td class="text-end text-nowrap">
-                                        <button class="action-btn btn-view" title="View Details">
-                                            <i class="fa-regular fa-eye"></i>
-                                        </button>
+                                        <td>
+                                            <?= $row['occupied'] ?>
+                                        </td>
 
-                                        <button class="action-btn btn-edit" title="Edit">
-                                            <i class="fa-regular fa-pen-to-square"></i>
-                                        </button>
+                                        <td>
 
-                                        <button class="action-btn btn-delete" title="Delete">
-                                            <i class="fa-regular fa-trash-can"></i>
-                                        </button>
-                                    </td>
-                                </tr>
+                                            <?php
+                                            if ($row['status'] == 'full') {
+                                                $class = "status-high";
+                                            } elseif ($row['status'] == 'near full') {
+                                                $class = "status-medium";
+                                            } else {
+                                                $class = "status-low";
+                                            }
+                                            ?>
 
-                                <tr>
-                                    <td class="fw-bold">Byblos Public Hall</td>
-                                    <td>Jbeil</td>
-                                    <td>200</td>
-                                    <td>45</td>
-                                    <td><span class="status-low">Available</span></td>
-                                    <td class="text-end text-nowrap">
-                                        <button class="action-btn btn-view" title="View Details">
-                                            <i class="fa-regular fa-eye"></i>
-                                        </button>
+                                            <span class="<?= $class ?>">
+                                                <?= ucfirst($row['status']) ?>
+                                            </span>
 
-                                        <button class="action-btn btn-edit" title="Edit">
-                                            <i class="fa-regular fa-pen-to-square"></i>
-                                        </button>
+                                        </td>
 
-                                        <button class="action-btn btn-delete" title="Delete">
-                                            <i class="fa-regular fa-trash-can"></i>
-                                        </button>
-                                    </td>
-                                </tr>
+                                        <td class="text-center text-nowrap">
+
+                                            <!-- <button class="action-btn btn-view">
+                                                <i class="fa-regular fa-eye"></i>
+                                            </button>
+
+                                            <button class="action-btn btn-edit">
+                                                <i class="fa-regular fa-pen-to-square"></i>
+                                            </button> -->
+
+                                            <button class="action-btn btn-delete dltshelter" data-id="<?php echo $row['id']; ?>">
+                                                <i class="fa-regular fa-trash-can" ></i>
+                                            </button>
+                                            </i>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+
                             </tbody>
                         </table>
                     </div>
                 </div>
-
                 <!-- RIGHT SIDE -->
                 <div class="col-md-4">
-
                     <!-- TOP NEEDS -->
                     <div class="modern-card mb-4">
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <h6 class="fw-bold mb-0">
-                                Top Needs (This Week)
+                                Top Needs
                                 <i class="bi bi-info-circle text-primary ms-1" style="font-size: 0.85rem; cursor: pointer;"></i>
                             </h6>
                             <a href="needs.php" class="small text-decoration-none fw-medium">View All Needs <i class="bi bi-chevron-right small"></i></a>
                         </div>
-
-                        <div class="mb-3">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <div class="d-flex align-items-center">
-                                    <i class="bi bi-fuel-pump me-3 text-secondary"></i> <span class="fw-medium">Fuel</span>
+                        <?php $maxNeed = $topNeeds[0]['total_quantity']; ?>
+                        <?php foreach ($topNeeds as $need): ?>
+                            <?php
+                            $width = ($need['total_quantity'] / $maxNeed) * 100;
+                            if ($width >= 80) {
+                                $color = "bg-danger";
+                            } elseif ($width >= 50) {
+                                $color = "bg-warning";
+                            } else {
+                                $color = "bg-success";
+                            }
+                            ?>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-box-seam me-3 text-secondary"></i>
+                                        <span class="fw-medium">
+                                            <?= ucfirst($need['need_name']) ?>
+                                        </span>
+                                    </div>
+                                    <span class="fw-bold">
+                                        <?= $need['total_quantity'] ?>
+                                    </span>
                                 </div>
-                                <span class="fw-bold">12</span>
-                            </div>
-                            <div class="need-bar">
-                                <div class="need-fill bg-danger" style="width:75%"></div>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <div class="d-flex align-items-center">
-                                    <i class="bi bi-ev-front me-3 text-secondary"></i> <span class="fw-medium">Food Aid</span>
+                                <div class="need-bar">
+                                    <div class="need-fill <?= $color ?>"
+                                        style="width:<?= $width ?>%">
+                                    </div>
                                 </div>
-                                <span class="fw-bold">15</span>
                             </div>
-                            <div class="need-bar">
-                                <div class="need-fill bg-warning" style="width:85%"></div>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <div class="d-flex align-items-center">
-                                    <i class="bi bi-clipboard-plus me-3 text-secondary"></i> <span class="fw-medium">Medical Supplies</span>
-                                </div>
-                                <span class="fw-bold">9</span>
-                            </div>
-                            <div class="need-bar">
-                                <div class="need-fill bg-success" style="width:60%"></div>
-                            </div>
-                        </div>
-
-
+                        <?php endforeach; ?>
                     </div>
 
                     <!-- DONATIONS -->
-
                     <div class="modern-card">
                         <div class="d-flex align-items-center mb-4">
                             <h6 class="fw-bold mb-0">Donations & Aid Summary</h6>
@@ -473,16 +636,14 @@ $dal = new DAL();
                         <div class="row g-3 mb-4">
                             <div class="col-6">
                                 <div class="summary-box">
-                                    <small class="text-muted">Total Donations Received</small>
-                                    <h4 class="fw-bold">$45,000</h4>
-                                    <small class="text-secondary opacity-75">This Week</small>
+                                    <small class="text-muted">Money Received</small>
+                                    <h4 class="fw-bold">$<?= number_format($totalDonations) ?></h4>
                                 </div>
                             </div>
                             <div class="col-6">
                                 <div class="summary-box">
-                                    <small class="text-muted">Aid Shipments Incoming</small>
-                                    <h4 class="fw-bold">12</h4>
-                                    <small class="text-secondary opacity-75">This Week</small>
+                                    <small class="text-muted">Aid Incoming</small>
+                                    <h4 class="fw-bold"><?= $totalAidEntries ?></h4>
                                 </div>
                             </div>
                         </div>
@@ -493,40 +654,51 @@ $dal = new DAL();
                                     <canvas id="donationsChart"></canvas>
                                 </div>
                             </div>
-
                             <div class="col-7">
+                                <?php
+                                $totalAll = array_sum($totals);
+                                $chartColors = [];
+                                foreach ($chartData as $row) {
+                                    $percentage = ($row['total'] / $totalAll) * 100;
+                                    if ($percentage >= 35) {
+                                        $chartColors[] = '#EE5D50';
+                                    } elseif ($percentage >= 20) {
+                                        $chartColors[] = '#FFB547';
+                                    } elseif ($percentage >= 10) {
+                                        $chartColors[] = '#0081ff';
+                                    } else {
+                                        $chartColors[] = '#05CD99';
+                                    }
+                                }
+                                ?>
                                 <div class="legend-list">
-                                    <div class="legend-item">
-                                        <div class="d-flex align-items-center gap-2">
-                                            <span class="dot bg-danger"></span>
-                                            <span>Fuel</span>
+                                    <?php
+                                    foreach ($chartData as $row):
+                                        $type = $row['donation_type'];
+                                        $amount = $row['total'];
+                                        $percentage = ($amount / $totalAll) * 100;
+                                        if ($percentage >= 35) {
+                                            $color = "bg-danger";
+                                        } elseif ($percentage >= 20) {
+                                            $color = "bg-warning";
+                                        } elseif ($percentage >= 10) {
+                                            $color = "bg-info";
+                                        } else {
+                                            $color = "bg-success";
+                                        }
+                                    ?>
+                                        <div class="legend-item">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="dot <?= $color ?>"></span>
+                                                <span>
+                                                    <?= ucfirst($type) ?>
+                                                </span>
+                                            </div>
+                                            <span class="text-muted">
+                                                <?= round($percentage) ?>%
+                                            </span>
                                         </div>
-                                        <span class="text-muted">40%</span>
-                                    </div>
-
-                                    <div class="legend-item">
-                                        <div class="d-flex align-items-center gap-2">
-                                            <span class="dot bg-warning"></span>
-                                            <span>Medical Supplies</span>
-                                        </div>
-                                        <span class="text-muted">25%</span>
-                                    </div>
-
-                                    <div class="legend-item">
-                                        <div class="d-flex align-items-center gap-2">
-                                            <span class="dot" style="background-color: #0081ff;"></span>
-                                            <span>Food Aid</span>
-                                        </div>
-                                        <span class="text-muted">20%</span>
-                                    </div>
-
-                                    <div class="legend-item">
-                                        <div class="d-flex align-items-center gap-2">
-                                            <span class="dot bg-info"></span>
-                                            <span>Water</span>
-                                        </div>
-                                        <span class="text-muted">15%</span>
-                                    </div>
+                                    <?php endforeach; ?>
                                 </div>
                             </div>
                         </div>
@@ -538,35 +710,64 @@ $dal = new DAL();
 
         </div>
 
-        <!-- JS -->
-        <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-        <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+        <?php include('includes/script.php'); ?>
 
         <script>
-            $('#sheltersTable').DataTable({
-                pageLength: 7,
-                dom: 'rt<"d-flex justify-content-between"ip>',
-                language: {
-                    info: "Showing _START_ to _END_ of _TOTAL_ results",
-                    paginate: {
-                        previous: "<",
-                        next: ">"
+            $(document).ready(function() {
+
+                var table = $('#sheltersTable').DataTable({
+
+                    pageLength: 13,
+
+                    dom: 'rt<"d-flex justify-content-between"ip>',
+
+                    ordering: true,
+                    order: [],
+
+                    language: {
+
+                        info: "Showing _START_ to _END_ of _TOTAL_ results",
+
+                        paginate: {
+                            previous: "<",
+                            next: ">"
+                        }
                     }
-                }
+                });
+
+                $('#customSearch').on('keyup', function() {
+
+                    table.search(this.value).draw();
+
+                });
+                // REGION FILTER
+                $('#regionFilter').on('change', function() {
+
+                    table.column(1).search(this.value).draw();
+
+                });
+
+                // STATUS FILTER
+                $('#statusFilter').on('change', function() {
+
+                    table.column(4).search(this.value).draw();
+
+                });
+
             });
+
+
+
             document.addEventListener("DOMContentLoaded", function() {
                 const ctx = document.getElementById('donationsChart').getContext('2d');
                 new Chart(ctx, {
                     type: 'doughnut',
                     data: {
+                        labels: <?= json_encode($labels) ?>,
                         datasets: [{
-                            data: [40, 25, 20, 15], // The percentages
-                            backgroundColor: [
-                                '#EE5D50', // Red
-                                '#FFB547', // Orange
-                                '#0081ff', // Blue
-                                '#05CD99' // Green
-                            ],
+                            data: <?= json_encode($totals) ?>,
+                            backgroundColor: <?= json_encode($chartColors) ?>,
                             borderWidth: 0,
                             hoverOffset: 4
                         }]
@@ -586,9 +787,150 @@ $dal = new DAL();
                     }
                 });
             });
+            // HIDE MUNICIPALITY FIELDS BY DEFAULT
+            $('#municipalityFields').hide();
+
+            $('#organizationSelect').on('change', function() {
+
+                if ($(this).val() == 'new') {
+
+                    $('#municipalityFields').slideDown();
+
+                } else {
+
+                    $('#municipalityFields').slideUp();
+                }
+            });
+
+            // ADD SHELTER AJAX
+
+            $('#addShelterForm').on('submit', function(e) {
+
+                e.preventDefault();
+
+                $.ajax({
+
+                    url: 'actions/add_shelter.php',
+
+                    type: 'POST',
+
+                    data: $(this).serialize(),
+
+                    dataType: 'json',
+
+                    success: function(response) {
+
+                        if (response.status == 'success') {
+
+                            Swal.fire({
+
+                                icon: 'success',
+
+                                title: 'Success',
+
+                                text: response.message,
+
+                                timer: 2000,
+
+                                showConfirmButton: false
+
+                            });
+
+                            $('#addShelterModal').modal('hide');
+
+                            $('#addShelterForm')[0].reset();
+
+                            setTimeout(function() {
+
+                                location.reload();
+
+                            }, 1500);
+
+                        } else {
+
+                            Swal.fire({
+
+                                icon: 'error',
+
+                                title: 'Error',
+
+                                text: response.message
+
+                            });
+                        }
+                    },
+
+                    error: function() {
+
+                        Swal.fire({
+
+                            icon: 'error',
+
+                            title: 'Error',
+
+                            text: 'Something went wrong'
+
+                        });
+                    }
+                });
+            });
+
+            $(document).on('click', '.dltshelter', function() {
+
+                let id = $(this).data('id');
+
+                Swal.fire({
+                    title: 'Delete shelter?',
+                    text: "This action cannot be undone",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Delete'
+                }).then((result) => {
+
+                    if (result.isConfirmed) {
+
+                        $.ajax({
+                            url: 'actions/delete_shelter.php',
+                            type: 'POST',
+                            data: {
+                                id: id
+                            },
+                            dataType: 'json',
+
+                            success: function(response) {
+
+                                if (response.status === 'success') {
+
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Deleted!',
+                                        text: response.message,
+                                        timer: 1500,
+                                        showConfirmButton: false
+                                    });
+
+                                    $('.dltshelter[data-id="' + id + '"]').closest('tr').fadeOut();
+
+                                } else {
+
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Error',
+                                        text: response.message
+                                    });
+                                }
+                            }
+                        });
+
+                    }
+
+                });
+
+            });
         </script>
 
-        <?php include('includes/script.php'); ?>
 
 </body>
 

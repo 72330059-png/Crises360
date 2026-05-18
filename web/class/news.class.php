@@ -30,7 +30,8 @@ class news extends DAL
     public function insertNews(
         $title,
         $content,
-        $category,
+        $category,            
+        $type,
         $status,
         $featured,
         $image,
@@ -42,17 +43,19 @@ class news extends DAL
                     title,
                     content,
                     category,
+                    type,
                     status,
                     featured,
                     image,
                     publish_date
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?)";
+                VALUES (?, ?, ?, ?,?, ?, ?, ?)";
 
         return $this->executeSafe($sql, [
             $title,
             $content,
             $category,
+            $type,
             $status,
             $featured,
             $image,
@@ -65,6 +68,7 @@ class news extends DAL
         $title,
         $content,
         $category,
+        $type,
         $status,
         $featured,
         $publish_date
@@ -74,6 +78,7 @@ class news extends DAL
                 SET title = ?,
                     content = ?,
                     category = ?,
+                    type = ?,
                     status = ?,
                     featured = ?,
                     publish_date = ?
@@ -83,6 +88,7 @@ class news extends DAL
             $title,
             $content,
             $category,
+            $type,
             $status,
             $featured,
             $publish_date,
@@ -217,4 +223,26 @@ class news extends DAL
 
         return $this->getdata($sql);
     }
+
+    public function getLatestFeaturedArticle()
+{
+    $sql = "SELECT *
+            FROM news
+            WHERE featured = 1 
+            AND type = 'Article'
+            ORDER BY publish_date DESC 
+            LIMIT 1";
+
+    $result = $this->getdata($sql);
+    return !empty($result) ? $result[0] : false;
+}
+public function getCategories() {
+    $sql = "SHOW COLUMNS FROM news LIKE 'category'";
+    $result = $this->getdata($sql);
+    $type = $result[0]['Type']; 
+    preg_match_all("/'([^']+)'/", $type, $matches);
+    return $matches[1]; 
+}
+
+
 }

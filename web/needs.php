@@ -1,13 +1,17 @@
 <?php
 session_start();
-require_once("class/DAL.class.php");
-
+require_once("class/municipality.class.php");
 if (!isset($_SESSION['logged_in']) || $_SESSION['role'] !== 'admin') {
     header("Location: login.php");
     exit;
 }
-
-$dal = new DAL();
+$mun = new muni();
+$needs = $mun->getAllNeeds();
+$totalNeeds = $mun->totalNeeds();
+$fulfilledNeeds = $mun->fulfilledNeeds();
+$activeNeeds = $mun->activeNeeds();
+$highPriorityNeeds = $mun->highPriorityNeeds();
+$totalMunicipalities = $mun->totalMunicipalitiesWithNeeds();
 ?>
 
 <!DOCTYPE html>
@@ -15,12 +19,6 @@ $dal = new DAL();
 
 <head>
     <title>Needs & Requests</title>
-
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
-
     <?php include('includes/header.php'); ?>
 
     <style>
@@ -211,25 +209,74 @@ $dal = new DAL();
 
         <!-- FILTERS -->
         <div class="d-flex gap-2 mb-4">
-            <input type="text" class="form-control filter-control" placeholder="Search needs...">
 
-            <select class="form-select filter-control">
-                <option>All Categories</option>
-                <option>Fuel</option>
-                <option>Food</option>
-                <option>Medical</option>
+            <!-- SEARCH -->
+            <input type="text"
+                id="needSearch"
+                class="form-control filter-control"
+                placeholder="Search needs...">
+
+            <!-- CATEGORY FILTER -->
+            <select id="categoryFilter" class="form-select filter-control">
+
+                <option value="">All Categories</option>
+
+                <?php
+
+                $categories = [];
+
+                foreach ($needs as $row) {
+
+                    if (!in_array($row['category'], $categories)) {
+
+                        $categories[] = $row['category'];
+                    }
+                }
+
+                foreach ($categories as $category):
+                ?>
+
+                    <option value="<?= $category ?>">
+                        <?= ucfirst($category) ?>
+                    </option>
+
+                <?php endforeach; ?>
+
             </select>
 
-            <select class="form-select filter-control">
-                <option>All Priorities</option>
-                <option>High</option>
-                <option>Medium</option>
-                <option>Low</option>
+            <!-- PRIORITY FILTER -->
+            <select id="priorityFilter" class="form-select filter-control">
+
+                <option value="">All Priorities</option>
+
+                <?php
+
+                $priorities = [];
+
+                foreach ($needs as $row) {
+
+                    if (!in_array($row['priority'], $priorities)) {
+
+                        $priorities[] = $row['priority'];
+                    }
+                }
+
+                foreach ($priorities as $priority):
+                ?>
+
+                    <option value="<?= $priority ?>">
+                        <?= ucfirst($priority) ?>
+                    </option>
+
+                <?php endforeach; ?>
+
             </select>
 
-            <select class="form-select filter-control">
-                <option>This Week</option>
-            </select>
+            <!-- DATE FILTER -->
+            <input type="date"
+                id="dateFilter"
+                class="form-control filter-control">
+
         </div>
 
         <!-- STATS -->
@@ -237,21 +284,21 @@ $dal = new DAL();
             <div class="col">
                 <div class="stat-card">
                     <div class="stat-label">Total Requests</div>
-                    <div class="stat-value">67</div>
+                    <div class="stat-value"><?= $totalNeeds ?></div>
                 </div>
             </div>
 
             <div class="col">
                 <div class="stat-card">
                     <div class="stat-label">Municipalities</div>
-                    <div class="stat-value">28</div>
+                    <div class="stat-value"><?= $totalMunicipalities ?></div>
                 </div>
             </div>
 
             <div class="col">
                 <div class="stat-card">
-                    <div class="stat-label">Active Requests</div>
-                    <div class="stat-value">52</div>
+                    <div class="stat-label">In Progress</div>
+                    <div class="stat-value"><?= $activeNeeds ?></div>
                 </div>
             </div>
 
@@ -259,7 +306,7 @@ $dal = new DAL();
                 <div class="stat-card d-flex align-items-center justify-content-between p-3">
                     <div>
                         <div class="stat-label mb-1" style="color: #a3aed0; font-size: 0.9rem;">Fulfilled</div>
-                        <div class="stat-value fw-bold" style="font-size: 1.5rem; color: #1b2559;">15</div>
+                        <div class="stat-value fw-bold" style="font-size: 1.5rem; color: #1b2559;"><?= $fulfilledNeeds ?></div>
                     </div>
 
                     <div class="stat-icon-circle">
@@ -288,72 +335,251 @@ $dal = new DAL();
                 </thead>
 
                 <tbody>
-                    <tr>
-                        <td class="fw-bold">Fuel</td>
-                        <td>Fuel</td>
-                        <td class="priority-high">High</td>
-                        <td>Tyre</td>
-                        <td>5000 L</td>
-                        <td class="status-open">Open</td>
-                        <td>May 18</td>
-                        <td class="text-end">
-                            <!-- Fulfill -->
-                            <button class="action-icon action-approve" data-tooltip="Fulfill Request">
-                                <i class="fa-solid fa-check"></i>
-                            </button>
 
-                            <!-- Cannot Fulfill -->
-                            <button class="action-icon action-reject" data-tooltip="Cannot Fulfill">
-                                <i class="fa-solid fa-xmark"></i>
-                            </button>
-                        </td>
+                    <?php foreach ($needs as $row): ?>
 
-                    </tr>
+                        <?php
 
-                    <tr>
-                        <td class="fw-bold">Medical Supplies</td>
-                        <td>Medical</td>
-                        <td class="priority-medium">Medium</td>
-                        <td>Saida</td>
-                        <td>200 Kits</td>
-                        <td class="status-progress">In Progress</td>
-                        <td>May 17</td>
-                        <td class="text-end">
-                            <!-- Fulfill -->
-                            <button class="action-icon action-approve" data-tooltip="Fulfill Request">
-                                <i class="fa-solid fa-check"></i>
-                            </button>
+                        if ($row['priority'] == 'high') {
+                            $priorityClass = "priority-high";
+                        } elseif ($row['priority'] == 'medium') {
+                            $priorityClass = "priority-medium";
+                        } else {
+                            $priorityClass = "priority-low";
+                        }
 
-                            <!-- Cannot Fulfill -->
-                            <button class="action-icon action-reject" data-tooltip="Cannot Fulfill">
-                                <i class="fa-solid fa-xmark"></i>
-                            </button>
-                        </td>
-                    </tr>
+                        if ($row['status'] == 'fulfilled') {
+                            $statusClass = "status-open";
+                        } elseif ($row['status'] == 'in_progress') {
+                            $statusClass = "status-progress";
+                        } else {
+                            $statusClass = "status-closed";
+                        }
+                        ?>
+                        <tr>
+                            <td class="fw-bold">
+                                <?= $row['need_name'] ?>
+                            </td>
+
+                            <td>
+                                <?= ucfirst($row['category']) ?>
+                            </td>
+
+                            <td>
+                                <span class="<?= $priorityClass ?>">
+                                    <?= ucfirst($row['priority']) ?>
+                                </span>
+                            </td>
+
+                            <td>
+                                <?= $row['municipality_name'] ?>
+                            </td>
+
+                            <td>
+                                <?= $row['quantity'] ?>
+                            </td>
+
+                            <td>
+                                <span class="<?= $statusClass ?>">
+                                    <?= ucfirst(str_replace('_', ' ', $row['status'])) ?>
+                                </span>
+                            </td>
+
+                            <td>
+                                <?= date('Y-m-d', strtotime($row['created_at'])) ?>
+                            </td>
+                            <td class="text-end">
+                                <button class="action-icon action-approve fulfillBtn"
+                                    data-id="<?= $row['id'] ?>"
+                                    data-tooltip="Fulfill Request">
+
+                                    <i class="fa-solid fa-check"></i>
+                                </button>
+                                <button class="action-icon action-reject rejectBtn"
+                                    data-id="<?= $row['id'] ?>"
+                                    data-tooltip="Reject Request">
+
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+
                 </tbody>
             </table>
         </div>
 
     </div>
-
-    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-
+    <?php include('includes/script.php'); ?>
     <script>
-        $('#needsTable').DataTable({
-            pageLength: 7,
-            dom: 'rt<"d-flex justify-content-between"ip>',
-            language: {
-                info: "Showing _START_ to _END_ of _TOTAL_ results",
-                paginate: {
-                    previous: "<",
-                    next: ">"
+        $(document).ready(function() {
+
+            var table = $('#needsTable').DataTable({
+
+                pageLength: 7,
+
+                dom: 'rt<"d-flex justify-content-between"ip>',
+
+                ordering: true,
+
+                language: {
+
+                    info: "Showing _START_ to _END_ of _TOTAL_ results",
+
+                    paginate: {
+                        previous: "<",
+                        next: ">"
+                    }
                 }
-            }
+            });
+
+            // SEARCH
+            $('#needSearch').on('keyup', function() {
+
+                table.search(this.value).draw();
+
+            });
+
+            // CATEGORY FILTER
+            $('#categoryFilter').on('change', function() {
+
+                table.column(1).search(this.value).draw();
+
+            });
+
+            // PRIORITY FILTER
+            $('#priorityFilter').on('change', function() {
+
+                table.column(2).search(this.value).draw();
+
+            });
+
+            // DATE FILTER
+            $('#dateFilter').on('change', function() {
+
+                table.column(6).search(this.value).draw();
+
+            });
+
+        });
+
+        // FULFILL NEED
+
+        $(document).on('click', '.fulfillBtn', function() {
+
+            let id = $(this).data('id');
+
+            $.ajax({
+
+                url: 'actions/fulfill_need.php',
+
+                type: 'POST',
+
+                data: {
+                    id: id
+                },
+
+                dataType: 'json',
+
+                success: function(response) {
+
+                    if (response.status == 'success') {
+
+                        Swal.fire({
+
+                            icon: 'success',
+
+                            title: 'Success',
+
+                            text: response.message,
+
+                            timer: 1500,
+
+                            showConfirmButton: false
+
+                        });
+
+                        setTimeout(function() {
+
+                            location.reload();
+
+                        }, 1500);
+
+                    } else {
+
+                        Swal.fire({
+
+                            icon: 'error',
+
+                            title: 'Error',
+
+                            text: response.message
+
+                        });
+                    }
+                }
+            });
+        });
+
+
+        // REJECT NEED
+
+        $(document).on('click', '.rejectBtn', function() {
+
+            let id = $(this).data('id');
+
+            $.ajax({
+
+                url: 'actions/reject_need.php',
+
+                type: 'POST',
+
+                data: {
+                    id: id
+                },
+
+                dataType: 'json',
+
+                success: function(response) {
+
+                    if (response.status == 'success') {
+
+                        Swal.fire({
+
+                            icon: 'warning',
+
+                            title: 'Need rejected',
+
+                            text: response.message,
+
+                            timer: 3000,
+
+                            showConfirmButton: false
+
+                        });
+
+                        setTimeout(function() {
+
+                            location.reload();
+
+                        }, 1500);
+
+                    } else {
+
+                        Swal.fire({
+
+                            icon: 'error',
+
+                            title: 'Error',
+
+                            text: response.message
+
+                        });
+                    }
+                }
+            });
         });
     </script>
-
-    <?php include('includes/script.php'); ?>
 
 </body>
 

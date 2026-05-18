@@ -13,14 +13,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = $_POST['name'];
     $email = $_POST['email'];
     // $password = $_POST['pass'];
-    $password = trim($_POST['pass']); // may be empty
+    $password = trim($_POST['pass']); 
 
     $role = $_POST['role'];
-
-    // Hash password
-    // $hashed = password_hash($password, PASSWORD_DEFAULT);
-
-    // Check duplicate BUT exclude the same user (id != id)
     $existing = $indexx->checkDuplicateuser($name, $email, $role, $id);
 
     if (!empty($existing)) {

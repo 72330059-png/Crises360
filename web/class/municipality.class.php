@@ -2,16 +2,61 @@
 
 require_once("DAL.class.php");
 
-class municipality extends DAL
+class muni extends DAL
 {
 
+    // public function getAllShelters()
+    // {
+    //     $sql = "SELECT * FROM shelters ORDER BY created_at DESC";
+
+    //     return $this->getdata($sql);
+    // }
+    public function fulfillNeed($id)
+    {
+        $sql = "UPDATE needs 
+            SET status = 'fulfilled' 
+            WHERE id = $id";
+
+        return $this->execute($sql);
+    }
+
+    public function rejectNeed($id)
+    {
+        $sql = "UPDATE needs 
+            SET status = 'rejected' 
+            WHERE id = $id";
+
+        return $this->execute($sql);
+    }
     public function getAllShelters()
     {
-        $sql = "SELECT * FROM shelters ORDER BY created_at DESC";
+        $sql = "
+        SELECT shelters.*, o.name AS organization_name
+        FROM shelters
+        INNER JOIN organizations o
+        ON shelters.organization_id = o.id
+        ORDER BY shelters.created_at DESC
+    ";
 
         return $this->getdata($sql);
     }
 
+    public function getAllmuni()
+    {
+        $sql = " SELECT *
+        FROM organizations
+        WHERE type='municipality'
+        ORDER BY name ASC";
+
+        return $this->getdata($sql);
+    }
+
+    public function deleteShelter($id)
+    {
+        $sql = "DELETE FROM shelters WHERE id = ?";
+
+        return $this->executeSafe($sql, [$id]);
+    }
     public function totalShelters()
     {
         $sql = "SELECT COUNT(*) total FROM shelters";
@@ -50,15 +95,16 @@ class municipality extends DAL
 
         return round(($occupied / $capacity) * 100);
     }
-        // NEEDS
+    // NEEDS
 
     public function getAllNeeds()
     {
         $sql = "SELECT needs.*, organizations.name AS municipality_name
-                FROM needs
-                LEFT JOIN organizations
-                ON needs.organization_id = organizations.id
-                ORDER BY created_at DESC";
+            FROM needs
+            LEFT JOIN organizations
+            ON needs.organization_id = organizations.id
+            WHERE organizations.type = 'municipality'
+            ORDER BY needs.created_at DESC";
 
         return $this->getdata($sql);
     }
@@ -75,8 +121,27 @@ class municipality extends DAL
     public function activeNeeds()
     {
         $sql = "SELECT COUNT(*) total
-                FROM needs
-                WHERE status != 'closed'";
+            FROM needs
+            WHERE status = 'in_progress'";
+
+        $data = $this->getdata($sql);
+
+        return $data[0]['total'];
+    }
+    public function totalMunicipalitiesWithNeeds()
+    {
+        $sql = "SELECT COUNT(DISTINCT organization_id) total
+            FROM needs";
+
+        $data = $this->getdata($sql);
+
+        return $data[0]['total'];
+    }
+    public function highPriorityNeeds()
+    {
+        $sql = "SELECT COUNT(*) total
+            FROM needs
+            WHERE priority = 'high'";
 
         $data = $this->getdata($sql);
 
@@ -94,7 +159,7 @@ class municipality extends DAL
         return $data[0]['total'];
     }
 
- //donations
+    //donations
 
     public function totalDonations()
     {
@@ -105,25 +170,145 @@ class municipality extends DAL
         return $data[0]['total'] ?? 0;
     }
 
-    public function totalAidShipments()
+    public function totalAidEntries()
     {
         $sql = "SELECT COUNT(*) total
-                FROM donations
-                WHERE donation_type = 'food'
-                   OR donation_type = 'medical'
-                   OR donation_type = 'fuel'";
+            FROM donations
+            WHERE donation_type != 'money'";
 
         $data = $this->getdata($sql);
 
         return $data[0]['total'];
     }
 
-        public function totalDisplacedPeople()
+    public function totalDisplacedPeople()
     {
         $sql = "SELECT COUNT(*) total FROM displaced_people";
 
         $data = $this->getdata($sql);
 
         return $data[0]['total'];
+    }
+
+    public function donationSummary()
+    {
+        $sql = "SELECT donation_type, SUM(total_amount) total
+            FROM donations
+            GROUP BY donation_type";
+
+        return $this->getdata($sql);
+    }
+    public function topNeeds()
+    {
+        $sql = "SELECT need_name,
+                   SUM(quantity) total_quantity
+            FROM needs
+            WHERE status != 'fulfilled'
+            GROUP BY need_name
+            ORDER BY total_quantity DESC
+            LIMIT 3";
+
+        return $this->getdata($sql);
+    }
+    public function availableCapacity()
+    {
+        $sql = "SELECT SUM(available) total FROM shelters";
+
+        $data = $this->getdata($sql);
+
+        return $data[0]['total'] ?? 0;
+    }
+    public function donationChartData()
+    {
+        $sql = "SELECT donation_type,
+                   SUM(total_amount) total
+            FROM donations
+            GROUP BY donation_type";
+
+        return $this->getdata($sql);
+    }
+
+
+
+    public function insertShelter(
+        $organization_id,
+        $organization_name,
+        $organization_location,
+        $organization_email,
+        $organization_password,
+        $shelter_name,
+        $location,
+        $capacity
+    ) {
+
+        // CASE 1:
+        // existing organization selected
+
+        if (!empty($organization_id)) {
+
+            $final_organization_id = $organization_id;
+        } else {
+
+            // CASE 2:
+            // create new municipality
+
+            $type = "municipality";
+
+            $hashed_password = password_hash(
+                $organization_password,
+                PASSWORD_DEFAULT
+            );
+
+            $sqlOrg = "INSERT INTO organizations
+        (name, type, location, email, password)
+        VALUES (?, ?, ?, ?, ?)";
+
+            $final_organization_id = $this->executeSafe(
+                $sqlOrg,
+                [
+                    $organization_name,
+                    $type,
+                    $organization_location,
+                    $organization_email,
+                    $hashed_password
+                ]
+            );
+
+            if (
+                !$final_organization_id ||
+                is_array($final_organization_id)
+            ) {
+                return false;
+            }
+        }
+
+        // DEFAULT VALUES
+
+        $occupied = 0;
+        $status = "open";
+        // INSERT SHELTER
+
+        $sqlShelter = "INSERT INTO shelters
+    (
+        organization_id,
+        shelter_name,
+        location,
+        capacity,
+        occupied,
+        status
+    )
+    VALUES (?, ?, ?, ?, ?,?)";
+
+        return $this->executeSafe(
+            $sqlShelter,
+            [
+                $final_organization_id,
+                $shelter_name,
+                $location,
+                $capacity,
+                $occupied,
+                $status
+            ]
+        );
     }
 }

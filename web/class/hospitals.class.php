@@ -8,7 +8,7 @@ class hospital extends DAL
     {
         $sql = "SELECT
                 h.*,
-                o.name,o.location,
+                o.name,o.location,o.id AS org_id,
 
                 (h.total_beds - h.available_beds) AS occupied_beds,
 
@@ -25,118 +25,112 @@ class hospital extends DAL
 
             WHERE o.type = 'hospital'
 
-            ORDER BY h.updated_at DESC";
+            ORDER BY o.created_at DESC";
 
         return $this->getdata($sql);
     }
 
 
+    // public function insertHospital(
+    //     $name,
+    //     $location,
+    //     $email,
+    //     $password,
+    //     $total_beds,
+    //     $hospital_status
+    // ) {
+    //     // hash password
+    //     $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+    //     $type = "hospital";
+    //     $available_beds = $total_beds;
+    //     $sqlOrg = "INSERT INTO organizations (name, type, location, email, password) VALUES (?, ?, ?, ?, ?)";
+    //     $organization_id = $this->executeSafe($sqlOrg, [
+    //         $name,
+    //         $type,
+    //         $location,
+    //         $email,
+    //         $hashed_password
+    //     ]);
+    //     if (!$organization_id || is_array($organization_id)) {
+    //         return $organization_id;
+    //     }
+    //     $sqlHospital = "INSERT INTO hospitals
+    //            (organization_id,total_beds,available_beds, hospital_status) VALUES (?, ?, ?, ?)";
+    //     return $this->executeSafe($sqlHospital, [
+    //         $organization_id,
+    //         $total_beds,
+    //         $available_beds,
+    //         $hospital_status
+    //     ]);
+    // }
     public function insertHospital(
-        $organization_id,
-        $region,
-        $city,
+        $name,
+        $location,
+        $email,
+        $password,
         $total_beds,
-        $available_beds,
-        $icu_beds,
-        $available_icu,
-        $staff_on_duty,
-        $ambulances,
-        $hospital_status,
-        $infrastructure_status,
-        $power_status,
-        $water_status
+        $hospital_status
     ) {
 
-        $sql = "INSERT INTO hospitals
-                (
-                    organization_id,
-                    region,
-                    city,
-                    total_beds,
-                    available_beds,
-                    icu_beds,
-                    available_icu,
-                    staff_on_duty,
-                    ambulances,
-                    hospital_status,
-                    infrastructure_status,
-                    power_status,
-                    water_status
-                )
-                VALUES
-                (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        // HASH PASSWORD
+        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
-        return $this->executeSafe($sql, [
+        $type = "hospital";
+
+        // available beds initially = total beds
+        $available_beds = $total_beds;
+
+        // INSERT INTO ORGANIZATIONS
+        $sqlOrg = "INSERT INTO organizations
+    (name, type, location, email, password)
+    VALUES (?, ?, ?, ?, ?)";
+
+        $organization_id = $this->executeSafe($sqlOrg, [
+            $name,
+            $type,
+            $location,
+            $email,
+            $hashed_password
+        ]);
+
+        // IF FIRST INSERT FAILED
+        if (!$organization_id || is_array($organization_id)) {
+            return $organization_id;
+        }
+
+        // INSERT INTO HOSPITALS
+        $sqlHospital = "INSERT INTO hospitals
+    (
+        organization_id,
+        total_beds,
+        available_beds,
+        hospital_status
+    )
+    VALUES (?, ?, ?, ?)";
+
+        $hospital = $this->executeSafe($sqlHospital, [
             $organization_id,
-            $region,
-            $city,
             $total_beds,
             $available_beds,
-            $icu_beds,
-            $available_icu,
-            $staff_on_duty,
-            $ambulances,
-            $hospital_status,
-            $infrastructure_status,
-            $power_status,
-            $water_status
+            $hospital_status
         ]);
+
+        // IF SECOND INSERT FAILED
+        if (!$hospital || is_array($hospital)) {
+
+            // DELETE ORGANIZATION TO AVOID BROKEN DATA
+            $sqlDelete = "DELETE FROM organizations WHERE id = ?";
+
+            $this->executeSafe($sqlDelete, [$organization_id]);
+
+            return $hospital;
+        }
+
+        return true;
     }
-
-
-    public function updateHospital(
-        $id,
-        $region,
-        $city,
-        $total_beds,
-        $available_beds,
-        $icu_beds,
-        $available_icu,
-        $staff_on_duty,
-        $ambulances,
-        $hospital_status,
-        $infrastructure_status,
-        $power_status,
-        $water_status
-    ) {
-
-        $sql = "UPDATE hospitals
-                SET
-                    region = ?,
-                    city = ?,
-                    total_beds = ?,
-                    available_beds = ?,
-                    icu_beds = ?,
-                    available_icu = ?,
-                    staff_on_duty = ?,
-                    ambulances = ?,
-                    hospital_status = ?,
-                    infrastructure_status = ?,
-                    power_status = ?,
-                    water_status = ?
-                WHERE id = ?";
-
-        return $this->executeSafe($sql, [
-            $region,
-            $city,
-            $total_beds,
-            $available_beds,
-            $icu_beds,
-            $available_icu,
-            $staff_on_duty,
-            $ambulances,
-            $hospital_status,
-            $infrastructure_status,
-            $power_status,
-            $water_status,
-            $id
-        ]);
-    }
-
-
     public function deleteHospital($id)
     {
-        $sql = "DELETE FROM hospitals WHERE id = ?";
+        $sql = "DELETE FROM organizations WHERE id = ?";
 
         return $this->executeSafe($sql, [$id]);
     }

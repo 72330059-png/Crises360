@@ -1,13 +1,22 @@
 <?php
 session_start();
-require_once("class/DAL.class.php");
+require_once("class/police.class.php");
 
 if (!isset($_SESSION['logged_in']) || $_SESSION['role'] !== 'admin') {
     header("Location: login.php");
     exit;
 }
-
-$dal = new DAL();
+$police = new police();
+$safeZones = $police->getSafeZones();
+$blockedRoads = $police->getBlockedRoads();
+$totalUnits = $police->getTotalUnits();
+$sentallerts = $police->getTotalAlertsnb();
+$unitsOnMission = $police->getUnitsOnMission();
+$policeUnits = $police->getPoliceUnits();
+$recentAlerts = $police->getRecentAlerts();
+$missions = $police->getPoliceMissions();
+// $units = $police->getUnitsForMission();
+$units = $police->getAvailableUnits();
 ?>
 
 <!DOCTYPE html>
@@ -15,20 +24,24 @@ $dal = new DAL();
 
 <head>
     <title>Police System</title>
-
-    <!-- CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-
     <?php include('includes/header.php'); ?>
-
     <style>
         body {
             background: #F4F7FE;
             font-family: 'DM Sans', sans-serif;
             color: #1B2559;
+        }
+
+        .btn-here {
+            background: #F4F7FE;
+            font-family: 'DM Sans', sans-serif;
+            color: #4f69e8;
+        }
+
+        .btn-here:hover {
+            background: #4f69e8;
+            font-family: 'DM Sans', sans-serif;
+            color: #ced4f1;
         }
 
         .main-content {
@@ -351,6 +364,280 @@ $dal = new DAL();
         }
     </style>
 </head>
+<!-- ADD UNIT MODAL -->
+<div class="modal fade" id="addUnitModal" tabindex="-1">
+
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+
+        <div class="modal-content border-0 rounded-4">
+
+            <div class="modal-header border-0">
+
+                <h5 class="modal-title fw-bold">
+                    Add Police Unit
+                </h5>
+
+                <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal">
+                </button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <form id="addUnitForm">
+
+                    <div class="row">
+
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label">
+                                Police Name
+                            </label>
+
+                            <input type="text"
+                                name="organization_name"
+                                class="form-control"
+                                required>
+
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label">
+                                Region
+                            </label>
+
+                            <input type="text"
+                                name="location"
+                                class="form-control"
+                                required>
+
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label">
+                                Email
+                            </label>
+
+                            <input type="email"
+                                name="email"
+                                class="form-control"
+                                required>
+
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label">
+                                Password
+                            </label>
+
+                            <input type="password"
+                                name="password"
+                                class="form-control"
+                                required>
+
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label">
+                                Callsign
+                            </label>
+
+                            <input type="text"
+                                name="callsign"
+                                class="form-control"
+                                required>
+
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label">
+                                Unit Type
+                            </label>
+
+                            <select name="unit_type"
+                                class="form-select"
+                                required>
+
+                                <option value="">
+                                    Select Type
+                                </option>
+
+                                <option value="patrol">
+                                    Patrol
+                                </option>
+
+                                <option value="swat">
+                                    SWAT
+                                </option>
+
+                                <option value="traffic">
+                                    Traffic
+                                </option>
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+                    <div class="text-end">
+
+                        <button type="submit"
+                            class="btn btn-primary px-4">
+
+                            Add Unit
+
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="modal fade" id="addMissionModal" tabindex="-1">
+
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+
+        <div class="modal-content border-0 rounded-4">
+
+            <div class="modal-header border-0">
+
+                <h5 class="modal-title fw-bold">
+                    Add Mission
+                </h5>
+
+                <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal">
+                </button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <form id="addMissionForm">
+
+                    <div class="row">
+
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label">
+                                Mission Title
+                            </label>
+
+                            <input type="text"
+                                name="title"
+                                class="form-control"
+                                required>
+
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label">
+                                Priority
+                            </label>
+
+                            <select name="priority"
+                                class="form-select"
+                                required>
+
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Description
+                        </label>
+
+                        <textarea
+                            name="description"
+                            class="form-control"
+                            rows="3"
+                            required></textarea>
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Assign Unit
+                        </label>
+
+                        <select name="units[]"
+                            class="form-select"
+                            multiple
+                            size="5"
+                            required>
+
+                            <option value="">
+                                Select Unit
+                            </option>
+
+                            <?php foreach ($units as $u): ?>
+
+                                <option value="<?= $u['unit_id']; ?>">
+
+                                    <?= $u['callsign']; ?>
+
+                                </option>
+
+                            <?php endforeach; ?>
+
+                        </select>
+
+                    </div>
+
+                    <div class="text-end">
+
+                        <button type="submit"
+                            class="btn btn-primary px-4">
+
+                            Add Mission
+
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
 
 <body>
 
@@ -360,9 +647,49 @@ $dal = new DAL();
     <div class="main-content">
 
         <!-- HEADER -->
-        <div class="mb-4">
-            <h2 class="fw-bold">Police System</h2>
-            <p class="text-muted small">Monitor safe areas, road conditions, and operations</p>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fw-bold">Police System</h2>
+                <p class="text-muted small">Monitor safe areas, road conditions, and operations</p>
+            </div>
+            <!-- FILTERS -->
+            <div class="d-flex gap-2 mb-4">
+
+                <!-- SEARCH -->
+                <input type="text"
+                    id="policeSearch"
+                    class="form-control"
+                    placeholder="Search police units..."
+                    style="max-width:250px; border-radius:12px;">
+
+                <!-- REGION FILTER -->
+                <select id="regionFilter" class="form-select" style="max-width:220px; border-radius:12px;">
+                    <option value="">All Regions</option>
+                    <?php
+                    $regions = [];
+                    foreach ($policeUnits as $unit) {
+                        if (!in_array($unit['location'], $regions)) {
+                            $regions[] = $unit['location'];
+                            echo "<option value='{$unit['location']}'>{$unit['location']}</option>";
+                        }
+                    }
+                    ?>
+                </select>
+
+                <select id="typeFilter" class="form-select" style="max-width:220px; border-radius:12px;">
+                    <option value="">All Unit Types</option>
+                    <?php
+                    $types = [];
+                    foreach ($policeUnits as $unit) {
+                        if (!in_array($unit['unit_type'], $types)) {
+
+                            $types[] = $unit['unit_type'];
+                            echo "<option value='{$unit['unit_type']}'>{$unit['unit_type']}</option>";
+                        }
+                    }
+                    ?>
+                </select>
+            </div>
         </div>
 
         <!-- STATS -->
@@ -373,22 +700,9 @@ $dal = new DAL();
                         <i class="fa-solid fa-tower-broadcast"></i>
                     </div>
                     <div class="db-content-area">
-                        <span class="db-label">Active Operations</span>
-                        <span class="db-main-value">8</span>
-                        <span class="db-subtext db-text-success"><i class="fa-solid fa-arrow-up"></i> 2 new today</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col">
-                <div class="db-stat-card">
-                    <div class="db-icon-box" style="background: #f4f7fe; color: #4318ff;">
-                        <i class="fa-solid fa-car-side"></i>
-                    </div>
-                    <div class="db-content-area">
-                        <span class="db-label">Patrol Units</span>
-                        <span class="db-main-value">48</span>
-                        <span class="db-subtext">Available: 32</span>
+                        <span class="db-label">Total Units</span>
+                        <span class="db-main-value"><?= $totalUnits ?></span>
+                        <!-- <span class="db-subtext db-text-success"><i class="fa-solid fa-arrow-up"></i> 2 new today</span> -->
                     </div>
                 </div>
             </div>
@@ -400,8 +714,7 @@ $dal = new DAL();
                     </div>
                     <div class="db-content-area">
                         <span class="db-label">Road Blockages</span>
-                        <span class="db-main-value">12</span>
-                        <span class="db-subtext db-text-danger"><i class="fa-solid fa-triangle-exclamation"></i> 3 critical</span>
+                        <span class="db-main-value"><?= $blockedRoads ?></span>
                     </div>
                 </div>
             </div>
@@ -412,8 +725,7 @@ $dal = new DAL();
                     </div>
                     <div class="db-content-area">
                         <span class="db-label">Safe Areas</span>
-                        <span class="db-main-value">26</span>
-                        <span class="db-subtext">All regions</span>
+                        <span class="db-main-value"><?= $safeZones ?></span>
                     </div>
                 </div>
             </div>
@@ -423,10 +735,14 @@ $dal = new DAL();
                     <div class="db-icon-box" style="background: #f5f3ff; color: #7c3aed;">
                         <i class="fa-solid fa-people-group"></i>
                     </div>
+
                     <div class="db-content-area">
-                        <span class="db-label">Evacuations Today</span>
-                        <span class="db-main-value">1,245</span>
-                        <span class="db-subtext" style="color: #7c3aed;">+ 18% from yesterday</span>
+                        <span class="db-label">Units On Mission</span>
+
+                        <span class="db-main-value">
+                            <?= $unitsOnMission ?>
+                        </span>
+
                     </div>
                 </div>
             </div>
@@ -438,8 +754,7 @@ $dal = new DAL();
                     </div>
                     <div class="db-content-area">
                         <span class="db-label">Alerts Sent</span>
-                        <span class="db-main-value">56</span>
-                        <span class="db-subtext">Last 24h</span>
+                        <span class="db-main-value"><?= $sentallerts ?></span>
                     </div>
                 </div>
             </div>
@@ -449,104 +764,103 @@ $dal = new DAL();
         <!-- TOP SECTION -->
         <div class="row g-4">
 
-            <!-- MAP -->
             <div class="col-md-8">
                 <div class="modern-card">
-                    <h6 class="fw-bold mb-3">Active Police Operations</h6>
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h6 class="fw-bold mb-3">Active Police Operations</h6>
+
+                        <button class="btn btn-sm btn-here rounded-pill px-3"
+                            style="font-size: 12px;"
+                            data-bs-toggle="modal"
+                            data-bs-target="#addUnitModal">
+
+                            <i class="fa-solid fa-plus me-1"></i> New Unit
+
+                        </button>
+                    </div>
                     <div class="table-responsive">
                         <table class="table align-middle" id="policeTable">
                             <thead>
                                 <tr>
-                                    <th>Operation</th>
+                                    <th>Police Name</th>
                                     <th>Region</th>
-                                    <th>Units</th>
+                                    <th>callsign</th>
+                                    <th>Unit type</th>
+                                    <!-- <th>mission</th> -->
                                     <th>Status</th>
-                                    <th>Started</th>
+                                    <th class="text-center">Actions</th>
                                 </tr>
                             </thead>
-
                             <tbody>
-                                <tr>
-                                    <td class="fw-bold">Downtown Security</td>
-                                    <td>Beirut</td>
-                                    <td>8</td>
-                                    <td class="status-warning">In Progress</td>
-                                    <td>May 18</td>
-                                </tr>
 
-                                <tr>
-                                    <td class="fw-bold">Road Clearance</td>
-                                    <td>Bekaa</td>
-                                    <td>6</td>
-                                    <td class="status-safe">Completed</td>
-                                    <td>May 18</td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold">Downtown Security</td>
-                                    <td>Beirut</td>
-                                    <td>8</td>
-                                    <td class="status-warning">In Progress</td>
-                                    <td>May 18</td>
-                                </tr>
+                                <?php foreach ($policeUnits as $unit): ?>
 
-                                <tr>
-                                    <td class="fw-bold">Road Clearance</td>
-                                    <td>Bekaa</td>
-                                    <td>6</td>
-                                    <td class="status-safe">Completed</td>
-                                    <td>May 18</td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold">Downtown Security</td>
-                                    <td>Beirut</td>
-                                    <td>8</td>
-                                    <td class="status-warning">In Progress</td>
-                                    <td>May 18</td>
-                                </tr>
+                                    <?php
+                                    $statusClass = '';
 
-                                <tr>
-                                    <td class="fw-bold">Road Clearance</td>
-                                    <td>Bekaa</td>
-                                    <td>6</td>
-                                    <td class="status-safe">Completed</td>
-                                    <td>May 18</td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold">Road Clearance</td>
-                                    <td>Bekaa</td>
-                                    <td>6</td>
-                                    <td class="status-safe">Completed</td>
-                                    <td>May 18</td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold">Downtown Security</td>
-                                    <td>Beirut</td>
-                                    <td>8</td>
-                                    <td class="status-warning">In Progress</td>
-                                    <td>May 18</td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold">Road Clearance</td>
-                                    <td>Bekaa</td>
-                                    <td>6</td>
-                                    <td class="status-safe">Completed</td>
-                                    <td>May 18</td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold">Downtown Security</td>
-                                    <td>Beirut</td>
-                                    <td>8</td>
-                                    <td class="status-warning">In Progress</td>
-                                    <td>May 18</td>
-                                </tr>
+                                    if ($unit['status'] == 'available') {
+                                        $statusClass = 'status-safe';
+                                    } elseif ($unit['status'] == 'on_mission') {
+                                        $statusClass = 'status-warning';
+                                    }
+                                    ?>
 
-                                <tr>
-                                    <td class="fw-bold">Road Clearance</td>
-                                    <td>Bekaa</td>
-                                    <td>6</td>
-                                    <td class="status-safe">Completed</td>
-                                    <td>May 18</td>
-                                </tr>
+                                    <tr>
+
+                                        <!-- Police Name -->
+                                        <td class="fw-bold police_name">
+                                            <?= $unit['organization_name']; ?>
+                                        </td>
+
+                                        <!-- Region -->
+                                        <td class="police_location">
+                                            <?= $unit['location']; ?>
+                                        </td>
+
+                                        <!-- Callsign -->
+                                        <td class="callsign">
+                                            <span class="badge bg-light text-dark">
+                                                <?= $unit['callsign']; ?>
+                                            </span>
+                                        </td>
+
+                                        <!-- Unit Type -->
+                                        <td class="unit_type">
+                                            <?= $unit['unit_type']; ?>
+                                        </td>
+
+                                        <!-- Mission -->
+                                        <!-- <td class="unit_mission">
+                                            <?= $unit['mission_title'] ?? 'No Mission'; ?>
+                                        </td> -->
+
+                                        <!-- Status -->
+                                        <td class="unit_status">
+                                            <span class="<?= $statusClass; ?>"><?= $unit['status'] ?>
+                                            </span>
+                                        </td>
+
+                                        <!-- Actions -->
+                                        <td class="text-center unit_action">
+                                            <!-- <i class="fa fa-edit text-muted me-2 editBtn"
+                                                style="cursor:pointer;">
+                                            </i> -->
+                                            <!-- action-btn.btn-view -->
+                                            <button class="action-btn btn-view editpol" data-unitid="<?php echo $unit['unit_id']; ?>" data-orgid="<?php echo $unit['organization_id']; ?>">
+                                                <i class="fa fa-edit" style="cursor:pointer;"></i>
+                                            </button>
+
+                                            <button class="action-btn btn-delete dltunit" data-id="<?php echo $unit['organization_id']; ?>">
+                                                <i class="fa-regular fa-trash-can"></i>
+                                            </button>
+
+                                        </td>
+
+                                    </tr>
+
+                                <?php endforeach; ?>
+
                             </tbody>
                         </table>
                     </div>
@@ -555,24 +869,16 @@ $dal = new DAL();
 
             <!-- RIGHT SIDE -->
             <div class="col-md-4">
-
                 <div class="modern-card alerts-card">
-
                     <!-- HEADER -->
                     <div class="d-flex justify-content-between align-items-center mb-4">
-
                         <h6 class="fw-bold mb-0">
                             Recent Alerts Sent
                         </h6>
-
-
                     </div>
-
                     <!-- TABLE -->
                     <div class="table-responsive">
-
                         <table class="table alerts-table align-middle" id="alertstablep">
-
                             <thead>
                                 <tr>
                                     <th></th>
@@ -580,123 +886,613 @@ $dal = new DAL();
                                 </tr>
                             </thead>
                             <tbody>
+                                <?php foreach ($recentAlerts as $alert): ?>
+                                    <?php
+                                    $iconClass = '';
+                                    $icon = '';
+                                    if ($alert['severity'] == 'danger') {
+                                        $iconClass = 'danger-alert';
+                                        $icon = 'fa-triangle-exclamation';
+                                    } elseif ($alert['severity'] == 'warning') {
+                                        $iconClass = 'warning-alert';
+                                        $icon = 'fa-bullhorn';
+                                    } elseif ($alert['severity'] == 'safe') {
+                                        $iconClass = 'safe-alert';
+                                        $icon = 'fa-circle-check';
+                                    }
 
-                                <!-- ROW -->
-                                <tr>
+                                    ?>
+                                    <tr>
+                                        <td class="alert-icon-td">
+                                            <div class="alert-icon <?= $iconClass; ?>">
+                                                <i class="fa-solid <?= $icon; ?>"></i>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="alert-title">
+                                                <?= $alert['title']; ?>
+                                            </div>
+                                            <div class="alert-subtext">
 
-                                    <td class="alert-icon-td">
-
-                                        <div class="alert-icon danger-alert">
-                                            <i class="fa-solid fa-triangle-exclamation"></i>
-                                        </div>
-
-                                    </td>
-
-                                    <td>
-
-                                        <div class="alert-title">
-                                            Road blocked on Airport Road
-                                        </div>
-
-                                        <div class="alert-subtext">
-                                            Target: All Civil Units • 10m ago
-                                        </div>
-
-                                    </td>
-
-                                </tr>
-
-                                <!-- ROW -->
-                                <tr>
-
-                                    <td class="alert-icon-td">
-
-                                        <div class="alert-icon warning-alert">
-                                            <i class="fa-solid fa-bullhorn"></i>
-                                        </div>
-
-                                    </td>
-
-                                    <td>
-
-                                        <div class="alert-title">
-                                            Evacuation advised in Dahieh
-                                        </div>
-
-                                        <div class="alert-subtext">
-                                            Target: Sector 7 Residents • 25m ago
-                                        </div>
-
-                                    </td>
-
-                                </tr>
-
-                                <!-- ROW -->
-                                <tr>
-
-                                    <td class="alert-icon-td">
-
-                                        <div class="alert-icon orange-alert">
-                                            <i class="fa-solid fa-car-burst"></i>
-                                        </div>
-
-                                    </td>
-
-                                    <td>
-
-                                        <div class="alert-title">
-                                            Traffic congestion in Jounieh
-                                        </div>
-
-                                        <div class="alert-subtext">
-                                            Target: Logistics Teams • 40m ago
-                                        </div>
-
-                                    </td>
-
-                                </tr>
-
-                                <!-- ROW -->
-                                <tr>
-
-                                    <td class="alert-icon-td">
-
-                                        <div class="alert-icon safe-alert">
-                                            <i class="fa-solid fa-circle-check"></i>
-                                        </div>
-
-                                    </td>
-
-                                    <td>
-
-                                        <div class="alert-title">
-                                            Route 1 safe update
-                                        </div>
-
-                                        <div class="alert-subtext">
-                                            Target: General Public • 1h ago
-                                        </div>
-
-                                    </td>
-
-                                </tr>
-
+                                                <?= $alert['organization_name']; ?>
+                                                •
+                                                <?= date('d M Y', strtotime($alert['created_at'])); ?>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
                             </tbody>
-
                         </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MISSION MANAGEMENT SECTION -->
+        <div class="row g-3 mt-2">
+            <div class="col-12">
+                <div class="modern-card">
+                    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+
+                        <div>
+                            <h6 class="fw-bold mb-0">Active Mission Tasking</h6>
+                        </div>
+
+                        <div class="d-flex align-items-center gap-2">
+
+                            <!-- Search -->
+                            <div id="missionSearchBox"></div>
+
+                            <!-- Button -->
+                            <button class="btn btn-sm btn-here rounded-pill px-3"
+                                style="font-size: 12px;" data-bs-toggle="modal" data-bs-target="#addMissionModal">
+                                <i class="fa-solid fa-plus me-1"></i> New Mission
+                            </button>
+
+                        </div>
 
                     </div>
 
+                    <div class="table-responsive">
+                        <table class="table align-middle" id="missionTable">
+                            <thead>
+                                <tr>
+                                    <th>Mission Name</th>
+                                    <th>Priority</th>
+                                    <th>Assigned Units</th>
+                                    <th>Description</th>
+                                    <th>Status</th>
+                                    <th class="text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+
+                                <?php foreach ($missions as $mission): ?>
+                                    <?php
+                                    $priorityClass = '';
+                                    $statusClass = '';
+
+                                    if ($mission['priority'] == 'High') {
+                                        $priorityClass = 'bg-danger';
+                                    } elseif ($mission['priority'] == 'Medium') {
+                                        $priorityClass = 'bg-warning text-dark';
+                                    } else {
+                                        $priorityClass = 'bg-success';
+                                    }
+
+                                    if ($mission['status'] == 'active') {
+                                        $statusClass = 'status-warning';
+                                    } elseif ($mission['status'] == 'completed') {
+                                        $statusClass = 'status-safe';
+                                    } else {
+                                        $statusClass = 'status-danger';
+                                    }
+
+                                    ?>
+                                    <tr>
+                                        <!-- Mission -->
+                                        <td class="fw-bold text-dark mission_title">
+                                            <?= $mission['title']; ?>
+                                        </td>
+                                        <!-- Priority -->
+                                        <td class="mission_priority">
+                                            <span class="badge rounded-pill <?= $priorityClass; ?>">
+                                                <?= ucfirst($mission['priority']); ?>
+                                            </span>
+                                        </td>
+                                        <!-- Units -->
+                                        <td class="mission_units">
+                                            <?php if ($mission['assigned_units']) : ?>
+                                                <span class="badge bg-purple">
+                                                    <?= $mission['assigned_units']; ?>
+                                                </span>
+
+                                            <?php else: ?>
+                                                <span class="text-muted small">
+                                                    No Units
+                                                </span>
+                                            <?php endif; ?>
+                                        </td>
+
+                                        <!-- Description -->
+                                        <td class="text-muted small mission_description">
+                                            <?= $mission['description']; ?>
+                                        </td>
+
+                                        <!-- Status -->
+                                        <td class="mission_status">
+                                            <span class="<?= $statusClass; ?>">
+                                                <?php
+                                                if ($mission['status'] == 'active') {
+                                                    echo 'In Progress';
+                                                } else {
+                                                    echo ucfirst($mission['status']);
+                                                }
+                                                ?>
+                                            </span>
+                                        </td>
+
+                                        <td class="text-center mission_action">
+
+                                            <i class="fa fa-edit text-muted me-2 editMissionBtn"
+                                                style="cursor:pointer;"
+                                                data-id="<?= $mission['mission_id']; ?>">
+                                            </i>
+
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
-
         </div>
-
-
 
     </div>
 
     <?php include('includes/script.php'); ?>
+    <script>
+        $(document).ready(function() {
+
+            var table = $('#policeTable').DataTable({
+
+                pageLength: 6,
+                order: [],
+                dom: 'rt<"d-flex justify-content-between"ip>',
+
+                language: {
+
+                    info: "Showing _START_ to _END_ of _TOTAL_ results",
+
+                    paginate: {
+                        previous: "<",
+                        next: ">"
+                    }
+                }
+            });
+
+            // SEARCH
+            $('#policeSearch').on('keyup', function() {
+
+                table.search(this.value).draw();
+
+            });
+
+            // REGION FILTER
+            $('#regionFilter').on('change', function() {
+
+                table.column(1).search(this.value).draw();
+
+            });
+
+            // UNIT TYPE FILTER
+            $('#typeFilter').on('change', function() {
+
+                table.column(3).search(this.value).draw();
+
+            });
+
+        });
+
+        $(document).ready(function() {
+
+            let missionTable = $('#missionTable').DataTable({
+                pageLength: 4,
+                searching: true,
+                lengthChange: false,
+                info: false,
+                pagingType: "simple_numbers",
+                autoWidth: false,
+                order: [],
+                dom: 'frtip',
+
+                language: {
+                    search: "",
+                    searchPlaceholder: "Search missions...",
+                    paginate: {
+                        next: '<i class="fa-solid fa-chevron-right"></i>',
+                        previous: '<i class="fa-solid fa-chevron-left"></i>'
+                    }
+                }
+            });
+
+            // move search input beside title/button
+            $('#missionTable_filter').appendTo('#missionSearchBox');
+
+        });
+
+        $('#addUnitForm').on('submit', function(e) {
+
+            e.preventDefault();
+
+            $.ajax({
+
+                url: 'actions/add_unit.php',
+
+                type: 'POST',
+
+                data: $(this).serialize(),
+
+                dataType: 'json',
+
+                success: function(response) {
+
+                    if (response.status == 'success') {
+
+                        Swal.fire({
+
+                            icon: 'success',
+
+                            title: 'Success',
+
+                            text: response.message,
+
+                            timer: 2000,
+
+                            showConfirmButton: false
+
+                        });
+
+                        $('#addUnitModal').modal('hide');
+
+                        $('#addUnitForm')[0].reset();
+
+                        setTimeout(function() {
+
+                            location.reload();
+
+                        }, 1500);
+
+                    } else {
+
+                        Swal.fire({
+
+                            icon: 'error',
+
+                            title: 'Error',
+
+                            text: response.message
+
+                        });
+
+                    }
+
+                }
+
+            });
+
+        });
+
+        $(document).on('click', '.dltunit', function() {
+
+            let id = $(this).data('id');
+
+            Swal.fire({
+                title: 'Delete Unit?',
+                text: "This action cannot be undone",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Delete'
+            }).then((result) => {
+
+                if (result.isConfirmed) {
+
+                    $.ajax({
+                        url: 'actions/delete_unit.php',
+                        type: 'POST',
+                        data: {
+                            id: id
+                        },
+                        dataType: 'json',
+
+                        success: function(response) {
+
+                            if (response.status === 'success') {
+
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Deleted!',
+                                    text: response.message,
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                });
+
+                                $('.dltunit[data-id="' + id + '"]').closest('tr').fadeOut();
+
+                            } else {
+
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: response.message
+                                });
+                            }
+                        }
+                    });
+
+                }
+
+            });
+
+        });
+
+        //unit_action unit_status unit_mission unit_type callsign  police_location police_name 
+        $(document).on('click', '.editpol', function() {
+            let unitId = $(this).data('unitid');
+            let orgId = $(this).data('orgid');
+            let row = $(this).closest('tr');
+            let policeName = row.find('.police_name').text().trim();
+            let location = row.find('.police_location').text().trim();
+            let callsign = row.find('.callsign').text().trim();
+            let type = row.find('.unit_type').text().trim();
+            // let mission = row.find('.unit_mission').text().trim();
+            let status = row.find('.unit_status').text().trim();
+            // let status = row.find('.unit-action').text().trim();
+
+            row.find('.police_name').html(`<input type="text" class="form-control edit-pol-name" value="${policeName}"> `);
+            row.find('.police_location').html(`<input type="text" class="form-control edit-location" value="${location}">`);
+            row.find('.callsign').html(`<input type="text" class="form-control edit-callsign" value="${callsign}">`);
+
+            row.find('.unit_type').html(`<select class="form-select edit-type">
+            <option ${type == 'patrol' ? 'selected' : ''}>patrol</option>
+            <option ${type == 'swat' ? 'selected' : ''}>swat</option>
+            <option ${type == 'traffic' ? 'selected' : ''}>traffic</option>
+            <option ${type == 'investigation' ? 'selected' : ''}>investigation</option>
+            </select> `);
+
+            // row.find('.unit_mission').html(`<input type="text" class="form-control edit-mission" value="${mission}">`);
+
+            row.find('.unit_status').html(`<select class="form-select edit-status">
+            <option ${status == 'available' ? 'selected' : ''}>available</option>
+            <option ${status == 'on_mission' ? 'selected' : ''}>on_mission</option>
+            <option ${status == 'off_duty' ? 'selected' : ''}>off_duty</option>
+            </select> `);
+
+            row.find('td:last').html(`
+            <button class="btn btn-success btn-sm saveBtnpol" data-unitid="${unitId}" data-orgid="${orgId}"> Save </button>
+            <button class="btn btn-secondary btn-sm cancelBtnpol" > Cancel </button>`);
+        });
+
+        $(document).on('click', '.saveBtnpol', function() {
+            let unitId = $(this).data('unitid');
+            let orgId = $(this).data('orgid');
+            let row = $(this).closest('tr');
+            let id = row.find('.cancelBtpol').data('id');
+            let polName = row.find('.edit-pol-name').val();
+            let inlocation = row.find('.edit-location').val();
+            let incallsign = row.find('.edit-callsign').val();
+            let type = row.find('.edit-type').val();
+            // let mission = row.find('.edit-mission').val();
+            let status = row.find('.edit-status').val();
+            $.ajax({
+                url: 'actions/update_police.php',
+                type: 'POST',
+                data: {
+                    unit_id: unitId,
+                    org_id: orgId,
+                    pol_name: polName,
+                    location: inlocation,
+                    callsign: incallsign,
+                    type: type,
+                    // mission: mission,
+                    status: status
+                },
+                dataType: 'json',
+                success: function(response) {
+                    if (response.status === 'success') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Updated!',
+                            text: response.message,
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                        window.location.reload();
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: response.message
+                        });
+                    }
+                }
+
+            });
+
+        });
+
+        $(document).on('click', '.cancelBtnpol', function() {
+            location.reload();
+        });
+
+        $('#addMissionForm').on('submit', function(e) {
+
+            e.preventDefault();
+
+            $.ajax({
+
+                url: 'actions/add_mission.php',
+
+                type: 'POST',
+
+                data: $(this).serialize(),
+
+                dataType: 'json',
+
+                success: function(response) {
+
+                    if (response.status == 'success') {
+
+                        Swal.fire({
+
+                            icon: 'success',
+
+                            title: 'Success',
+
+                            text: response.message,
+
+                            timer: 1500,
+
+                            showConfirmButton: false
+
+                        });
+
+                        $('#addMissionModal').modal('hide');
+
+                        $('#addMissionForm')[0].reset();
+
+                        setTimeout(function() {
+
+                            location.reload();
+
+                        }, 1200);
+
+                    } else {
+
+                        Swal.fire({
+
+                            icon: 'error',
+
+                            title: 'Error',
+
+                            text: response.message
+
+                        });
+                    }
+                }
+            });
+        });
+
+        $(document).on('click', '.editMissionBtn', function() {
+            let missionId = $(this).data('id');
+            let row = $(this).closest('tr');
+            let title = row.find('.mission_title').text().trim();
+            let priority = row.find('.mission_priority').text().trim().toLowerCase();
+            let description = row.find('.mission_description').text().trim();
+            let status = row.find('.mission_status').text().trim().toLowerCase();
+            let assignedUnits = row.find('.mission_units span').text().trim();
+            assignedUnits = assignedUnits ? assignedUnits.split(',').map(unit => unit.trim()) : [];
+            if (status == 'in progress') {
+                status = 'active';
+            }
+
+            row.find('.mission_title').html(`<input type="text"class="form-control edit-mission-title" value="${title}">`);
+
+            row.find('.mission_priority').html(`
+            <select class="form-select edit-mission-priority">
+            <option value="low" ${priority == 'low' ? 'selected' : ''}> Low </option>
+            <option value="medium" ${priority == 'medium' ? 'selected' : ''}> Medium </option>
+            <option value="high"  ${priority == 'high' ? 'selected' : ''}>  High  </option>
+            </select>
+             `);
+
+            row.find('.mission_units').html(`
+            <select class="form-select edit-units" multiple size="5">
+            <?php foreach ($units as $u): ?>
+            <option value="<?= $u['unit_id']; ?>">
+            <?= $u['callsign']; ?>
+            </option>
+            <?php endforeach; ?>
+            </select>`);
+
+            row.find('.edit-units option').each(function () {
+            let text = $(this).text().trim();
+            if (assignedUnits.includes(text)) {
+            $(this).prop('selected', true);}});
+
+            row.find('.mission_description').html(`<textarea class="form-control edit-mission-description">${description}</textarea> `);
+
+            row.find('.mission_status').html(`
+            <select class="form-select edit-mission-status">
+            <option value="active" ${status == 'active' ? 'selected' : ''}> Active </option>
+            <option value="completed" ${status == 'completed' ? 'selected' : ''}> Completed </option>
+            <option value="late" ${status == 'late' ? 'selected' : ''}> Late </option>
+            </select> `);
+
+            row.find('.mission_action').html(`<button class="btn btn-success btn-sm saveMissionBtn" data-id="${missionId}">
+            Save
+            </button>
+
+            <button class="btn btn-secondary btn-sm cancelMissionBtn">
+            Cancel
+            </button> `);
+        });
+
+        $(document).on('click', '.saveMissionBtn', function() {
+            let missionId = $(this).data('id');
+            let row = $(this).closest('tr');
+            let title = row.find('.edit-mission-title').val();
+            let priority = row.find('.edit-mission-priority').val();
+            let units = row.find('.edit-units').val();
+            let description = row.find('.edit-mission-description').val();
+            let status = row.find('.edit-mission-status').val();
+
+            $.ajax({
+                url: 'actions/update_mission.php',
+                type: 'POST',
+                data: {
+                    mission_id: missionId,
+                    title: title,
+                    priority: priority,
+                    description: description,
+                    status: status,
+                    units: units
+                },
+                dataType: 'json',
+                traditional: true,
+                success: function(response) {
+                    if (response.status == 'success') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Updated',
+                            text: response.message,
+                            timer: 1500,
+                            showConfirmButton: false
+
+                        });
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1200);
+
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: response.message
+                        });
+                    }
+                }
+            });
+        });
+        $(document).on('click', '.cancelMissionBtn', function() {
+
+            location.reload();
+
+        });
+    </script>
 
 </body>
 

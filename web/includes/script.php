@@ -269,30 +269,6 @@
     });
 
     $(document).ready(function() {
-        var table = $('#alertTable').DataTable({
-            "paging": true,
-            "info": true,
-            "ordering": true,
-            "lengthChange": false,
-            "dom": 'rt<"d-flex justify-content-between align-items-center"ip>',
-            "language": {
-                "paginate": {
-                    "previous": "<i class='fa-solid fa-chevron-left'></i>",
-                    "next": "<i class='fa-solid fa-chevron-right'></i>"
-                }
-            }
-        });
-
-        $('#alertSearch').keyup(function() {
-            table.search($(this).val()).draw();
-        })
-    });
-
-
-
-
-
-    $(document).ready(function() {
         $('#newsTable').DataTable({
             "paging": true,
             "searching": true,
@@ -300,11 +276,12 @@
             "info": true,
             "lengthChange": false,
             "pageLength": 10,
+            "order":[],
             "responsive": true,
             "dom": 'rt<"d-flex justify-content-between align-items-center mt-3"ip>',
             "columnDefs": [{
                 "orderable": false,
-                "targets": 5
+                "targets": 4
             }],
             "language": {
                 "info": "Showing _START_ to _END_ of _TOTAL_ entries",
@@ -359,26 +336,6 @@
     });
 
     $(document).ready(function() {
-        $('#policeTable').DataTable({
-            "pageLength": 9,
-            "searching": false,
-            "lengthChange": false,
-            "info": false,
-            "pagingType": "simple",
-            "autoWidth": false,
-
-            "language": {
-
-                "paginate": {
-                    "next": '<i class="fa-solid fa-chevron-right"></i>',
-                    "previous": '<i class="fa-solid fa-chevron-left"></i>'
-                }
-            }
-
-        });
-    });
-   
-    $(document).ready(function() {
         $('#alertstablep').DataTable({
             "pageLength": 4,
             "searching": false,
@@ -396,232 +353,232 @@
         });
     });
 
-     ////here for incidents;
-        let currentIncidentId = null;
+    ////here for incidents;
+    let currentIncidentId = null;
 
-        const modal = document.getElementById('viewIncidentModal');
+    const modal = document.getElementById('viewIncidentModal');
 
-        modal.addEventListener('show.bs.modal', function(event) {
+    modal.addEventListener('show.bs.modal', function(event) {
 
-            const button = event.relatedTarget;
+        const button = event.relatedTarget;
 
-            currentIncidentId = button.getAttribute('data-id');
+        currentIncidentId = button.getAttribute('data-id');
 
-            const description = button.getAttribute('data-description');
+        const description = button.getAttribute('data-description');
 
-            const title = button.getAttribute('data-title');
+        const title = button.getAttribute('data-title');
 
-            document.getElementById('incidentDescription').innerText = description;
+        document.getElementById('incidentDescription').innerText = description;
 
-            document.getElementById('incidentTitle').innerText = title;
-        });
+        document.getElementById('incidentTitle').innerText = title;
+    });
 
-        $('#editDescriptionBtn').click(function() {
+    $('#editDescriptionBtn').click(function() {
 
-            let currentText = $('#incidentDescription').text();
+        let currentText = $('#incidentDescription').text();
 
-            $('#editDescriptionTextarea').val(currentText);
+        $('#editDescriptionTextarea').val(currentText);
 
-            $('#incidentDescription').addClass('d-none');
+        $('#incidentDescription').addClass('d-none');
 
-            $('#editDescriptionTextarea').removeClass('d-none');
+        $('#editDescriptionTextarea').removeClass('d-none');
 
-            $('#saveDescriptionBtn').removeClass('d-none');
+        $('#saveDescriptionBtn').removeClass('d-none');
 
-        });
+    });
 
-        $('#saveDescriptionBtn').click(function() {
+    $('#saveDescriptionBtn').click(function() {
 
-            let description = $('#editDescriptionTextarea').val();
+        let description = $('#editDescriptionTextarea').val();
 
-            $.ajax({
+        $.ajax({
 
-                url: 'actions/update_description.php',
+            url: 'actions/update_description.php',
 
-                type: 'POST',
+            type: 'POST',
 
-                data: {
-                    id: currentIncidentId,
-                    description: description
-                },
+            data: {
+                id: currentIncidentId,
+                description: description
+            },
 
-                dataType: 'json',
+            dataType: 'json',
 
-                success: function(response) {
+            success: function(response) {
 
-                    if (response.status === 'success') {
+                if (response.status === 'success') {
 
-                        $('#incidentDescription').text(description);
+                    $('#incidentDescription').text(description);
 
-                        $('#incidentDescription').removeClass('d-none');
+                    $('#incidentDescription').removeClass('d-none');
 
-                        $('#editDescriptionTextarea').addClass('d-none');
+                    $('#editDescriptionTextarea').addClass('d-none');
 
-                        $('#saveDescriptionBtn').addClass('d-none');
+                    $('#saveDescriptionBtn').addClass('d-none');
 
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Updated!',
-                            text: response.message,
-                            timer: 1500,
-                            showConfirmButton: false
-                        });
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Updated!',
+                        text: response.message,
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
 
-                    } else {
+                } else {
 
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: response.message
-                        });
-
-                    }
-
-                }
-
-            });
-
-        });
-
-        $('#saveIncidentBtn').click(function() {
-
-            let incident_name = $('#addIncidentName').val();
-
-            let location = $('#addLocation').val();
-
-            let severity = $('#addSeverity').val();
-
-            let status = $('#addStatus').val();
-
-            let description = $('#addDescription').val();
-
-            $.ajax({
-
-                url: 'actions/add_incident.php',
-
-                type: 'POST',
-
-                data: {
-                    incident_name: incident_name,
-                    location: location,
-                    severity: severity,
-                    status: status,
-                    description: description
-                },
-
-                dataType: 'json',
-
-                success: function(response) {
-
-                    if (response.status === 'success') {
-
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Success',
-                            text: response.message,
-                            timer: 1500,
-                            showConfirmButton: false
-                        });
-
-                        setTimeout(() => {
-
-                            window.location.reload();
-
-                        }, 1500);
-
-                    } else {
-
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: response.message
-                        });
-
-                    }
-
-                }
-
-            });
-
-        });
-
-        $(document).on('click', '.deleteBtn', function() {
-
-            let id = $(this).data('id');
-
-            Swal.fire({
-                title: 'Delete Incident?',
-                text: "This action cannot be undone",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Delete'
-            }).then((result) => {
-
-                if (result.isConfirmed) {
-
-                    $.ajax({
-                        url: 'actions/delete_incident.php',
-                        type: 'POST',
-                        data: {
-                            id: id
-                        },
-                        dataType: 'json',
-
-                        success: function(response) {
-
-                            if (response.status === 'success') {
-
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'Deleted!',
-                                    text: response.message,
-                                    timer: 1500,
-                                    showConfirmButton: false
-                                });
-
-                                $('.deleteBtn[data-id="' + id + '"]').closest('tr').fadeOut();
-
-                            } else {
-
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Error',
-                                    text: response.message
-                                });
-                            }
-                        }
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: response.message
                     });
 
                 }
 
-            });
+            }
 
         });
 
-        $(document).on('click', '.editBtn', function() {
+    });
 
-            let row = $(this).closest('tr');
+    $('#saveIncidentBtn').click(function() {
 
-            let incidentName = row.find('.incident-name').text().trim();
-            let location = row.find('.incident-location').text().trim();
-            let severity = row.find('.incident-severity').text().trim();
-            let status = row.find('.incident-status').text().trim();
+        let incident_name = $('#addIncidentName').val();
 
-            row.find('.incident-name').html(`
+        let location = $('#addLocation').val();
+
+        let severity = $('#addSeverity').val();
+
+        let status = $('#addStatus').val();
+
+        let description = $('#addDescription').val();
+
+        $.ajax({
+
+            url: 'actions/add_incident.php',
+
+            type: 'POST',
+
+            data: {
+                incident_name: incident_name,
+                location: location,
+                severity: severity,
+                status: status,
+                description: description
+            },
+
+            dataType: 'json',
+
+            success: function(response) {
+
+                if (response.status === 'success') {
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: response.message,
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+
+                    setTimeout(() => {
+
+                        window.location.reload();
+
+                    }, 1500);
+
+                } else {
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: response.message
+                    });
+
+                }
+
+            }
+
+        });
+
+    });
+
+    $(document).on('click', '.deleteBtn', function() {
+
+        let id = $(this).data('id');
+
+        Swal.fire({
+            title: 'Delete Incident?',
+            text: "This action cannot be undone",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Delete'
+        }).then((result) => {
+
+            if (result.isConfirmed) {
+
+                $.ajax({
+                    url: 'actions/delete_incident.php',
+                    type: 'POST',
+                    data: {
+                        id: id
+                    },
+                    dataType: 'json',
+
+                    success: function(response) {
+
+                        if (response.status === 'success') {
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Deleted!',
+                                text: response.message,
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+
+                            $('.deleteBtn[data-id="' + id + '"]').closest('tr').fadeOut();
+
+                        } else {
+
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: response.message
+                            });
+                        }
+                    }
+                });
+
+            }
+
+        });
+
+    });
+
+    $(document).on('click', '.editBtn', function() {
+
+        let row = $(this).closest('tr');
+
+        let incidentName = row.find('.incident-name').text().trim();
+        let location = row.find('.incident-location').text().trim();
+        let severity = row.find('.incident-severity').text().trim();
+        let status = row.find('.incident-status').text().trim();
+
+        row.find('.incident-name').html(`
         <input type="text"
                class="form-control edit-incident-name"
                value="${incidentName}">
     `);
 
-            row.find('.incident-location').html(`
+        row.find('.incident-location').html(`
         <input type="text"
                class="form-control edit-location"
                value="${location}">
     `);
 
-            row.find('.incident-severity').html(`
+        row.find('.incident-severity').html(`
         <select class="form-select edit-severity">
             <option ${severity == 'Low' ? 'selected' : ''}>Low</option>
             <option ${severity == 'Medium' ? 'selected' : ''}>Medium</option>
@@ -629,7 +586,7 @@
         </select>
     `);
 
-            row.find('.incident-status').html(`
+        row.find('.incident-status').html(`
         <select class="form-select edit-status">
             <option ${status == 'Investigating' ? 'selected' : ''}>Investigating</option>
             <option ${status == 'In Progress' ? 'selected' : ''}>In Progress</option>
@@ -637,8 +594,8 @@
         </select>
     `);
 
-            // replace action buttons
-            row.find('td:last').html(`
+        // replace action buttons
+        row.find('td:last').html(`
         <button class="btn btn-success btn-sm saveBtn"data-id="${$(this).data('id')}">
             Save
         </button>
@@ -648,174 +605,172 @@
         </button>
     `);
 
-        });
+    });
 
 
-        $(document).on('click', '.saveBtn', function() {
+    $(document).on('click', '.saveBtn', function() {
 
-            let row = $(this).closest('tr');
+        let row = $(this).closest('tr');
 
-            let id = row.find('.cancelBtn').data('id');
+        let id = row.find('.cancelBtn').data('id');
 
-            let incidentName = row.find('.edit-incident-name').val();
-            let inlocation = row.find('.edit-location').val();
-            let severity = row.find('.edit-severity').val();
-            let status = row.find('.edit-status').val();
+        let incidentName = row.find('.edit-incident-name').val();
+        let inlocation = row.find('.edit-location').val();
+        let severity = row.find('.edit-severity').val();
+        let status = row.find('.edit-status').val();
 
-            $.ajax({
+        $.ajax({
 
-                url: 'actions/update_incident.php',
+            url: 'actions/update_incident.php',
 
-                type: 'POST',
+            type: 'POST',
 
-                data: {
-                    id: id,
-                    incident_name: incidentName,
-                    location: inlocation,
-                    severity: severity,
-                    status: status
+            data: {
+                id: id,
+                incident_name: incidentName,
+                location: inlocation,
+                severity: severity,
+                status: status
 
-                },
+            },
 
-                dataType: 'json',
+            dataType: 'json',
 
-                success: function(response) {
+            success: function(response) {
 
-                    if (response.status === 'success') {
+                if (response.status === 'success') {
 
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Updated!',
-                            text: response.message,
-                            timer: 1500,
-                            showConfirmButton: false
-                        });
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Updated!',
+                        text: response.message,
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
 
-                        window.location.reload();
-
-                    } else {
-
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: response.message
-                        });
-                    }
-                }
-
-            });
-
-        });
-
-        $(document).on('click', '.cancelBtn', function() {
-
-            location.reload();
-
-        });
-
-        function filterIncidents() {
-
-            let search = $('#searchFilter').val().toLowerCase();
-
-            let type = $('#typeFilter').val().toLowerCase();
-
-            let region = $('#regionFilter').val().toLowerCase();
-
-            let status = $('#statusFilter').val().toLowerCase();
-
-            let date = $('#dateFilter').val();
-
-            $('#myIncidentTable tbody tr').each(function() {
-
-                let incidentName = $(this)
-                    .find('.incident-name')
-                    .text()
-                    .toLowerCase();
-
-                let incidentType = $(this)
-                    .find('.incident-severity')
-                    .text()
-                    .toLowerCase();
-
-                let incidentLocation = $(this)
-                    .find('.incident-location')
-                    .text()
-                    .toLowerCase();
-
-                let incidentStatus = $(this)
-                    .find('.incident-status')
-                    .text()
-                    .toLowerCase();
-
-                let incidentDate = $(this)
-                    .find('.incident-date')
-                    .data('date');
-
-
-                let matchSearch =
-
-                    incidentName.includes(search) ||
-
-                    incidentLocation.includes(search);
-
-
-                let matchType =
-
-                    type === '' ||
-
-                    incidentType.includes(type);
-
-
-                let matchRegion =
-
-                    region === '' ||
-
-                    incidentLocation.includes(region);
-
-
-                let matchStatus =
-
-                    status === '' ||
-
-                    incidentStatus.includes(status);
-
-
-                let matchDate =
-
-                    date === '' ||
-
-                    incidentDate === date;
-
-
-                if (
-                    matchSearch &&
-                    matchType &&
-                    matchRegion &&
-                    matchStatus &&
-                    matchDate
-                ) {
-
-                    $(this).show();
+                    window.location.reload();
 
                 } else {
 
-                    $(this).hide();
-
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: response.message
+                    });
                 }
+            }
 
-            });
+        });
 
-        }
+    });
 
-        $('#searchFilter').on('keyup', filterIncidents);
+    $(document).on('click', '.cancelBtn', function() {
 
-        $('#typeFilter').on('change', filterIncidents);
+        location.reload();
 
-        $('#regionFilter').on('change', filterIncidents);
+    });
 
-        $('#statusFilter').on('change', filterIncidents);
+    function filterIncidents() {
 
-        $('#dateFilter').on('change', filterIncidents);
-    
+        let search = $('#searchFilter').val().toLowerCase();
 
+        let type = $('#typeFilter').val().toLowerCase();
+
+        let region = $('#regionFilter').val().toLowerCase();
+
+        let status = $('#statusFilter').val().toLowerCase();
+
+        let date = $('#dateFilter').val();
+
+        $('#myIncidentTable tbody tr').each(function() {
+
+            let incidentName = $(this)
+                .find('.incident-name')
+                .text()
+                .toLowerCase();
+
+            let incidentType = $(this)
+                .find('.incident-severity')
+                .text()
+                .toLowerCase();
+
+            let incidentLocation = $(this)
+                .find('.incident-location')
+                .text()
+                .toLowerCase();
+
+            let incidentStatus = $(this)
+                .find('.incident-status')
+                .text()
+                .toLowerCase();
+
+            let incidentDate = $(this)
+                .find('.incident-date')
+                .data('date');
+
+
+            let matchSearch =
+
+                incidentName.includes(search) ||
+
+                incidentLocation.includes(search);
+
+
+            let matchType =
+
+                type === '' ||
+
+                incidentType.includes(type);
+
+
+            let matchRegion =
+
+                region === '' ||
+
+                incidentLocation.includes(region);
+
+
+            let matchStatus =
+
+                status === '' ||
+
+                incidentStatus.includes(status);
+
+
+            let matchDate =
+
+                date === '' ||
+
+                incidentDate === date;
+
+
+            if (
+                matchSearch &&
+                matchType &&
+                matchRegion &&
+                matchStatus &&
+                matchDate
+            ) {
+
+                $(this).show();
+
+            } else {
+
+                $(this).hide();
+
+            }
+
+        });
+
+    }
+
+    $('#searchFilter').on('keyup', filterIncidents);
+
+    $('#typeFilter').on('change', filterIncidents);
+
+    $('#regionFilter').on('change', filterIncidents);
+
+    $('#statusFilter').on('change', filterIncidents);
+
+    $('#dateFilter').on('change', filterIncidents);
 </script>

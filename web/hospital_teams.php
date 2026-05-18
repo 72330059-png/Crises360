@@ -21,7 +21,7 @@ $mission_teams = $hospital->onMissionTeams($hospital_id);
 $support_teams = $hospital->teamsNeedingSupport($hospital_id);
 $teams = $hospital->getHospitalTeams($hospital_id);
 ?>
-
+<!--  -->
 <!DOCTYPE html>
 <html lang="en">
 
