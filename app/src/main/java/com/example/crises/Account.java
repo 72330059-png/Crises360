@@ -2,6 +2,7 @@ package com.example.crises;
 
 import android.app.DatePickerDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
@@ -30,6 +31,8 @@ public class Account extends AppCompatActivity {
     String username;
     String mode;
 
+    SharedPreferences prefs; // ✅ ADDED
+
     String GET_URL = "http://10.0.2.2/crises_api/get_members.php";
     String UPDATE_URL = "http://10.0.2.2/crises_api/update_member.php";
     String ADD_URL = "http://10.0.2.2/crises_api/add_members.php";
@@ -44,6 +47,9 @@ public class Account extends AppCompatActivity {
         setContentView(R.layout.activity_account);
 
         queue = Volley.newRequestQueue(this);
+
+        // ✅ SharedPreferences INIT
+        prefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
 
         username = getIntent().getStringExtra("username");
         mode = getIntent().getStringExtra("mode");
@@ -117,11 +123,14 @@ public class Account extends AppCompatActivity {
 
                                         clipboard.setPrimaryClip(clip);
 
-                                        android.widget.Toast.makeText(this,
+                                        Toast.makeText(this,
                                                 "Password copied",
-                                                android.widget.Toast.LENGTH_SHORT).show();
+                                                Toast.LENGTH_SHORT).show();
                                     })
                                     .setPositiveButton("Continue", (dialog, which) -> {
+
+                                        // ✅ MARK PROFILE COMPLETE
+                                        prefs.edit().putBoolean("isProfileComplete", true).apply();
 
                                         dialog.dismiss();
 
@@ -129,7 +138,6 @@ public class Account extends AppCompatActivity {
                                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                                         startActivity(intent);
                                     })
-
                                     .show();
 
                         } else {
@@ -170,12 +178,16 @@ public class Account extends AppCompatActivity {
         queue.add(request);
     }
 
-    // ---------------- UPDATE PROFILE ----------------
+    // ---------------- UPDATE ----------------
     private void updateData() {
 
         StringRequest request = new StringRequest(Request.Method.POST, UPDATE_URL,
                 response -> {
                     if (response.trim().equals("success")) {
+
+                        // ✅ MARK PROFILE COMPLETE
+                        prefs.edit().putBoolean("isProfileComplete", true).apply();
+
                         Toast.makeText(this, "Updated", Toast.LENGTH_SHORT).show();
                     } else {
                         Toast.makeText(this, "Failed", Toast.LENGTH_SHORT).show();

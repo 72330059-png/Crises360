@@ -20,7 +20,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 
-public class HomeActivity extends AppCompatActivity {
+public class HomeActivity extends BaseActivity {
 
     String username;
     CardView quickCall;
@@ -36,6 +36,7 @@ public class HomeActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
+        if (!checkProfileCompletion()) return;
         setContentView(R.layout.activity_home);
 
         // 🔥 GET USERNAME (SAFE METHOD)

@@ -34,7 +34,6 @@ public class Login extends AppCompatActivity {
         btnLogin = findViewById(R.id.btnLogin);
         btnRegister = findViewById(R.id.btnRegister);
 
-
         btnLogin.setOnClickListener(v -> {
 
             String username = etUser.getText().toString().trim();
@@ -78,20 +77,41 @@ public class Login extends AppCompatActivity {
 
                                 int userId = json.getInt("user_id");
 
-                                SharedPreferences prefs = getSharedPreferences("user", MODE_PRIVATE);
-                                prefs.edit()
+                                // ✅ Save login session
+                                SharedPreferences userPrefs = getSharedPreferences("user", MODE_PRIVATE);
+                                userPrefs.edit()
                                         .putInt("user_id", userId)
                                         .apply();
 
+                                // ✅ Check profile completion flag
+                                SharedPreferences profilePrefs =
+                                        getSharedPreferences("user_prefs", MODE_PRIVATE);
+
+                                boolean isComplete =
+                                        profilePrefs.getBoolean("isProfileComplete", false);
+
                                 Toast.makeText(this, "Login Successful", Toast.LENGTH_SHORT).show();
 
+                                if (isComplete) {
 
-                                Intent intent = new Intent(Login.this, HomeActivity.class);
-                                intent.putExtra("username", username);
-                                startActivity(intent);
+                                    // 🔥 GO TO HOME
+                                    Intent intent = new Intent(Login.this, HomeActivity.class);
+                                    intent.putExtra("username", username);
+                                    startActivity(intent);
+
+                                } else {
+
+                                    // 🆕 FORCE PROFILE COMPLETION
+                                    Intent intent = new Intent(Login.this, Account.class);
+                                    intent.putExtra("mode", "register");
+                                    intent.putExtra("username", username);
+                                    startActivity(intent);
+                                }
+
                                 finish();
 
                             } else {
+
                                 Toast.makeText(this,
                                         json.getString("message"),
                                         Toast.LENGTH_SHORT).show();
@@ -104,17 +124,17 @@ public class Login extends AppCompatActivity {
 
                 } catch (Exception e) {
                     runOnUiThread(() ->
-                            Toast.makeText(this, "Server error: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this,
+                                    "Server error: " + e.getMessage(),
+                                    Toast.LENGTH_SHORT).show()
                     );
                 }
             }).start();
         });
 
         btnRegister.setOnClickListener(v -> {
-
             Intent intent = new Intent(Login.this, Account.class);
             intent.putExtra("mode", "register");
-
             startActivity(intent);
         });
     }

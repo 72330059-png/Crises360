@@ -31,7 +31,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-public class Alerts extends AppCompatActivity {
+public class Alerts extends BaseActivity {
 
     RecyclerView recyclerView;
     ArrayList<AlertModel> list;
@@ -50,6 +50,7 @@ public class Alerts extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         EdgeToEdge.enable(this);
+        if (!checkProfileCompletion()) return;
         setContentView(R.layout.activity_alerts);
 
         View mainView = findViewById(R.id.main);

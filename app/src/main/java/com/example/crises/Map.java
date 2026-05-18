@@ -10,7 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-public class Map extends AppCompatActivity {
+public class Map extends BaseActivity {
 
     WebView webView;
     BottomNavigationView bottomNavigation;
@@ -18,16 +18,16 @@ public class Map extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_map); // your XML file
+        if (!checkProfileCompletion()) return;
+        setContentView(R.layout.activity_map);
 
-        // 📍 WebView setup
         webView = findViewById(R.id.webview);
 
         WebSettings settings = webView.getSettings();
-        settings.setJavaScriptEnabled(true);      // IMPORTANT for Leaflet
-        settings.setDomStorageEnabled(true);      // important for map storage
+        settings.setJavaScriptEnabled(true);
+        settings.setDomStorageEnabled(true);
 
-        webView.setWebViewClient(new WebViewClient()); // open inside app
+        webView.setWebViewClient(new WebViewClient());
 
         // Load your map
         webView.loadUrl("file:///android_asset/map.html");

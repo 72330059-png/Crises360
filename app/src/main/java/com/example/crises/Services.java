@@ -13,7 +13,7 @@ import androidx.cardview.widget.CardView;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-public class Services extends AppCompatActivity {
+public class Services extends BaseActivity {
 
     CardView  sheltersCard, sosCard, cardHospitals, cardNeeds;
     LinearLayout shelterOptions;
@@ -22,6 +22,7 @@ public class Services extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (!checkProfileCompletion()) return;
         setContentView(R.layout.activity_services);
 
         initHospitals();
