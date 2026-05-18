@@ -14,32 +14,32 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <!-- NAME -->
+        <!-- NEED NAME -->
         <TextView
+            android:id="@+id/need_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/name"
-            android:text="Service Name"
+            android:text="Water Bottles"
             android:textStyle="bold"
             android:textSize="16sp"
             android:textColor="#1E2A38"/>
 
-        <!-- LOCATION -->
+        <!-- ORGANIZATION + LOCATION -->
         <TextView
+            android:id="@+id/location"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/location"
-            android:text="Beirut - Hamra"
+            android:text="Red Cross - Beirut"
             android:textSize="13sp"
             android:textColor="#666"
             android:layout_marginTop="4dp"/>
 
-        <!-- TYPE -->
+        <!-- CATEGORY -->
         <TextView
+            android:id="@+id/category"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/type"
-            android:text="Supermarket"
+            android:text="Supplies"
             android:textSize="12sp"
             android:textStyle="bold"
             android:layout_marginTop="6dp"
@@ -47,24 +47,34 @@
 
         <!-- STATUS -->
         <TextView
+            android:id="@+id/status"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/status"
-            android:text="OPEN"
+            android:text="Pending"
             android:textSize="12sp"
             android:textStyle="bold"
             android:layout_marginTop="4dp"
             android:textColor="#2E7D32"/>
 
-        <!-- AVAILABILITY -->
+        <!-- QUANTITY -->
         <TextView
+            android:id="@+id/quantity"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/availability"
-            android:text="Available"
+            android:text="Quantity: 100"
             android:textSize="12sp"
             android:layout_marginTop="4dp"
             android:textColor="#444"/>
+
+        <!-- PRIORITY -->
+        <TextView
+            android:id="@+id/priority"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Priority: High"
+            android:textSize="12sp"
+            android:layout_marginTop="4dp"
+            android:textColor="#D32F2F"/>
 
     </LinearLayout>
 

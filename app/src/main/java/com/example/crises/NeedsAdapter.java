@@ -21,16 +21,17 @@ public class NeedsAdapter extends RecyclerView.Adapter<NeedsAdapter.ViewHolder> 
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
-        TextView name, location, type, status, availability;
+        TextView need_name, location, category, status, quantity, priority;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
 
-            name = itemView.findViewById(R.id.name);
+            need_name = itemView.findViewById(R.id.need_name);
             location = itemView.findViewById(R.id.location);
-            type = itemView.findViewById(R.id.type);
+            category = itemView.findViewById(R.id.category);
             status = itemView.findViewById(R.id.status);
-            availability = itemView.findViewById(R.id.availability);
+            quantity = itemView.findViewById(R.id.quantity);
+            priority = itemView.findViewById(R.id.priority);
         }
     }
 
@@ -47,29 +48,34 @@ public class NeedsAdapter extends RecyclerView.Adapter<NeedsAdapter.ViewHolder> 
 
         Need need = list.get(position);
 
-        holder.name.setText(need.getName());
+        holder.need_name.setText(need.getName());
         holder.location.setText(need.getLocation());
-        holder.type.setText(need.getType());
+        holder.category.setText(need.getCategory());
         holder.status.setText(need.getStatus());
-        holder.availability.setText(need.getAvailability());
+        holder.quantity.setText("Quantity: " + need.getQuantity());
+        holder.priority.setText("Priority: " + need.getPriority());
 
-
-        if (need.getStatus().equalsIgnoreCase("OPEN")) {
-            holder.status.setTextColor(Color.parseColor("#2E7D32"));
+        // STATUS COLOR
+        if (need.getStatus() != null &&
+                need.getStatus().equalsIgnoreCase("Pending")) {
+            holder.status.setTextColor(Color.parseColor("#FF9800"));
         } else {
-            holder.status.setTextColor(Color.RED);
+            holder.status.setTextColor(Color.parseColor("#2E7D32"));
         }
 
-
-        switch (need.getAvailability().toLowerCase()) {
-            case "available":
-                holder.availability.setTextColor(Color.parseColor("#2E7D32"));
-                break;
-            case "limited":
-                holder.availability.setTextColor(Color.parseColor("#FF9800"));
-                break;
-            default:
-                holder.availability.setTextColor(Color.RED);
+        // PRIORITY COLOR
+        if (need.getPriority() != null) {
+            switch (need.getPriority().toLowerCase()) {
+                case "high":
+                    holder.priority.setTextColor(Color.RED);
+                    break;
+                case "medium":
+                    holder.priority.setTextColor(Color.parseColor("#FF9800"));
+                    break;
+                default:
+                    holder.priority.setTextColor(Color.parseColor("#2E7D32"));
+                    break;
+            }
         }
     }
 
