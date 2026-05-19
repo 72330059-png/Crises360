@@ -22,14 +22,15 @@ public class MainActivity extends AppCompatActivity {
         ImageView bg = findViewById(R.id.backgroundImage);
         if (bg != null) {
             Glide.with(this)
-                    .load(R.drawable.logo2)
-                    .override(800, 800)
+                    .load(R.drawable.background)
+                    .centerCrop()
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
                     .into(bg);
         }
 
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
             if (!isFinishing()) {
-                startActivity(new Intent(MainActivity.this, Login.class));
+                startActivity(new Intent(MainActivity.this, StartingActivity.class));
                 finish();
             }
         }, 2000);

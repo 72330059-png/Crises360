@@ -4,13 +4,13 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#DDE6ED">
+    android:background="#FFFFFF">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/topAppBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#DDE6ED"
+        android:background="#FFFFFF"
         app:elevation="0dp">
 
         <RelativeLayout
@@ -19,6 +19,7 @@
             android:paddingHorizontal="20dp"
             android:paddingVertical="18dp">
 
+            <!-- FIXED BRAND TEXT -->
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -30,8 +31,8 @@
                     android:id="@+id/appBrandName"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Crises360"
-                    android:textColor="#27374D"
+                    android:text="Hello, Ali..."
+                    android:textColor="#1D2A44"
                     android:textSize="22sp"
                     android:textStyle="bold" />
             </LinearLayout>
@@ -53,7 +54,7 @@
                     android:padding="8dp"
                     android:scaleType="fitCenter"
                     android:src="@drawable/tips"
-                    app:tint="#27374D" />
+                    app:tint="#1D2A44" />
 
                 <ImageButton
                     android:id="@+id/settingsBtn"
@@ -63,17 +64,18 @@
                     android:padding="8dp"
                     android:scaleType="fitCenter"
                     android:src="@drawable/setting"
-                    app:tint="#27374D" />
+                    app:tint="#1D2A44" />
             </LinearLayout>
         </RelativeLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
-    <!-- Scroll Content -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@id/bottomNavigation"
-        android:layout_below="@id/topAppBar">
+        android:layout_below="@id/topAppBar"
+        android:clipToPadding="false"
+        android:scrollbars="none">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -81,157 +83,138 @@
             android:orientation="vertical"
             android:padding="20dp">
 
-            <!-- ✅ Quick Emergency Call (TOP) -->
-            <androidx.cardview.widget.CardView
-                android:id="@+id/btnQuickCall"
-                android:layout_width="match_parent"
-                android:layout_height="80dp"
-                android:layout_marginBottom="16dp"
-                android:clickable="true"
-                android:focusable="true"
-                android:foreground="?attr/selectableItemBackground"
-                app:cardBackgroundColor="#FFFFFF"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="4dp">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center_vertical"
-                    android:paddingStart="20dp"
-                    android:paddingEnd="20dp"
-                    android:text="⚡ Quick Emergency Call"
-                    android:textColor="#27374D"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
-            </androidx.cardview.widget.CardView>
-
-            <!-- Guides -->
             <TextView
+                android:id="@+id/welcomeTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="10dp"
-                android:text="📘 Guides"
-                android:textColor="#526D82"
-                android:textSize="18sp"
+                android:text="Hello, Ali"
+                android:textColor="#1D2A44"
+                android:textSize="28sp"
                 android:textStyle="bold" />
 
+            <!-- SAFE CARD FIXED -->
             <androidx.cardview.widget.CardView
-                android:id="@+id/guideCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                android:clickable="true"
-                android:focusable="true"
-                android:foreground="?android:attr/selectableItemBackground"
-                app:cardCornerRadius="18dp"
-                app:cardElevation="4dp">
+                android:layout_marginBottom="16dp"
+                app:cardBackgroundColor="#F4FAF7"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp">
 
-                <LinearLayout
+                <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
                     android:padding="16dp">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="All-in-One Survival Guide"
-                        android:textColor="#27374D"
-                        android:textSize="16sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="View PDF Guide (Instructions &amp; Safety)"
-                        android:textColor="#526D82" />
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-            <!-- News -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                android:text="📰 Latest News"
-                android:textColor="#526D82"
-                android:textSize="18sp"
-                android:textStyle="bold" />
-
-            <androidx.cardview.widget.CardView
-                android:id="@+id/newsCard"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:clickable="true"
-                android:focusable="true"
-                android:foreground="?android:attr/selectableItemBackground"
-                app:cardBackgroundColor="#FFFFFF"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="4dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
                     <ImageView
-                        android:id="@+id/newsImage"
-                        android:layout_width="match_parent"
-                        android:layout_height="140dp"
-                        android:scaleType="centerCrop"
-                        android:src="@drawable/news" />
+                        android:id="@+id/shieldIcon"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_alignParentStart="true"
+                        android:layout_centerVertical="true"
+                        android:src="@android:drawable/ic_dialog_info"
+                        android:tint="#10B981" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="16dp">
-
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="New Safety Guidelines"
-                            android:textColor="#27374D"
-                            android:textSize="17sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:text="Important updates on emergency services and local shelter availability..."
-                            android:textColor="#526D82"
-                            android:textSize="14sp" />
+                        android:layout_centerVertical="true"
+                        android:layout_marginStart="14dp"
+                        android:layout_toEndOf="@id/shieldIcon"
+                        android:orientation="vertical">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="10dp"
-                            android:text="READ FULL STORY →"
-                            android:textColor="#219EBC"
-                            android:textSize="12sp"
+                            android:text="Your Safety Status"
+                            android:textColor="#475467"
+                            android:textSize="13sp"
                             android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="You are Safe"
+                            android:textColor="#10B981"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:text="Last updated: Today, 9:30 AM"
+                            android:textColor="#98A2B3"
+                            android:textSize="11sp" />
                     </LinearLayout>
-                </LinearLayout>
+                </RelativeLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- SOS CARD FIXED -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
+                app:cardBackgroundColor="#FFF5F5"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="14dp">
+
+                    <ImageView
+                        android:id="@+id/phoneIcon"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_alignParentStart="true"
+                        android:layout_centerVertical="true"
+                        android:src="@android:drawable/stat_sys_phone_call"
+                        android:tint="#FE5F55" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:layout_marginStart="12dp"
+                        android:layout_toEndOf="@id/phoneIcon"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Need help now?"
+                            android:textColor="#1D2A44"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Contact emergency services."
+                            android:textColor="#667085"
+                            android:textSize="13sp" />
+                    </LinearLayout>
+
+                    <Button
+                        android:id="@+id/sosButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="40dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:backgroundTint="#FE5F55"
+                        android:minWidth="75dp"
+                        android:paddingHorizontal="16dp"
+                        android:text="SOS"
+                        android:textColor="#FFFFFF"
+                        android:textStyle="bold"
+                        app:cornerRadius="12dp" />
+                </RelativeLayout>
             </androidx.cardview.widget.CardView>
 
         </LinearLayout>
     </ScrollView>
-
-    <!-- Bottom Navigation -->
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottomNavigation"
-        android:layout_width="match_parent"
-        android:layout_height="75dp"
-        android:layout_alignParentBottom="true"
-        android:background="@drawable/footer_background"
-        app:elevation="12dp"
-        app:itemIconTint="#526D82"
-        app:itemTextColor="#526D82"
-        app:labelVisibilityMode="labeled"
-        app:menu="@menu/bottom_nav_menu" />
 
 </RelativeLayout>
