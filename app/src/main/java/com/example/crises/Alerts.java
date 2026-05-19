@@ -3,21 +3,9 @@ package com.example.crises;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.view.View;
 
 import androidx.activity.EdgeToEdge;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
-
-import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -26,6 +14,7 @@ import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.tabs.TabLayout;
 
 import org.json.JSONObject;
 
@@ -34,9 +23,12 @@ import java.util.ArrayList;
 public class Alerts extends BaseActivity {
 
     RecyclerView recyclerView;
-    ArrayList<AlertModel> list;
+    ArrayList<AlertModel> fullList = new ArrayList<>();
+    ArrayList<AlertModel> filteredList = new ArrayList<>();
     AlertsAdapter adapter;
+
     BottomNavigationView bottomNav;
+    TabLayout tabLayout;
 
     @Override
     protected void attachBaseContext(Context newBase) {
@@ -51,42 +43,30 @@ public class Alerts extends BaseActivity {
 
         EdgeToEdge.enable(this);
         if (!checkProfileCompletion()) return;
-        setContentView(R.layout.activity_alerts);
 
-        View mainView = findViewById(R.id.main);
-        if (mainView != null) {
-            ViewCompat.setOnApplyWindowInsetsListener(mainView, (v, insets) -> {
-                Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-                v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-                return insets;
-            });
-        }
+        setContentView(R.layout.activity_alerts);
 
         recyclerView = findViewById(R.id.recyclerAlerts);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        list = new ArrayList<>();
+        adapter = new AlertsAdapter(filteredList);
+        recyclerView.setAdapter(adapter);
 
-        loadAlertsFromServer();
-
-        initSwipe();
+        initTabFilters();          // ✅ MUST come before loading data
         initBottomNavigation();
+
+        loadAlertsFromServer();    // ✅ safe now
     }
 
-
     private void loadAlertsFromServer() {
-
         String url = "http://10.0.2.2/crises_api/get_alerts.php?user_id=" + getUserId();
 
         JsonArrayRequest request = new JsonArrayRequest(Request.Method.GET, url, null,
                 response -> {
-
                     try {
-
-                        list.clear();
+                        fullList.clear();
 
                         for (int i = 0; i < response.length(); i++) {
-
                             JSONObject obj = response.getJSONObject(i);
 
                             int id = obj.getInt("id");
@@ -95,16 +75,19 @@ public class Alerts extends BaseActivity {
                             String time = obj.getString("time");
                             String severity = obj.getString("severity");
 
-                            list.add(new AlertModel(id, severity, message, location, time));
+                            fullList.add(new AlertModel(id, severity, message, location, time));
                         }
 
-                        adapter = new AlertsAdapter(list);
-                        recyclerView.setAdapter(adapter);
+                        // ✅ SAFE fallback if tabLayout not ready
+                        int position = (tabLayout != null)
+                                ? tabLayout.getSelectedTabPosition()
+                                : 0;
+
+                        filterList(position);
 
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-
                 },
                 error -> error.printStackTrace()
         );
@@ -112,79 +95,59 @@ public class Alerts extends BaseActivity {
         RequestQueue queue = Volley.newRequestQueue(this);
         queue.add(request);
     }
+
+    private void initTabFilters() {
+        tabLayout = findViewById(R.id.tabFilters);
+
+        // Default tab = "All Alerts"
+        TabLayout.Tab defaultTab = tabLayout.getTabAt(0);
+        if (defaultTab != null) defaultTab.select();
+
+        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                filterList(tab.getPosition());
+            }
+
+            @Override public void onTabUnselected(TabLayout.Tab tab) {}
+            @Override public void onTabReselected(TabLayout.Tab tab) {}
+        });
+    }
+
+    private void filterList(int position) {
+        filteredList.clear();
+
+        if (position == 0) {
+            filteredList.addAll(fullList);
+        }
+        else if (position == 1) {
+            for (AlertModel alert : fullList) {
+                if ("Warning".equalsIgnoreCase(alert.getSeverity())) {
+                    filteredList.add(alert);
+                }
+            }
+        }
+        else if (position == 2) {
+            for (AlertModel alert : fullList) {
+                if ("Update".equalsIgnoreCase(alert.getSeverity())) {
+                    filteredList.add(alert);
+                }
+            }
+        }
+
+        adapter.notifyDataSetChanged();
+    }
+
     private String getUserId() {
         SharedPreferences prefs = getSharedPreferences("user", MODE_PRIVATE);
         return String.valueOf(prefs.getInt("user_id", -1));
     }
-    private void initSwipe() {
-
-        ItemTouchHelper.SimpleCallback swipe = new ItemTouchHelper.SimpleCallback(0,
-                ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
-
-            @Override
-            public boolean onMove(RecyclerView recyclerView,
-                                  RecyclerView.ViewHolder viewHolder,
-                                  RecyclerView.ViewHolder target) {
-                return false;
-            }
-
-            @Override
-            public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
-
-                int position = viewHolder.getAdapterPosition();
-
-                // ⚠️ UI remove only (DB update later)
-                list.remove(position);
-                adapter.notifyItemRemoved(position);
-            }
-
-            @Override
-            public void onChildDraw(Canvas c, RecyclerView recyclerView,
-                                    RecyclerView.ViewHolder viewHolder,
-                                    float dX, float dY,
-                                    int actionState, boolean isCurrentlyActive) {
-
-                View itemView = viewHolder.itemView;
-                Paint paint = new Paint();
-
-                if (dX > 0) {
-
-                    paint.setColor(Color.parseColor("#FF3B30"));
-                    c.drawRect(
-                            itemView.getLeft(),
-                            itemView.getTop(),
-                            itemView.getLeft() + dX,
-                            itemView.getBottom(),
-                            paint
-                    );
-
-                } else {
-
-                    paint.setColor(Color.parseColor("#007AFF"));
-                    c.drawRect(
-                            itemView.getRight() + dX,
-                            itemView.getTop(),
-                            itemView.getRight(),
-                            itemView.getBottom(),
-                            paint
-                    );
-                }
-
-                super.onChildDraw(c, recyclerView, viewHolder,
-                        dX, dY, actionState, isCurrentlyActive);
-            }
-        };
-
-        new ItemTouchHelper(swipe).attachToRecyclerView(recyclerView);
-    }
 
     private void initBottomNavigation() {
-
         bottomNav = findViewById(R.id.bottomNavigation);
         bottomNav.setSelectedItemId(R.id.nav_alerts);
 
         bottomNav.setOnItemSelectedListener(item -> {
-
             int id = item.getItemId();
 
             if (id == R.id.nav_alerts) return true;
@@ -193,8 +156,6 @@ public class Alerts extends BaseActivity {
                 startActivity(new Intent(this, HomeActivity.class));
             } else if (id == R.id.nav_map) {
                 startActivity(new Intent(this, Map.class));
-            } else if (id == R.id.nav_service) {
-                startActivity(new Intent(this, Services.class));
             } else if (id == R.id.nav_profile) {
                 startActivity(new Intent(this, Account.class));
             }

@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
@@ -23,7 +24,7 @@ import java.io.InputStream;
 public class HomeActivity extends BaseActivity {
 
     String username;
-    CardView quickCall;
+    Button quickCall;
 
     @Override
     protected void attachBaseContext(Context newBase) {
@@ -54,7 +55,6 @@ public class HomeActivity extends BaseActivity {
 
         initQuickCall();
         initTopAppBar();
-        initGuidesSection();
         initNewsSection();
         initBottomNavigation();
     }
@@ -77,47 +77,6 @@ public class HomeActivity extends BaseActivity {
     }
 
     // ---------------- GUIDE PDF ----------------
-    private void initGuidesSection() {
-
-        CardView guideCard = findViewById(R.id.guideCard);
-        if (guideCard == null) return;
-
-        guideCard.setOnClickListener(v -> {
-
-            try {
-                File file = new File(getCacheDir(), "Emergency.pdf");
-
-                if (!file.exists()) {
-                    InputStream is = getAssets().open("Emergency.pdf");
-                    FileOutputStream os = new FileOutputStream(file);
-
-                    byte[] buffer = new byte[1024];
-                    int length;
-
-                    while ((length = is.read(buffer)) > 0) {
-                        os.write(buffer, 0, length);
-                    }
-
-                    os.close();
-                    is.close();
-                }
-
-                Uri uri = FileProvider.getUriForFile(
-                        this,
-                        getPackageName() + ".provider",
-                        file
-                );
-
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.setDataAndType(uri, "application/pdf");
-                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                startActivity(intent);
-
-            } catch (Exception e) {
-                Toast.makeText(this, "Error opening PDF", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
 
     // ---------------- NEWS ----------------
     private void initNewsSection() {
@@ -132,7 +91,7 @@ public class HomeActivity extends BaseActivity {
     // ---------------- QUICK CALL ----------------
     private void initQuickCall() {
 
-        quickCall = findViewById(R.id.btnQuickCall);
+        quickCall = findViewById(R.id.sosButton);
 
         quickCall.setOnClickListener(v -> {
 
@@ -185,9 +144,6 @@ public class HomeActivity extends BaseActivity {
 
             } else if (id == R.id.nav_map) {
                 intent = new Intent(this, Map.class);
-
-            } else if (id == R.id.nav_service) {
-                intent = new Intent(this, Services.class);
 
             } else if (id == R.id.nav_profile) {
 
