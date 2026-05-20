@@ -2,25 +2,21 @@ package com.example.crises;
 
 public class Newsss {
 
-    String title, description, source, location, type, pubDate, severity;
+    String title, content, category, type, publishDate;
 
-    public Newsss(String title, String description, String source,
-                  String location, String type, String pubDate, String severity) {
+    public Newsss(String title, String content, String category,
+                  String type, String publishDate) {
 
         this.title = title;
-        this.description = description;
-        this.source = source;
-        this.location = location;
+        this.content = content;
+        this.category = category;
         this.type = type;
-        this.pubDate = pubDate;
-        this.severity = severity;
+        this.publishDate = publishDate;
     }
 
     public String getTitle() { return title; }
-    public String getDescription() { return description; }
-    public String getSource() { return source; }
-    public String getLocation() { return location; }
+    public String getContent() { return content; }
+    public String getCategory() { return category; }
     public String getType() { return type; }
-    public String getPubDate() { return pubDate; }
-    public String getSeverity() { return severity; }
+    public String getPublishDate() { return publishDate; }
 }

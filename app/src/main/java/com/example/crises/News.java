@@ -42,7 +42,6 @@ public class News extends AppCompatActivity {
         new Thread(() -> {
 
             try {
-
                 URL url = new URL("http://10.0.2.2/crises_api/get_news.php");
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("GET");
@@ -70,19 +69,17 @@ public class News extends AppCompatActivity {
 
                     list.add(new Newsss(
                             obj.optString("title"),
-                            obj.optString("description"),
-                            obj.optString("source"),
-                            obj.optString("location"),
-                            obj.optString("type"),
-                            obj.optString("pubDate"),
-                            obj.optString("severity")
+                            obj.optString("content"),        // FIXED
+                            obj.optString("category"),       // FIXED
+                            obj.optString("type"),           // OK
+                            obj.optString("publish_date")    // FIXED
                     ));
                 }
 
                 runOnUiThread(() -> adapter.notifyDataSetChanged());
 
             } catch (Exception e) {
-                Log.e("NEWS_ERROR", e.getMessage());
+                Log.e("NEWS_ERROR", e.toString());
             }
         }).start();
     }

@@ -1,11 +1,10 @@
 package com.example.crises;
 
-import android.content.Intent;
 import android.graphics.Color;
-import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -21,20 +20,20 @@ public class PublicShelterAdapter extends RecyclerView.Adapter<PublicShelterAdap
         this.list = list;
     }
 
+    // VIEW HOLDER
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
-        TextView name, location, status, capacity, rooms, call, details;
+        TextView shelter_name, location, status, available;
+        ImageView icon;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
 
-            name = itemView.findViewById(R.id.name);
+            shelter_name = itemView.findViewById(R.id.shelter_name);
             location = itemView.findViewById(R.id.location);
             status = itemView.findViewById(R.id.status);
-            capacity = itemView.findViewById(R.id.capacity);
-            rooms = itemView.findViewById(R.id.rooms);
-            call = itemView.findViewById(R.id.call);
-            details = itemView.findViewById(R.id.details);
+            available = itemView.findViewById(R.id.available);
+            icon = itemView.findViewById(R.id.shelter_icon);
         }
     }
 
@@ -53,35 +52,42 @@ public class PublicShelterAdapter extends RecyclerView.Adapter<PublicShelterAdap
 
         PublicShelter s = list.get(position);
 
-
-        holder.name.setText(s.getName());
+        // BASIC DATA
+        holder.shelter_name.setText(s.getShelterName());
         holder.location.setText("📍 " + s.getLocation());
-        holder.capacity.setText("👥 " + s.getCurrent() + " / " + s.getCapacity());
-        holder.rooms.setText("🛏 " + s.getEmptyRooms() + " empty rooms");
-        holder.status.setText(s.getStatus());
+        holder.available.setText("Free: " + s.getAvailable());
 
+        // SAFE STATUS
+        String status = (s.getStatus() == null) ? "" : s.getStatus().toLowerCase().trim();
 
-        if (s.getStatus().equalsIgnoreCase("Available")) {
-            holder.status.setBackgroundColor(Color.parseColor("#4CAF50")); // Green
-        } else if (s.getStatus().equalsIgnoreCase("Full")) {
-            holder.status.setBackgroundColor(Color.RED);
-        } else {
-            holder.status.setBackgroundColor(Color.parseColor("#FFA000")); // Orange
+        // RESET DEFAULT ICON FIRST
+        holder.icon.setImageResource(R.drawable.ic_shelter_open);
+
+        if (status.contains("full") && !status.contains("near")) {
+
+            // 🔴 FULL
+            holder.status.setText("FULL");
+            holder.status.setBackgroundColor(Color.parseColor("#F44336"));
+            holder.icon.setImageResource(R.drawable.ic_shelter_full);
+
+        }
+        else if (status.contains("near") || status.contains("almost") || status.contains("limited")) {
+
+            // 🟠 NEAR FULL
+            holder.status.setText("NEAR-FULL");
+            holder.status.setBackgroundColor(Color.parseColor("#FF9800"));
+            holder.icon.setImageResource(R.drawable.ic_shelter_near);
+
+        }
+        else {
+
+            // 🟢 OPEN
+            holder.status.setText("OPEN");
+            holder.status.setBackgroundColor(Color.parseColor("#4CAF50"));
+            holder.icon.setImageResource(R.drawable.ic_shelter_open);
         }
 
-
-        holder.call.setOnClickListener(v -> {
-            Intent intent = new Intent(Intent.ACTION_DIAL);
-            intent.setData(Uri.parse("tel:" + s.getPhone()));
-            v.getContext().startActivity(intent);
-        });
-
-
-        holder.details.setOnClickListener(v -> {
-
-          //  Intent i = new Intent(v.getContext(), ShelterDetails.class);
-
-        });
+        holder.status.setTextColor(Color.WHITE);
     }
 
     @Override

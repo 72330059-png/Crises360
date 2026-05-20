@@ -31,13 +31,16 @@ public class Account extends AppCompatActivity {
     String username;
     String mode;
 
-    SharedPreferences prefs; // ✅ ADDED
+    SharedPreferences prefs;
 
     String GET_URL = "http://10.0.2.2/crises_api/get_members.php";
     String UPDATE_URL = "http://10.0.2.2/crises_api/update_member.php";
     String ADD_URL = "http://10.0.2.2/crises_api/add_members.php";
 
+    // ✅ FIXED: username/password are EditText (user input)
     EditText etName, etId, etPhone, etDob, etFather, etMother, etCountry, etPlace;
+    EditText etUsername, etPassword;
+
     AutoCompleteTextView spGender, spStatus, spBlood;
 
     @Override
@@ -48,8 +51,8 @@ public class Account extends AppCompatActivity {
 
         queue = Volley.newRequestQueue(this);
 
-        // ✅ SharedPreferences INIT
-        prefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
+        // ✅ SAME SESSION AS LOGIN + SPLASH
+        prefs = getSharedPreferences("user_session", MODE_PRIVATE);
 
         username = getIntent().getStringExtra("username");
         mode = getIntent().getStringExtra("mode");
@@ -66,18 +69,17 @@ public class Account extends AppCompatActivity {
         }
 
         findViewById(R.id.btnSave).setOnClickListener(v -> {
-
             if ("register".equals(mode)) {
                 addMember();
             } else {
                 updateData();
             }
-
         });
     }
 
     // ---------------- INIT ----------------
     private void initViews() {
+
         etName = findViewById(R.id.etName);
         etId = findViewById(R.id.etId);
         etPhone = findViewById(R.id.etPhone);
@@ -86,6 +88,10 @@ public class Account extends AppCompatActivity {
         etMother = findViewById(R.id.etMother);
         etCountry = findViewById(R.id.etCountry);
         etPlace = findViewById(R.id.etPlace);
+
+        // ✅ LOGIN INPUT FIELDS
+        etUsername = findViewById(R.id.etUsername);
+        etPassword = findViewById(R.id.etPassword);
 
         spGender = findViewById(R.id.spGender);
         spStatus = findViewById(R.id.spStatus);
@@ -109,30 +115,16 @@ public class Account extends AppCompatActivity {
                             new androidx.appcompat.app.AlertDialog.Builder(Account.this)
                                     .setTitle("Success")
                                     .setMessage(
-                                            "Member Created Successfully!\n\n" +
+                                            "Account Created!\n\n" +
                                                     "Username: " + username + "\n" +
                                                     "Password: " + password
                                     )
-                                    .setNeutralButton("Copy Password", (d, w) -> {
-
-                                        android.content.ClipboardManager clipboard =
-                                                (android.content.ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-
-                                        android.content.ClipData clip =
-                                                android.content.ClipData.newPlainText("password", password);
-
-                                        clipboard.setPrimaryClip(clip);
-
-                                        Toast.makeText(this,
-                                                "Password copied",
-                                                Toast.LENGTH_SHORT).show();
-                                    })
                                     .setPositiveButton("Continue", (dialog, which) -> {
 
-                                        // ✅ MARK PROFILE COMPLETE
-                                        prefs.edit().putBoolean("isProfileComplete", true).apply();
-
-                                        dialog.dismiss();
+                                        prefs.edit()
+                                                .putBoolean("isLoggedIn", true)
+                                                .putBoolean("isProfileComplete", true)
+                                                .apply();
 
                                         Intent intent = new Intent(Account.this, HomeActivity.class);
                                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -141,18 +133,14 @@ public class Account extends AppCompatActivity {
                                     .show();
 
                         } else {
-                            Toast.makeText(this,
-                                    obj.getString("message"),
-                                    Toast.LENGTH_SHORT).show();
+                            Toast.makeText(this, obj.getString("message"), Toast.LENGTH_SHORT).show();
                         }
 
                     } catch (Exception e) {
                         Toast.makeText(this, "Parse Error", Toast.LENGTH_SHORT).show();
                     }
                 },
-                error -> Toast.makeText(this,
-                        "Network Error: " + error.getMessage(),
-                        Toast.LENGTH_LONG).show()
+                error -> Toast.makeText(this, "Network Error", Toast.LENGTH_SHORT).show()
         ) {
             @Override
             protected Map<String, String> getParams() {
@@ -171,6 +159,10 @@ public class Account extends AppCompatActivity {
                 map.put("country", etCountry.getText().toString().trim());
                 map.put("place_of_birth", etPlace.getText().toString().trim());
 
+                // ✅ USER INPUT LOGIN DATA
+                map.put("username", etUsername.getText().toString().trim());
+                map.put("password", etPassword.getText().toString().trim());
+
                 return map;
             }
         };
@@ -183,19 +175,24 @@ public class Account extends AppCompatActivity {
 
         StringRequest request = new StringRequest(Request.Method.POST, UPDATE_URL,
                 response -> {
+
                     if (response.trim().equals("success")) {
 
-                        // ✅ MARK PROFILE COMPLETE
-                        prefs.edit().putBoolean("isProfileComplete", true).apply();
+                        prefs.edit()
+                                .putBoolean("isProfileComplete", true)
+                                .apply();
 
                         Toast.makeText(this, "Updated", Toast.LENGTH_SHORT).show();
+
+                        Intent intent = new Intent(Account.this, HomeActivity.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
+
                     } else {
                         Toast.makeText(this, "Failed", Toast.LENGTH_SHORT).show();
                     }
                 },
-                error -> Toast.makeText(this,
-                        "Network Error",
-                        Toast.LENGTH_SHORT).show()
+                error -> Toast.makeText(this, "Network Error", Toast.LENGTH_SHORT).show()
         ) {
             @Override
             protected Map<String, String> getParams() {
@@ -251,11 +248,11 @@ public class Account extends AppCompatActivity {
                         }
 
                     } catch (Exception e) {
-                        Toast.makeText(this, "JSON Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        Toast.makeText(this, "JSON Error", Toast.LENGTH_SHORT).show();
                     }
 
                 },
-                error -> Toast.makeText(this, "Network Error: " + error.toString(), Toast.LENGTH_LONG).show()
+                error -> Toast.makeText(this, "Network Error", Toast.LENGTH_SHORT).show()
         ) {
             @Override
             protected Map<String, String> getParams() {
@@ -275,9 +272,8 @@ public class Account extends AppCompatActivity {
             Calendar c = Calendar.getInstance();
 
             DatePickerDialog dialog = new DatePickerDialog(this,
-                    (view, year, month, day) -> {
-                        etDob.setText(year + "-" + (month + 1) + "-" + day);
-                    },
+                    (view, year, month, day) ->
+                            etDob.setText(year + "-" + (month + 1) + "-" + day),
                     c.get(Calendar.YEAR),
                     c.get(Calendar.MONTH),
                     c.get(Calendar.DAY_OF_MONTH));
@@ -302,6 +298,7 @@ public class Account extends AppCompatActivity {
                 new String[]{"A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"}));
     }
 
+    // ---------------- BOTTOM NAV ----------------
     private void setupBottomNav() {
 
         BottomNavigationView bottomNav = findViewById(R.id.bottomNavigation);
@@ -317,7 +314,6 @@ public class Account extends AppCompatActivity {
 
             } else if (item.getItemId() == R.id.nav_map) {
                 startActivity(new Intent(this, MapActivity.class));
-
             }
 
             return true;

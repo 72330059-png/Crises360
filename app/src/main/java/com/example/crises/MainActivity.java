@@ -19,7 +19,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
         ImageView bg = findViewById(R.id.backgroundImage);
         if (bg != null) {
             Glide.with(this)
@@ -29,31 +28,24 @@ public class MainActivity extends AppCompatActivity {
                     .into(bg);
         }
 
-        // ⏳ Splash delay
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
 
             SharedPreferences prefs = getSharedPreferences("user_session", MODE_PRIVATE);
 
             boolean isLoggedIn = prefs.getBoolean("isLoggedIn", false);
-            boolean rememberMe = prefs.getBoolean("rememberMe", false);
             boolean isProfileComplete = prefs.getBoolean("isProfileComplete", false);
 
             Intent intent;
 
-            if (!isLoggedIn) {
+            // ✅ ONLY 2 IMPORTANT DECISIONS
 
+            if (!isLoggedIn) {
                 intent = new Intent(MainActivity.this, StartingActivity.class);
 
-            } else if (!rememberMe) {
-
-                intent = new Intent(MainActivity.this, Login.class);
-
             } else if (!isProfileComplete) {
-
                 intent = new Intent(MainActivity.this, Account.class);
 
             } else {
-
                 intent = new Intent(MainActivity.this, HomeActivity.class);
             }
 

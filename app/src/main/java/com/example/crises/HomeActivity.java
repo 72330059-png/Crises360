@@ -63,13 +63,20 @@ public class HomeActivity extends BaseActivity {
         ImageButton settingsBtn = findViewById(R.id.settingsBtn);
 
         if (notificationBtn != null) {
-            notificationBtn.setOnClickListener(v ->
-                    startActivity(new Intent(this, Tips.class)));
+            notificationBtn.setOnClickListener(v -> {
+                startActivity(new Intent(HomeActivity.this, Tips.class));
+            });
         }
 
         if (settingsBtn != null) {
-            settingsBtn.setOnClickListener(v ->
-                    startActivity(new Intent(this, Settings.class)));
+            settingsBtn.setOnClickListener(v -> {
+                try {
+                    startActivity(new Intent(HomeActivity.this, Settings.class));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    android.widget.Toast.makeText(this, "Settings not found!", android.widget.Toast.LENGTH_SHORT).show();
+                }
+            });
         }
     }
 

@@ -13,7 +13,7 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
-        <!-- 🔴 LEFT COLOR BAR -->
+        <!-- 🔴 LEFT GREEN BAR (KEEP SAME DESIGN) -->
         <View
             android:id="@+id/severityBar"
             android:layout_width="6dp"
@@ -46,7 +46,7 @@
                     android:paddingHorizontal="10dp"
                     android:paddingVertical="3dp"/>
 
-                <!-- DATE -->
+                <!-- DATE (publish_date from DB) -->
                 <TextView
                     android:id="@+id/date"
                     android:layout_width="match_parent"
@@ -68,26 +68,25 @@
                 android:textColor="#1E2A38"
                 android:layout_marginTop="6dp"/>
 
-            <!-- DESCRIPTION -->
+            <!-- CONTENT (THIS = your DB 'content') -->
             <TextView
                 android:id="@+id/description"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Description here..."
+                android:text="Content here..."
                 android:textSize="14sp"
                 android:textColor="#555"
                 android:layout_marginTop="4dp"
                 android:maxLines="3"
                 android:ellipsize="end"/>
 
-            <!-- 🔥 SEVERITY (ADDED TO MATCH ADAPTER) -->
+            <!-- OPTIONAL FIELD (keep or hide in adapter) -->
             <TextView
                 android:id="@+id/severity"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Severity"
-                android:textSize="12sp"
-                android:textStyle="bold"
+                android:text=""
+                android:visibility="gone"
                 android:layout_marginTop="6dp"/>
 
             <!-- BOTTOM ROW -->
@@ -98,23 +97,23 @@
                 android:layout_marginTop="10dp"
                 android:weightSum="2">
 
-                <!-- LOCATION -->
+                <!-- CATEGORY (optional from DB) -->
                 <TextView
                     android:id="@+id/location"
                     android:layout_width="0dp"
                     android:layout_weight="1"
                     android:layout_height="wrap_content"
-                    android:text="📍 Location"
+                    android:text="Category"
                     android:textSize="12sp"
                     android:textColor="#666"/>
 
-                <!-- SOURCE -->
+                <!-- TYPE / STATUS / VIEWS AREA -->
                 <TextView
                     android:id="@+id/source"
                     android:layout_width="0dp"
                     android:layout_weight="1"
                     android:layout_height="wrap_content"
-                    android:text="Source"
+                    android:text=""
                     android:textSize="12sp"
                     android:textColor="#666"
                     android:gravity="end"/>

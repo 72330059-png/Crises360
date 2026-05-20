@@ -27,19 +27,25 @@ public class Login extends AppCompatActivity {
     TextView btnRegister;
     CheckBox cbRememberMe;
 
+    SharedPreferences prefs;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        // 🔥 SESSION CHECK (AUTO LOGIN)
-        SharedPreferences prefs = getSharedPreferences("user_session", MODE_PRIVATE);
+        prefs = getSharedPreferences("user_session", MODE_PRIVATE);
 
+        // ✅ AUTO LOGIN FIXED
         boolean isLoggedIn = prefs.getBoolean("isLoggedIn", false);
-        boolean rememberMe = prefs.getBoolean("rememberMe", false);
+        boolean isProfileComplete = prefs.getBoolean("isProfileComplete", false);
 
-        if (isLoggedIn && rememberMe) {
-            startActivity(new Intent(Login.this, HomeActivity.class));
+        if (isLoggedIn) {
+            if (isProfileComplete) {
+                startActivity(new Intent(Login.this, HomeActivity.class));
+            } else {
+                startActivity(new Intent(Login.this, Account.class));
+            }
             finish();
             return;
         }
@@ -60,7 +66,6 @@ public class Login extends AppCompatActivity {
                 return;
             }
 
-            // 🔥 Disable button while loading
             btnLogin.setEnabled(false);
 
             new Thread(() -> {
@@ -72,9 +77,9 @@ public class Login extends AppCompatActivity {
                     conn.setRequestMethod("POST");
                     conn.setDoOutput(true);
 
-                    // ✅ ENCODE DATA (IMPORTANT)
-                    String data = "username=" + URLEncoder.encode(username, "UTF-8") +
-                            "&password=" + URLEncoder.encode(password, "UTF-8");
+                    String data =
+                            "username=" + URLEncoder.encode(username, "UTF-8") +
+                                    "&password=" + URLEncoder.encode(password, "UTF-8");
 
                     OutputStream os = conn.getOutputStream();
                     os.write(data.getBytes());
@@ -91,14 +96,14 @@ public class Login extends AppCompatActivity {
                     JSONObject json = new JSONObject(response.toString());
 
                     runOnUiThread(() -> {
-
-                        btnLogin.setEnabled(true); // 🔥 enable again
+                        btnLogin.setEnabled(true);
 
                         try {
-
                             if (json.getString("status").equals("success")) {
 
                                 int userId = json.getInt("user_id");
+
+                                boolean remember = cbRememberMe.isChecked();
 
                                 SharedPreferences.Editor editor = prefs.edit();
 
@@ -106,22 +111,17 @@ public class Login extends AppCompatActivity {
                                 editor.putString("username", username);
 
                                 editor.putBoolean("isLoggedIn", true);
-                                editor.putBoolean("rememberMe", cbRememberMe.isChecked());
+                                editor.putBoolean("rememberMe", remember);
+
+                                // default until Account page updates it
+                                editor.putBoolean("isProfileComplete", false);
 
                                 editor.apply();
 
-                                boolean isComplete = prefs.getBoolean("isProfileComplete", false);
-
                                 Toast.makeText(this, "Login Successful", Toast.LENGTH_SHORT).show();
 
-                                if (isComplete) {
-                                    startActivity(new Intent(Login.this, HomeActivity.class));
-                                } else {
-                                    Intent intent = new Intent(Login.this, Account.class);
-                                    intent.putExtra("mode", "register");
-                                    startActivity(intent);
-                                }
-
+                                // ✅ CLEAN FLOW
+                                startActivity(new Intent(Login.this, Account.class));
                                 finish();
 
                             } else {
@@ -146,11 +146,9 @@ public class Login extends AppCompatActivity {
             }).start();
         });
 
-        // 🔗 GO TO REGISTER
+        // REGISTER
         btnRegister.setOnClickListener(v -> {
-            Intent intent = new Intent(Login.this, Account.class);
-            intent.putExtra("mode", "register");
-            startActivity(intent);
+            startActivity(new Intent(Login.this, Account.class));
         });
     }
 }
