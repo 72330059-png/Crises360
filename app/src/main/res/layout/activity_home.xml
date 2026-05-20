@@ -234,6 +234,7 @@
                 android:orientation="horizontal">
 
                 <LinearLayout
+                    android:id="@+id/btnFindShelter"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -267,6 +268,7 @@
                 </LinearLayout>
 
                 <LinearLayout
+                    android:id="@+id/btnMedicalHelp"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -300,6 +302,7 @@
                 </LinearLayout>
 
                 <LinearLayout
+                    android:id="@+id/btnEmotionalSupport"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -333,8 +336,9 @@
                 </LinearLayout>
 
                 <LinearLayout
+                    android:id="@+id/btnNeeds"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="80dp"
                     android:layout_weight="1"
                     android:gravity="center"
                     android:orientation="vertical">
@@ -386,7 +390,7 @@
                 android:foreground="?android:attr/selectableItemBackground"
                 app:cardBackgroundColor="#FFFFFF"
                 app:cardCornerRadius="16dp"
-                app:cardElevation="0dp">
+                app:cardElevation="1dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -394,46 +398,43 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
-                    <!-- subtle accent line -->
-                    <View
-                        android:layout_width="40dp"
-                        android:layout_height="2dp"
-                        android:background="#219EBC" />
-
-                    <!-- title -->
+                    <!-- CATEGORY -->
                     <TextView
-                        android:layout_width="match_parent"
+                        android:id="@+id/newsCategory"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
-                        android:text="New safety guidelines released by authorities"
-                        android:textColor="#111827"
-                        android:textSize="16sp"
+                        android:text="SAFETY UPDATE"
+                        android:textColor="#2F66F6"
+                        android:textSize="11sp"
                         android:textStyle="bold"
-                        android:lineSpacingExtra="2dp" />
+                        android:letterSpacing="0.08" />
 
-                    <!-- short description -->
+                    <!-- TITLE -->
                     <TextView
+                        android:id="@+id/newsTitle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
-                        android:text="Emergency procedures have been updated to improve response time and public safety."
-                        android:textColor="#6B7280"
-                        android:textSize="13sp"
-                        android:lineSpacingExtra="2dp" />
+                        android:layout_marginTop="8dp"
+                        android:text="New emergency response guidelines released by authorities"
+                        android:textColor="#111827"
+                        android:textSize="17sp"
+                        android:textStyle="bold"
+                        android:lineSpacingExtra="3dp" />
 
-                    <!-- footer -->
+                    <!-- SIMPLE FOOTER TAG ONLY -->
                     <TextView
+                        android:id="@+id/newsTag"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="10dp"
-                        android:text="2 hours ago"
+                        android:text="#Breaking"
                         android:textColor="#9CA3AF"
-                        android:textSize="11sp" />
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
 
                 </LinearLayout>
 
             </androidx.cardview.widget.CardView>
-
         </LinearLayout>
     </ScrollView>
 

@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -23,16 +24,18 @@ public class Login extends AppCompatActivity {
     EditText etUser, etPassword;
     Button btnLogin;
     TextView btnRegister;
+    CheckBox cbRememberMe;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        etUser = findViewById(R.id.etUser);
+        etUser = findViewById(R.id.etUsername);
         etPassword = findViewById(R.id.etPassword);
         btnLogin = findViewById(R.id.btnLogin);
-        btnRegister = findViewById(R.id.btnRegister);
+        btnRegister = findViewById(R.id.tvCreateAccount);
+        cbRememberMe = findViewById(R.id.cbRememberMe);
 
         btnLogin.setOnClickListener(v -> {
 
@@ -77,41 +80,36 @@ public class Login extends AppCompatActivity {
 
                                 int userId = json.getInt("user_id");
 
-                                // ✅ Save login session
-                                SharedPreferences userPrefs = getSharedPreferences("user", MODE_PRIVATE);
-                                userPrefs.edit()
-                                        .putInt("user_id", userId)
-                                        .apply();
+                                // 🔥 USE ONE SHARED PREF
+                                SharedPreferences prefs = getSharedPreferences("user_session", MODE_PRIVATE);
+                                SharedPreferences.Editor editor = prefs.edit();
 
-                                // ✅ Check profile completion flag
-                                SharedPreferences profilePrefs =
-                                        getSharedPreferences("user_prefs", MODE_PRIVATE);
+                                editor.putInt("user_id", userId);
+                                editor.putString("username", username);
 
-                                boolean isComplete =
-                                        profilePrefs.getBoolean("isProfileComplete", false);
+                                // ✅ IMPORTANT
+                                editor.putBoolean("isLoggedIn", true);
+
+                                // ✅ OPTIONAL (Remember me)
+                                editor.putBoolean("rememberMe", cbRememberMe.isChecked());
+
+                                editor.apply();
+
+                                boolean isComplete = prefs.getBoolean("isProfileComplete", false);
 
                                 Toast.makeText(this, "Login Successful", Toast.LENGTH_SHORT).show();
 
                                 if (isComplete) {
-
-                                    // 🔥 GO TO HOME
-                                    Intent intent = new Intent(Login.this, HomeActivity.class);
-                                    intent.putExtra("username", username);
-                                    startActivity(intent);
-
+                                    startActivity(new Intent(Login.this, HomeActivity.class));
                                 } else {
-
-                                    // 🆕 FORCE PROFILE COMPLETION
                                     Intent intent = new Intent(Login.this, Account.class);
                                     intent.putExtra("mode", "register");
-                                    intent.putExtra("username", username);
                                     startActivity(intent);
                                 }
 
                                 finish();
 
                             } else {
-
                                 Toast.makeText(this,
                                         json.getString("message"),
                                         Toast.LENGTH_SHORT).show();
@@ -132,6 +130,7 @@ public class Login extends AppCompatActivity {
             }).start();
         });
 
+        // 🔗 Register
         btnRegister.setOnClickListener(v -> {
             Intent intent = new Intent(Login.this, Account.class);
             intent.putExtra("mode", "register");

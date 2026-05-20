@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -53,6 +54,7 @@ public class HomeActivity extends BaseActivity {
             sp.edit().putString("username", username).apply();
         }
 
+        initQuickActions();
         initQuickCall();
         initTopAppBar();
         initNewsSection();
@@ -161,5 +163,32 @@ public class HomeActivity extends BaseActivity {
 
             return false;
         });
+    }
+    private void initQuickActions() {
+
+        LinearLayout findShelter = findViewById(R.id.btnFindShelter);
+        LinearLayout medicalHelp = findViewById(R.id.btnMedicalHelp);
+        LinearLayout emotionalSupport = findViewById(R.id.btnEmotionalSupport);
+        LinearLayout needs = findViewById(R.id.btnNeeds);
+
+        if (findShelter != null) {
+            findShelter.setOnClickListener(v ->
+                    startActivity(new Intent(this, PublicShelters.class)));
+        }
+
+        if (medicalHelp != null) {
+            medicalHelp.setOnClickListener(v ->
+                    startActivity(new Intent(this, Hospitals.class)));
+        }
+
+        //if (emotionalSupport != null) {
+          //  emotionalSupport.setOnClickListener(v ->
+          //          startActivity(new Intent(this, EmotionalSupportActivity.class)));
+       // }
+
+        if (needs != null) {
+            needs.setOnClickListener(v ->
+                    startActivity(new Intent(this, Needs.class)));
+        }
     }
 }
