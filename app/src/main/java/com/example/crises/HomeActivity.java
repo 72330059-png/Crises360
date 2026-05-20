@@ -8,19 +8,12 @@ import android.os.Bundle;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
-import androidx.core.content.FileProvider;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
 
 public class HomeActivity extends BaseActivity {
 
@@ -38,25 +31,27 @@ public class HomeActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
+
+        // 🔐 SESSION CHECK
+        SharedPreferences prefs = getSharedPreferences("user_session", MODE_PRIVATE);
+        boolean isLoggedIn = prefs.getBoolean("isLoggedIn", false);
+
+        if (!isLoggedIn) {
+            startActivity(new Intent(this, Login.class));
+            finish();
+            return;
+        }
+
         if (!checkProfileCompletion()) return;
+
         setContentView(R.layout.activity_home);
 
-        // 🔥 GET USERNAME (SAFE METHOD)
-        username = getIntent().getStringExtra("username");
+        // ✅ CLEAN USERNAME FETCH
+        username = prefs.getString("username", "");
 
-        if (username == null || username.isEmpty()) {
-            SharedPreferences sp = getSharedPreferences("user", MODE_PRIVATE);
-            username = sp.getString("username", "");
-        }
-
-        if (!username.isEmpty()) {
-            SharedPreferences sp = getSharedPreferences("user", MODE_PRIVATE);
-            sp.edit().putString("username", username).apply();
-        }
-
+        initTopAppBar();
         initQuickActions();
         initQuickCall();
-        initTopAppBar();
         initNewsSection();
         initBottomNavigation();
     }
@@ -78,19 +73,18 @@ public class HomeActivity extends BaseActivity {
         }
     }
 
-    // ---------------- GUIDE PDF ----------------
-
     // ---------------- NEWS ----------------
     private void initNewsSection() {
 
         CardView newsCard = findViewById(R.id.newsCard);
+
         if (newsCard != null) {
             newsCard.setOnClickListener(v ->
                     startActivity(new Intent(this, News.class)));
         }
     }
 
-    // ---------------- QUICK CALL ----------------
+    // ---------------- QUICK CALL (SOS) ----------------
     private void initQuickCall() {
 
         quickCall = findViewById(R.id.sosButton);
@@ -103,18 +97,13 @@ public class HomeActivity extends BaseActivity {
                     "🚒 Fire Brigade (175)"
             };
 
+            String[] numbers = {"140", "112", "175"};
+
             new AlertDialog.Builder(this)
                     .setTitle("Choose Emergency Service")
                     .setItems(options, (dialog, which) -> {
 
-                        String number;
-
-                        switch (which) {
-                            case 0: number = "140"; break;
-                            case 1: number = "112"; break;
-                            case 2: number = "175"; break;
-                            default: number = "112";
-                        }
+                        String number = numbers[which];
 
                         Intent intent = new Intent(Intent.ACTION_DIAL);
                         intent.setData(Uri.parse("tel:" + number));
@@ -125,7 +114,30 @@ public class HomeActivity extends BaseActivity {
         });
     }
 
-    // ---------------- BOTTOM NAV ----------------
+    // ---------------- QUICK ACTIONS ----------------
+    private void initQuickActions() {
+
+        LinearLayout findShelter = findViewById(R.id.btnFindShelter);
+        LinearLayout medicalHelp = findViewById(R.id.btnMedicalHelp);
+        LinearLayout needs = findViewById(R.id.btnNeeds);
+
+        if (findShelter != null) {
+            findShelter.setOnClickListener(v ->
+                    startActivity(new Intent(this, PublicShelters.class)));
+        }
+
+        if (medicalHelp != null) {
+            medicalHelp.setOnClickListener(v ->
+                    startActivity(new Intent(this, Hospitals.class)));
+        }
+
+        if (needs != null) {
+            needs.setOnClickListener(v ->
+                    startActivity(new Intent(this, Needs.class)));
+        }
+    }
+
+    // ---------------- BOTTOM NAVIGATION ----------------
     private void initBottomNavigation() {
 
         BottomNavigationView bottomNav = findViewById(R.id.bottomNavigation);
@@ -145,13 +157,10 @@ public class HomeActivity extends BaseActivity {
                 intent = new Intent(this, Alerts.class);
 
             } else if (id == R.id.nav_map) {
-                intent = new Intent(this, Map.class);
+                intent = new Intent(this, MapActivity.class);
 
             } else if (id == R.id.nav_profile) {
-
-                intent = new Intent(HomeActivity.this, Account.class);
-
-                // 🔥 SAFE USERNAME PASSING
+                intent = new Intent(this, Account.class);
                 intent.putExtra("username", username);
             }
 
@@ -164,31 +173,16 @@ public class HomeActivity extends BaseActivity {
             return false;
         });
     }
-    private void initQuickActions() {
 
-        LinearLayout findShelter = findViewById(R.id.btnFindShelter);
-        LinearLayout medicalHelp = findViewById(R.id.btnMedicalHelp);
-        LinearLayout emotionalSupport = findViewById(R.id.btnEmotionalSupport);
-        LinearLayout needs = findViewById(R.id.btnNeeds);
+    // ---------------- LOGOUT METHOD ----------------
+    public void logout() {
 
-        if (findShelter != null) {
-            findShelter.setOnClickListener(v ->
-                    startActivity(new Intent(this, PublicShelters.class)));
-        }
+        SharedPreferences prefs = getSharedPreferences("user_session", MODE_PRIVATE);
+        prefs.edit().clear().apply();
 
-        if (medicalHelp != null) {
-            medicalHelp.setOnClickListener(v ->
-                    startActivity(new Intent(this, Hospitals.class)));
-        }
-
-        //if (emotionalSupport != null) {
-          //  emotionalSupport.setOnClickListener(v ->
-          //          startActivity(new Intent(this, EmotionalSupportActivity.class)));
-       // }
-
-        if (needs != null) {
-            needs.setOnClickListener(v ->
-                    startActivity(new Intent(this, Needs.class)));
-        }
+        startActivity(new Intent(this, StartingActivity.class));
+        finish();
     }
+
+
 }

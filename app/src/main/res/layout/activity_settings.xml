@@ -54,7 +54,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/headerContainer"
-        android:layout_above="@id/bottomNavigation"
         android:padding="16dp"
         android:clipToPadding="false">
 
@@ -318,17 +317,5 @@
 
         </LinearLayout>
     </ScrollView>
-
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottomNavigation"
-        android:layout_width="match_parent"
-        android:layout_height="75dp"
-        android:layout_alignParentBottom="true"
-        android:background="@drawable/footer_background"
-        app:itemIconTint="#526D82"
-        app:itemTextColor="#526D82"
-        app:labelVisibilityMode="labeled"
-        app:menu="@menu/bottom_nav_menu"
-        app:elevation="12dp" />
 
 </RelativeLayout>

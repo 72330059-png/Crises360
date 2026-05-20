@@ -7,6 +7,9 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
 
     <application
         android:allowBackup="true"
@@ -22,15 +25,7 @@
             android:name=".StartingActivity"
             android:exported="false" />
         <activity android:name=".Login" />
-        <activity
-            android:name=".ShelterDetails"
-            android:exported="false" />
-        <activity
-            android:name=".SOSActivity"
-            android:exported="false" />
-        <activity
-            android:name=".Houses"
-            android:exported="false" />
+
         <activity
             android:name=".PublicShelters"
             android:exported="false" />
@@ -70,13 +65,11 @@
             android:name=".Tips"
             android:exported="false" />
         <activity
-            android:name=".Services"
-            android:exported="false" />
-        <activity
             android:name=".Account"
             android:exported="false" />
         <activity
-            android:name=".Map"
+            android:name=".MapActivity"
+            android:hardwareAccelerated="true"
             android:exported="false" />
         <activity
             android:name=".Alerts"

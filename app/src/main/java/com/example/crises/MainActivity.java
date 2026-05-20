@@ -18,13 +18,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-    }
 
-    @Override
-    protected void onPostResume() {
-        super.onPostResume();
 
-        // 🎨 Load background image
         ImageView bg = findViewById(R.id.backgroundImage);
         if (bg != null) {
             Glide.with(this)
@@ -34,34 +29,37 @@ public class MainActivity extends AppCompatActivity {
                     .into(bg);
         }
 
-        // ⏳ Splash delay (2 seconds)
+        // ⏳ Splash delay
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            if (!isFinishing()) {
 
-                // 🔐 SESSION CHECK
-                SharedPreferences prefs = getSharedPreferences("user_session", MODE_PRIVATE);
+            SharedPreferences prefs = getSharedPreferences("user_session", MODE_PRIVATE);
 
-                boolean isLoggedIn = prefs.getBoolean("isLoggedIn", false);
-                boolean isProfileComplete = prefs.getBoolean("isProfileComplete", false);
+            boolean isLoggedIn = prefs.getBoolean("isLoggedIn", false);
+            boolean rememberMe = prefs.getBoolean("rememberMe", false);
+            boolean isProfileComplete = prefs.getBoolean("isProfileComplete", false);
 
-                Intent intent;
+            Intent intent;
 
-                if (!isLoggedIn) {
-                    // ❌ First time user
-                    intent = new Intent(MainActivity.this, StartingActivity.class);
+            if (!isLoggedIn) {
 
-                } else if (!isProfileComplete) {
-                    // ⚠️ Logged in but profile not completed
-                    intent = new Intent(MainActivity.this, Account.class);
+                intent = new Intent(MainActivity.this, StartingActivity.class);
 
-                } else {
-                    // ✅ User already logged in → go directly Home
-                    intent = new Intent(MainActivity.this, HomeActivity.class);
-                }
+            } else if (!rememberMe) {
 
-                startActivity(intent);
-                finish();
+                intent = new Intent(MainActivity.this, Login.class);
+
+            } else if (!isProfileComplete) {
+
+                intent = new Intent(MainActivity.this, Account.class);
+
+            } else {
+
+                intent = new Intent(MainActivity.this, HomeActivity.class);
             }
+
+            startActivity(intent);
+            finish();
+
         }, 2000);
     }
 }

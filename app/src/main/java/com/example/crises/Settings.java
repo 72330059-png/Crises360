@@ -22,11 +22,8 @@ public class Settings extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
 
-        // ---------------- INIT VIEWS ----------------
-        backBtn = findViewById(R.id.backBtn);
-        tvUsername = findViewById(R.id.tvUsername);
-        tvPassword = findViewById(R.id.tvPassword);
-        btnChange = findViewById(R.id.btnChange);
+
+
 
         // ---------------- LOAD USER DATA ----------------
         userPrefs = getSharedPreferences("user", MODE_PRIVATE);

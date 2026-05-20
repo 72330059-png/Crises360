@@ -17,6 +17,7 @@ import org.json.JSONObject;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.Scanner;
 
 public class Login extends AppCompatActivity {
@@ -30,6 +31,18 @@ public class Login extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        // 🔥 SESSION CHECK (AUTO LOGIN)
+        SharedPreferences prefs = getSharedPreferences("user_session", MODE_PRIVATE);
+
+        boolean isLoggedIn = prefs.getBoolean("isLoggedIn", false);
+        boolean rememberMe = prefs.getBoolean("rememberMe", false);
+
+        if (isLoggedIn && rememberMe) {
+            startActivity(new Intent(Login.this, HomeActivity.class));
+            finish();
+            return;
+        }
 
         etUser = findViewById(R.id.etUsername);
         etPassword = findViewById(R.id.etPassword);
@@ -47,6 +60,9 @@ public class Login extends AppCompatActivity {
                 return;
             }
 
+            // 🔥 Disable button while loading
+            btnLogin.setEnabled(false);
+
             new Thread(() -> {
                 try {
 
@@ -56,7 +72,9 @@ public class Login extends AppCompatActivity {
                     conn.setRequestMethod("POST");
                     conn.setDoOutput(true);
 
-                    String data = "username=" + username + "&password=" + password;
+                    // ✅ ENCODE DATA (IMPORTANT)
+                    String data = "username=" + URLEncoder.encode(username, "UTF-8") +
+                            "&password=" + URLEncoder.encode(password, "UTF-8");
 
                     OutputStream os = conn.getOutputStream();
                     os.write(data.getBytes());
@@ -74,23 +92,20 @@ public class Login extends AppCompatActivity {
 
                     runOnUiThread(() -> {
 
+                        btnLogin.setEnabled(true); // 🔥 enable again
+
                         try {
 
                             if (json.getString("status").equals("success")) {
 
                                 int userId = json.getInt("user_id");
 
-                                // 🔥 USE ONE SHARED PREF
-                                SharedPreferences prefs = getSharedPreferences("user_session", MODE_PRIVATE);
                                 SharedPreferences.Editor editor = prefs.edit();
 
                                 editor.putInt("user_id", userId);
                                 editor.putString("username", username);
 
-                                // ✅ IMPORTANT
                                 editor.putBoolean("isLoggedIn", true);
-
-                                // ✅ OPTIONAL (Remember me)
                                 editor.putBoolean("rememberMe", cbRememberMe.isChecked());
 
                                 editor.apply();
@@ -121,16 +136,17 @@ public class Login extends AppCompatActivity {
                     });
 
                 } catch (Exception e) {
-                    runOnUiThread(() ->
-                            Toast.makeText(this,
-                                    "Server error: " + e.getMessage(),
-                                    Toast.LENGTH_SHORT).show()
-                    );
+                    runOnUiThread(() -> {
+                        btnLogin.setEnabled(true);
+                        Toast.makeText(this,
+                                "Server error: " + e.getMessage(),
+                                Toast.LENGTH_SHORT).show();
+                    });
                 }
             }).start();
         });
 
-        // 🔗 Register
+        // 🔗 GO TO REGISTER
         btnRegister.setOnClickListener(v -> {
             Intent intent = new Intent(Login.this, Account.class);
             intent.putExtra("mode", "register");

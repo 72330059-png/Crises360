@@ -155,7 +155,7 @@ public class Alerts extends BaseActivity {
             if (id == R.id.nav_home) {
                 startActivity(new Intent(this, HomeActivity.class));
             } else if (id == R.id.nav_map) {
-                startActivity(new Intent(this, Map.class));
+                startActivity(new Intent(this, MapActivity.class));
             } else if (id == R.id.nav_profile) {
                 startActivity(new Intent(this, Account.class));
             }

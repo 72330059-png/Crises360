@@ -79,26 +79,8 @@ public class PublicShelterAdapter extends RecyclerView.Adapter<PublicShelterAdap
 
         holder.details.setOnClickListener(v -> {
 
-            Intent i = new Intent(v.getContext(), ShelterDetails.class);
+          //  Intent i = new Intent(v.getContext(), ShelterDetails.class);
 
-            i.putExtra("name", s.getName());
-            i.putExtra("location", s.getLocation());
-            i.putExtra("status", s.getStatus());
-
-            i.putExtra("address", s.getAddress());
-            i.putExtra("phone", s.getPhone());
-            i.putExtra("type", s.getType());
-
-            i.putExtra("capacity", s.getCapacity());
-            i.putExtra("current", s.getCurrent());
-            i.putExtra("empty", s.getEmptyRooms());
-
-            i.putExtra("food", s.isFood());
-            i.putExtra("water", s.isWater());
-            i.putExtra("electricity", s.isElectricity());
-            i.putExtra("medical", s.isMedical());
-
-            v.getContext().startActivity(i);
         });
     }
 

@@ -316,10 +316,8 @@ public class Account extends AppCompatActivity {
                 startActivity(new Intent(this, Alerts.class));
 
             } else if (item.getItemId() == R.id.nav_map) {
-                startActivity(new Intent(this, Map.class));
+                startActivity(new Intent(this, MapActivity.class));
 
-            } else if (item.getItemId() == R.id.nav_service) {
-                startActivity(new Intent(this, Services.class));
             }
 
             return true;

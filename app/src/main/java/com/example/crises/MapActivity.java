@@ -6,11 +6,9 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-public class Map extends BaseActivity {
+public class MapActivity extends BaseActivity {
 
     WebView webView;
     BottomNavigationView bottomNavigation;
@@ -45,8 +43,7 @@ public class Map extends BaseActivity {
 
             Intent intent = null;
             if (id == R.id.nav_alerts) intent = new Intent(this, Alerts.class);
-            else if (id == R.id.nav_map) intent = new Intent(this, Map.class);
-            else if (id == R.id.nav_service) intent = new Intent(this, Services.class);
+            else if (id == R.id.nav_map) intent = new Intent(this, MapActivity.class);
             else if (id == R.id.nav_profile) intent = new Intent(this, Account.class);
 
             if (intent != null) {

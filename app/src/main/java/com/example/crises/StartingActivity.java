@@ -22,25 +22,27 @@ public class StartingActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_starting);
 
-        // Handle padding for system bars
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
 
-        // 🔗 Connect UI
         btnGetStarted = findViewById(R.id.btnGetStarted);
         tvLoginAction = findViewById(R.id.tvLoginAction);
 
-        // 🚀 GET STARTED button
+        // 🆕 NEW USER → REGISTER
         btnGetStarted.setOnClickListener(v -> {
-            startActivity(new Intent(StartingActivity.this, Login.class));
+            Intent intent = new Intent(StartingActivity.this, Account.class);
+            intent.putExtra("mode", "register");
+            startActivity(intent);
+            finish();
         });
 
-        // 🔐 Already have account → Login
+        // 🔐 EXISTING USER → LOGIN
         tvLoginAction.setOnClickListener(v -> {
             startActivity(new Intent(StartingActivity.this, Login.class));
+            finish();
         });
     }
 }
