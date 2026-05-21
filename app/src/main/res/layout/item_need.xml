@@ -14,14 +14,13 @@
         android:orientation="vertical"
         android:padding="12dp">
 
-        <!-- TOP ROW: ICON + TITLE + STATUS -->
+        <!-- TOP ROW -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical">
 
-            <!-- CATEGORY ICON -->
             <ImageView
                 android:id="@+id/category_icon"
                 android:layout_width="34dp"
@@ -29,23 +28,21 @@
                 android:layout_marginEnd="8dp"
                 android:src="@drawable/ic_category_other"/>
 
-            <!-- NEED NAME -->
             <TextView
-                android:id="@+id/need_name"
+                android:id="@+id/resource_name"
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
-                android:text="Need Name"
+                android:text="Resource Name"
                 android:textStyle="bold"
                 android:textSize="16sp"
                 android:textColor="#1E2A38"/>
 
-            <!-- STATUS -->
             <TextView
                 android:id="@+id/status"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="PENDING"
+                android:text="ACTIVE"
                 android:textSize="11sp"
                 android:textStyle="bold"
                 android:textColor="#FFFFFF"
@@ -58,7 +55,7 @@
             android:id="@+id/location"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Location"
+            android:text="City / Area"
             android:textSize="13sp"
             android:textColor="#666"
             android:layout_marginTop="4dp"/>
@@ -74,25 +71,47 @@
             android:textColor="#1E3A5F"
             android:layout_marginTop="6dp"/>
 
-        <!-- QUANTITY -->
+        <!-- ADDRESS -->
         <TextView
-            android:id="@+id/quantity"
+            android:id="@+id/address"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Quantity"
+            android:text="📍 Address"
             android:textSize="12sp"
             android:textColor="#444"
             android:layout_marginTop="4dp"/>
 
-        <!-- PRIORITY -->
+        <!-- CONTACT -->
         <TextView
-            android:id="@+id/priority"
+            android:id="@+id/contact"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Priority"
+            android:text="📞 Contact"
             android:textSize="12sp"
-            android:textColor="#D32F2F"
+            android:textColor="#2E7D32"
             android:layout_marginTop="4dp"/>
+
+        <!-- HOURS (NEW) -->
+        <TextView
+            android:id="@+id/hours"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="🕒 Opening Hours"
+            android:textSize="12sp"
+            android:textColor="#1565C0"
+            android:layout_marginTop="4dp"/>
+
+        <!-- DESCRIPTION -->
+        <TextView
+            android:id="@+id/notes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Additional details about the resource..."
+            android:textSize="12sp"
+            android:textColor="#555"
+            android:layout_marginTop="6dp"
+            android:maxLines="2"
+            android:ellipsize="end"/>
 
     </LinearLayout>
 

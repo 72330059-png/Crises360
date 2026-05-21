@@ -4,6 +4,7 @@ import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -21,66 +22,101 @@ public class NeedsAdapter extends RecyclerView.Adapter<NeedsAdapter.ViewHolder> 
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
-        TextView need_name, location, category, status, quantity, priority;
+        TextView name, location, category, status, address, contact, hours, notes;
+        ImageView icon;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
 
-            need_name = itemView.findViewById(R.id.need_name);
+            name = itemView.findViewById(R.id.resource_name);
             location = itemView.findViewById(R.id.location);
             category = itemView.findViewById(R.id.category);
             status = itemView.findViewById(R.id.status);
-            quantity = itemView.findViewById(R.id.quantity);
-            priority = itemView.findViewById(R.id.priority);
+            address = itemView.findViewById(R.id.address);
+            contact = itemView.findViewById(R.id.contact);
+            hours = itemView.findViewById(R.id.hours);
+            notes = itemView.findViewById(R.id.notes);
+            icon = itemView.findViewById(R.id.category_icon);
         }
     }
 
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+
         View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_need, parent, false);
+
         return new ViewHolder(v);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
 
-        Need need = list.get(position);
+        Need r = list.get(position);
 
-        holder.need_name.setText(need.getName());
-        holder.location.setText(need.getLocation());
-        holder.category.setText(need.getCategory());
-        holder.status.setText(need.getStatus());
-        holder.quantity.setText("Quantity: " + need.getQuantity());
-        holder.priority.setText("Priority: " + need.getPriority());
+        holder.name.setText(r.getName());
+        holder.location.setText(r.getLocation());
+        holder.category.setText(r.getCategory());
 
-        // STATUS COLOR
-        if (need.getStatus() != null &&
-                need.getStatus().equalsIgnoreCase("Pending")) {
-            holder.status.setTextColor(Color.parseColor("#FF9800"));
-        } else {
-            holder.status.setTextColor(Color.parseColor("#2E7D32"));
-        }
+        holder.address.setText("📍 " + r.getAddress());
+        holder.contact.setText("📞 " + r.getContact());
+        holder.hours.setText("🕒 " + r.getHours());
+        holder.notes.setText(r.getNotes());
 
-        // PRIORITY COLOR
-        if (need.getPriority() != null) {
-            switch (need.getPriority().toLowerCase()) {
-                case "high":
-                    holder.priority.setTextColor(Color.RED);
+        String status = r.getStatus();
+
+        if (status != null) {
+
+            switch (status.toLowerCase()) {
+
+                case "fulfilled":
+                    holder.status.setText("FULFILLED");
+                    holder.status.setBackgroundColor(Color.parseColor("#4CAF50"));
                     break;
-                case "medium":
-                    holder.priority.setTextColor(Color.parseColor("#FF9800"));
+
+                case "in_progress":
+                    holder.status.setText("IN PROGRESS");
+                    holder.status.setBackgroundColor(Color.parseColor("#FF9800"));
                     break;
+
+                case "rejected":
+                    holder.status.setText("REJECTED");
+                    holder.status.setBackgroundColor(Color.parseColor("#F44336"));
+                    break;
+
                 default:
-                    holder.priority.setTextColor(Color.parseColor("#2E7D32"));
+                    holder.status.setText(status.toUpperCase());
+                    holder.status.setBackgroundColor(Color.GRAY);
                     break;
             }
+
+            holder.status.setTextColor(Color.WHITE);
+            holder.status.setPadding(20, 6, 20, 6);
         }
+
+        holder.icon.setImageResource(getCategoryIcon(r.getCategory()));
     }
 
     @Override
     public int getItemCount() {
         return list.size();
+    }
+
+    private int getCategoryIcon(String category) {
+
+        if (category == null) return R.drawable.ic_category_other;
+
+        switch (category.toLowerCase()) {
+
+            case "food": return R.drawable.ic_food;
+            case "water": return R.drawable.ic_water;
+            case "medical": return R.drawable.ic_medical;
+            case "fuel": return R.drawable.ic_fuel;
+            case "transport": return R.drawable.ic_transport;
+            case "clothes": return R.drawable.ic_clothes;
+
+            default: return R.drawable.ic_category_other;
+        }
     }
 }

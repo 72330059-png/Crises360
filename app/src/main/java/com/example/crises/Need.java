@@ -2,22 +2,29 @@ package com.example.crises;
 
 public class Need {
 
-    String name, location, category, status, quantity, priority;
+    String name, category, status, location;
+    String address, contact, hours, notes;
 
-    public Need(String name, String location, String category,
-                String status, String quantity, String priority) {
+    public Need(String name, String category, String status,
+                String location, String address,
+                String contact, String hours, String notes) {
+
         this.name = name;
-        this.location = location;
         this.category = category;
         this.status = status;
-        this.quantity = quantity;
-        this.priority = priority;
+        this.location = location;
+        this.address = address;
+        this.contact = contact;
+        this.hours = hours;
+        this.notes = notes;
     }
 
     public String getName() { return name; }
-    public String getLocation() { return location; }
     public String getCategory() { return category; }
     public String getStatus() { return status; }
-    public String getQuantity() { return quantity; }
-    public String getPriority() { return priority; }
+    public String getLocation() { return location; }
+    public String getAddress() { return address; }
+    public String getContact() { return contact; }
+    public String getHours() { return hours; }
+    public String getNotes() { return notes; }
 }
