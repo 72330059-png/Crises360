@@ -2,57 +2,54 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F8FAFC"
-    tools:context=".Login">
+    android:background="#F8FAFC">
 
     <LinearLayout
         android:id="@+id/llHeader"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="28dp"
+        android:layout_marginTop="48dp"
         android:gravity="center_horizontal"
         android:orientation="vertical"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintEnd_toEndOf="parent">
 
+        <!-- Shield icon — same as Login screen -->
         <ImageView
-            android:id="@+id/ivLoginShield"
             android:layout_width="64dp"
             android:layout_height="64dp"
-            android:contentDescription="App Shield Logo"
             android:src="@drawable/shield"
-             />
+            android:contentDescription="Shield" />
 
         <TextView
-            android:id="@+id/tvWelcomeBack"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:fontFamily="sans-serif-black"
-            android:text="Welcome Back!"
+            android:text="Verify It's You"
             android:textColor="#1E293B"
             android:textSize="28sp"
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/tvLoginSubtitle"
+            android:id="@+id/tvEmailSentTo"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
+            android:layout_marginTop="8dp"
             android:fontFamily="sans-serif-medium"
-            android:text="Glad to see you again 👋"
+            android:gravity="center"
             android:textColor="#64748B"
-            android:textSize="15sp" />
+            android:textSize="14sp"
+            android:paddingHorizontal="32dp" />
 
     </LinearLayout>
 
     <androidx.cardview.widget.CardView
-        android:id="@+id/cvLoginCard"
+        android:id="@+id/cvCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
@@ -73,86 +70,45 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Email"
+                android:text="Verification Code"
                 android:textColor="#64748B"
                 android:textSize="14sp"
                 android:fontFamily="sans-serif-medium" />
 
+            <!-- Single code input — large and centered -->
             <EditText
-                android:id="@+id/etUsername"
+                android:id="@+id/etCode"
                 android:layout_width="match_parent"
-                android:layout_height="52dp"
+                android:layout_height="64dp"
                 android:layout_marginTop="8dp"
                 android:background="@android:drawable/edit_text"
-                android:hint="Enter your email"
+                android:hint="• • • • • •"
                 android:textColorHint="#94A3B8"
                 android:textColor="#1E293B"
-                android:textSize="15sp"
-                android:inputType="textPersonName"
-                android:paddingHorizontal="16dp"
-                android:drawableStart="@android:drawable/ic_menu_myplaces"
-                android:drawablePadding="12dp"
-                app:drawableTint="#1A73E8" />
+                android:textSize="28sp"
+                android:gravity="center"
+                android:inputType="number"
+                android:maxLength="6"
+                android:letterSpacing="0.5" />
 
+            <!-- Countdown timer -->
             <TextView
+                android:id="@+id/tvTimer"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Password"
-                android:textColor="#64748B"
-                android:textSize="14sp"
-                android:fontFamily="sans-serif-medium"
-                android:layout_marginTop="20dp" />
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="12dp"
+                android:textColor="#1A73E8"
+                android:textSize="13sp"
+                android:fontFamily="sans-serif-medium" />
 
-            <EditText
-                android:id="@+id/etPassword"
-                android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:layout_marginTop="8dp"
-                android:background="@android:drawable/edit_text"
-                android:hint="Enter your password"
-                android:textColorHint="#94A3B8"
-                android:textColor="#1E293B"
-                android:textSize="15sp"
-                android:inputType="textPassword"
-                android:paddingHorizontal="16dp"
-                android:drawableStart="@android:drawable/ic_lock_idle_lock"
-                android:drawableEnd="@android:drawable/ic_menu_view"
-                android:drawablePadding="12dp"
-                app:drawableTint="#64748B" />
-
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp">
-
-                <CheckBox
-                    android:id="@+id/cbRememberMe"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Remember me"
-                    android:textColor="#64748B"
-                    android:textSize="13sp"
-                    android:layout_alignParentStart="true"
-                    android:layout_centerVertical="true" />
-
-                <TextView
-                    android:id="@+id/tvForgotPassword"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Forgot password?"
-                    android:textColor="#1A73E8"
-                    android:textSize="13sp"
-                    android:textStyle="bold"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true" />
-            </RelativeLayout>
-
+            <!-- Verify button -->
             <Button
-                android:id="@+id/btnLogin"
+                android:id="@+id/btnVerify"
                 android:layout_width="match_parent"
                 android:layout_height="54dp"
                 android:layout_marginTop="24dp"
-                android:text="LOGIN"
+                android:text="VERIFY"
                 android:textColor="#FFFFFF"
                 android:textSize="16sp"
                 android:textStyle="bold"
@@ -161,6 +117,7 @@
                 android:insetBottom="0dp"
                 app:cornerRadius="27dp" />
 
+            <!-- Resend -->
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -171,15 +128,15 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="New here? "
+                    android:text="Didn't receive the code? "
                     android:textColor="#64748B"
                     android:textSize="13sp" />
 
                 <TextView
-                    android:id="@+id/tvCreateAccount"
+                    android:id="@+id/btnResend"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Create an account"
+                    android:text="Resend"
                     android:textColor="#1A73E8"
                     android:textStyle="bold"
                     android:textSize="13sp" />
@@ -187,7 +144,5 @@
 
         </LinearLayout>
     </androidx.cardview.widget.CardView>
-
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>

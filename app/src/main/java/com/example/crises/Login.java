@@ -10,6 +10,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import org.json.JSONObject;
@@ -22,9 +23,9 @@ import java.util.Scanner;
 
 public class Login extends AppCompatActivity {
 
-    EditText etUser, etPassword;
+    EditText etEmail, etPassword;
     Button btnLogin;
-    TextView btnRegister;
+    TextView tvCreateAccount, tvForgotPassword;
     CheckBox cbRememberMe;
 
     SharedPreferences prefs;
@@ -36,119 +37,191 @@ public class Login extends AppCompatActivity {
 
         prefs = getSharedPreferences("user_session", MODE_PRIVATE);
 
-        // ✅ AUTO LOGIN FIXED
-        boolean isLoggedIn = prefs.getBoolean("isLoggedIn", false);
-        boolean isProfileComplete = prefs.getBoolean("isProfileComplete", false);
-
-        if (isLoggedIn) {
-            if (isProfileComplete) {
-                startActivity(new Intent(Login.this, HomeActivity.class));
-            } else {
-                startActivity(new Intent(Login.this, Account.class));
-            }
+        // ✅ Already fully logged in → skip login entirely
+        if (prefs.getBoolean("isLoggedIn", false)) {
+            goToDashboard();
             finish();
             return;
         }
 
-        etUser = findViewById(R.id.etUsername);
-        etPassword = findViewById(R.id.etPassword);
-        btnLogin = findViewById(R.id.btnLogin);
-        btnRegister = findViewById(R.id.tvCreateAccount);
-        cbRememberMe = findViewById(R.id.cbRememberMe);
+        // etUsername in XML is now used for email
+        etEmail          = findViewById(R.id.etUsername);
+        etPassword       = findViewById(R.id.etPassword);
+        btnLogin         = findViewById(R.id.btnLogin);
+        tvCreateAccount  = findViewById(R.id.tvCreateAccount);
+        tvForgotPassword = findViewById(R.id.tvForgotPassword);
+        cbRememberMe     = findViewById(R.id.cbRememberMe);
 
+        // ✅ Pre-fill email if coming from SignUp
+        String preEmail = getIntent().getStringExtra("email");
+        if (preEmail != null) etEmail.setText(preEmail);
+
+        // ── Login button ──────────────────────────────────────
         btnLogin.setOnClickListener(v -> {
-
-            String username = etUser.getText().toString().trim();
+            String email    = etEmail.getText().toString().trim();
             String password = etPassword.getText().toString().trim();
 
-            if (TextUtils.isEmpty(username) || TextUtils.isEmpty(password)) {
+            if (TextUtils.isEmpty(email) || TextUtils.isEmpty(password)) {
                 Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
                 return;
             }
 
+            if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                Toast.makeText(this, "Please enter a valid email", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             btnLogin.setEnabled(false);
+            doLogin(email, password);
+        });
 
-            new Thread(() -> {
-                try {
+        // ── Forgot password ───────────────────────────────────
+        tvForgotPassword.setOnClickListener(v -> showForgotDialog());
 
-                    URL url = new URL("http://10.0.2.2/crises_api/login.php");
-                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        // ── Go to Sign Up ─────────────────────────────────────
+        tvCreateAccount.setOnClickListener(v -> {
+            startActivity(new Intent(Login.this, SignUp.class));
+            finish();
+        });
+    }
 
-                    conn.setRequestMethod("POST");
-                    conn.setDoOutput(true);
+    // ── LOGIN REQUEST ─────────────────────────────────────────
+    private void doLogin(String email, String password) {
+        new Thread(() -> {
+            try {
+                URL url = new URL("http://10.0.2.2/crises_api/login.php");
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("POST");
+                conn.setDoOutput(true);
+                conn.setConnectTimeout(8000);
+                conn.setReadTimeout(8000);
 
-                    String data =
-                            "username=" + URLEncoder.encode(username, "UTF-8") +
-                                    "&password=" + URLEncoder.encode(password, "UTF-8");
+                String data = "email="    + URLEncoder.encode(email,    "UTF-8")
+                        + "&password=" + URLEncoder.encode(password, "UTF-8");
 
-                    OutputStream os = conn.getOutputStream();
-                    os.write(data.getBytes());
-                    os.flush();
-                    os.close();
+                OutputStream os = conn.getOutputStream();
+                os.write(data.getBytes());
+                os.flush();
+                os.close();
 
-                    Scanner scanner = new Scanner(conn.getInputStream());
-                    StringBuilder response = new StringBuilder();
+                Scanner sc = new Scanner(conn.getInputStream());
+                StringBuilder sb = new StringBuilder();
+                while (sc.hasNext()) sb.append(sc.nextLine());
+                sc.close();
 
-                    while (scanner.hasNext()) {
-                        response.append(scanner.nextLine());
-                    }
+                JSONObject json = new JSONObject(sb.toString());
 
-                    JSONObject json = new JSONObject(response.toString());
+                runOnUiThread(() -> {
+                    btnLogin.setEnabled(true);
+                    try {
+                        if (json.getString("status").equals("success")) {
 
-                    runOnUiThread(() -> {
-                        btnLogin.setEnabled(true);
+                            // ✅ Save partial session — NOT logged in yet, 2FA comes next
+                            prefs.edit()
+                                    .putInt("user_id",          json.getInt("user_id"))
+                                    .putString("email",         email)
+                                    .putString("full_name",     json.optString("full_name", ""))
+                                    .putString("national_id",   json.optString("national_id", ""))
+                                    .putBoolean("isProfileComplete",
+                                            json.optBoolean("profile_complete", false))
+                                    .putBoolean("isLoggedIn",   false) // ← 2FA not done yet
+                                    .apply();
 
-                        try {
-                            if (json.getString("status").equals("success")) {
+                            // ✅ Go to 2FA screen
+                            Intent intent = new Intent(Login.this, Verify.class);
+                            intent.putExtra("email", email);
+                            startActivity(intent);
 
-                                int userId = json.getInt("user_id");
-
-                                boolean remember = cbRememberMe.isChecked();
-
-                                SharedPreferences.Editor editor = prefs.edit();
-
-                                editor.putInt("user_id", userId);
-                                editor.putString("username", username);
-
-                                editor.putBoolean("isLoggedIn", true);
-                                editor.putBoolean("rememberMe", remember);
-
-                                // default until Account page updates it
-                                editor.putBoolean("isProfileComplete", false);
-
-                                editor.apply();
-
-                                Toast.makeText(this, "Login Successful", Toast.LENGTH_SHORT).show();
-
-                                // ✅ CLEAN FLOW
-                                startActivity(new Intent(Login.this, Account.class));
-                                finish();
-
-                            } else {
-                                Toast.makeText(this,
-                                        json.getString("message"),
-                                        Toast.LENGTH_SHORT).show();
-                            }
-
-                        } catch (Exception e) {
-                            Toast.makeText(this, "Parsing error", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(this,
+                                    json.optString("message", "Login failed"),
+                                    Toast.LENGTH_LONG).show();
                         }
-                    });
-
-                } catch (Exception e) {
-                    runOnUiThread(() -> {
-                        btnLogin.setEnabled(true);
+                    } catch (Exception e) {
                         Toast.makeText(this,
-                                "Server error: " + e.getMessage(),
+                                "Error: " + e.getMessage(),
                                 Toast.LENGTH_SHORT).show();
-                    });
-                }
-            }).start();
-        });
+                    }
+                });
 
-        // REGISTER
-        btnRegister.setOnClickListener(v -> {
-            startActivity(new Intent(Login.this, Account.class));
-        });
+            } catch (Exception e) {
+                runOnUiThread(() -> {
+                    btnLogin.setEnabled(true);
+                    Toast.makeText(this,
+                            "Connection error: " + e.getMessage(),
+                            Toast.LENGTH_SHORT).show();
+                });
+            }
+        }).start();
+    }
+
+    // ── FORGOT PASSWORD DIALOG ────────────────────────────────
+    private void showForgotDialog() {
+        EditText input = new EditText(this);
+        input.setHint("Enter your email address");
+        input.setInputType(android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
+        input.setPadding(40, 20, 40, 20);
+
+        new AlertDialog.Builder(this)
+                .setTitle("Reset Password")
+                .setMessage("We'll send a reset link to your email.")
+                .setView(input)
+                .setPositiveButton("Send", (dialog, which) -> {
+                    String email = input.getText().toString().trim();
+                    if (TextUtils.isEmpty(email)) {
+                        Toast.makeText(this, "Enter your email", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    sendForgotPassword(email);
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void sendForgotPassword(String email) {
+        new Thread(() -> {
+            try {
+                URL url = new URL("http://10.0.2.2/crises_api/forgot_password.php");
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("POST");
+                conn.setDoOutput(true);
+                conn.setConnectTimeout(8000);
+                conn.setReadTimeout(10000);
+
+                String data = "email=" + URLEncoder.encode(email, "UTF-8");
+                OutputStream os = conn.getOutputStream();
+                os.write(data.getBytes());
+                os.flush();
+                os.close();
+
+                Scanner sc = new Scanner(conn.getInputStream());
+                StringBuilder sb = new StringBuilder();
+                while (sc.hasNext()) sb.append(sc.nextLine());
+                sc.close();
+
+                JSONObject json = new JSONObject(sb.toString());
+                runOnUiThread(() -> {
+                    try {
+                        new AlertDialog.Builder(this)
+                                .setTitle("Email Sent")
+                                .setMessage(json.optString("message"))
+                                .setPositiveButton("OK", null)
+                                .show();
+                    } catch (Exception ignored) {}
+                });
+            } catch (Exception e) {
+                runOnUiThread(() ->
+                        Toast.makeText(this,
+                                "Connection error: " + e.getMessage(),
+                                Toast.LENGTH_SHORT).show());
+            }
+        }).start();
+    }
+
+    // ── ROUTING ───────────────────────────────────────────────
+    private void goToDashboard() {
+        Intent intent = new Intent(Login.this, HomeActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
     }
 }

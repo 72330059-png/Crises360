@@ -3,7 +3,6 @@ package com.example.crises;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
-import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -13,8 +12,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 public class StartingActivity extends AppCompatActivity {
 
-    Button btnGetStarted;
-    TextView tvLoginAction;
+    Button btnLogin, btnSignUp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,20 +26,18 @@ public class StartingActivity extends AppCompatActivity {
             return insets;
         });
 
-        btnGetStarted = findViewById(R.id.btnGetStarted);
-        tvLoginAction = findViewById(R.id.tvLoginAction);
+        btnLogin  = findViewById(R.id.btnlogin);
+        btnSignUp = findViewById(R.id.btnSign);
 
-        // 🆕 NEW USER → REGISTER
-        btnGetStarted.setOnClickListener(v -> {
-            Intent intent = new Intent(StartingActivity.this, Account.class);
-            intent.putExtra("mode", "register");
-            startActivity(intent);
+        // ✅ EXISTING USER → LOGIN
+        btnLogin.setOnClickListener(v -> {
+            startActivity(new Intent(StartingActivity.this, Login.class));
             finish();
         });
 
-        // 🔐 EXISTING USER → LOGIN
-        tvLoginAction.setOnClickListener(v -> {
-            startActivity(new Intent(StartingActivity.this, Login.class));
+        // ✅ NEW CITIZEN → SIGN UP
+        btnSignUp.setOnClickListener(v -> {
+            startActivity(new Intent(StartingActivity.this, SignUp.class));
             finish();
         });
     }

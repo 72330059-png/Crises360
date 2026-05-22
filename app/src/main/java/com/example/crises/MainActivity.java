@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -26,29 +27,36 @@ public class MainActivity extends AppCompatActivity {
                     .centerCrop()
                     .diskCacheStrategy(DiskCacheStrategy.ALL)
                     .into(bg);
+
+            // DEV TOOL: long-press splash to reset session for testing
+            bg.setOnLongClickListener(v -> {
+                getSharedPreferences("user_session", MODE_PRIVATE)
+                        .edit().clear().apply();
+                Toast.makeText(this, "Session cleared", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(MainActivity.this, StartingActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+                finish();
+                return true;
+            });
         }
 
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
 
             SharedPreferences prefs = getSharedPreferences("user_session", MODE_PRIVATE);
-
             boolean isLoggedIn = prefs.getBoolean("isLoggedIn", false);
-            boolean isProfileComplete = prefs.getBoolean("isProfileComplete", false);
 
             Intent intent;
 
-            // ✅ ONLY 2 IMPORTANT DECISIONS
-
-            if (!isLoggedIn) {
-                intent = new Intent(MainActivity.this, StartingActivity.class);
-
-            } else if (!isProfileComplete) {
-                intent = new Intent(MainActivity.this, Account.class);
-
-            } else {
+            if (isLoggedIn) {
+                // ✅ Fully logged in (passed 2FA) → go straight to dashboard
                 intent = new Intent(MainActivity.this, HomeActivity.class);
+            } else {
+                // ✅ Not logged in → show intro screen
+                intent = new Intent(MainActivity.this, StartingActivity.class);
             }
 
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
             finish();
 
