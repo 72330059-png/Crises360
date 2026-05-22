@@ -6,6 +6,8 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -29,12 +31,17 @@ public class Account extends AppCompatActivity {
     RequestQueue queue;
     SharedPreferences prefs;
 
-    // URLs
     static final String GET_URL    = "http://10.0.2.2/crises_api/get_members.php";
     static final String UPDATE_URL = "http://10.0.2.2/crises_api/update_member.php";
 
-    TextInputEditText etName, etId, etPhone, etDob, etFather, etMother, etCountry, etPlace;
+    // Fields
+    TextInputEditText etName, etId, etPhone, etDob,
+            etFather, etMother, etCountry, etPlace;
     AutoCompleteTextView spGender, spStatus, spBlood;
+
+    // Header views
+    TextView tvAvatarInitials, tvHeaderName, tvHeaderId, tvProgressPercent;
+    ProgressBar progressProfile;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,20 +57,19 @@ public class Account extends AppCompatActivity {
         setupCalendar();
         setupBottomNav();
 
-        // ✅ Pre-fill name and national ID from registration (saved in prefs)
+        // Pre-fill from registration data saved in prefs
         String savedName = prefs.getString("full_name", "");
         String savedId   = prefs.getString("national_id", "");
         if (!savedName.isEmpty()) etName.setText(savedName);
         if (!savedId.isEmpty())   etId.setText(savedId);
 
-        // ✅ Load rest of profile from server
+        // Load full profile from server
         loadData();
 
-        // ✅ Save button — only updates profile
         findViewById(R.id.btnSave).setOnClickListener(v -> updateData());
     }
 
-    // ── INIT VIEWS ────────────────────────────────────────────
+    // ── INIT ─────────────────────────────────────────────────
     private void initViews() {
         etName    = findViewById(R.id.etName);
         etId      = findViewById(R.id.etId);
@@ -76,9 +82,50 @@ public class Account extends AppCompatActivity {
         spGender  = findViewById(R.id.spGender);
         spStatus  = findViewById(R.id.spStatus);
         spBlood   = findViewById(R.id.spBlood);
+
+        tvAvatarInitials  = findViewById(R.id.tvAvatarInitials);
+        tvHeaderName      = findViewById(R.id.tvHeaderName);
+        tvHeaderId        = findViewById(R.id.tvHeaderId);
+        tvProgressPercent = findViewById(R.id.tvProgressPercent);
+        progressProfile   = findViewById(R.id.progressProfile);
     }
 
-    // ── LOAD DATA FROM SERVER ─────────────────────────────────
+    // ── HEADER + PROGRESS ────────────────────────────────────
+    private void updateHeader() {
+        String name = etName.getText().toString().trim();
+        String id   = etId.getText().toString().trim();
+
+        if (!name.isEmpty()) {
+            String[] parts = name.split(" ");
+            String initials = parts.length >= 2
+                    ? String.valueOf(parts[0].charAt(0)) + parts[1].charAt(0)
+                    : String.valueOf(parts[0].charAt(0));
+            tvAvatarInitials.setText(initials.toUpperCase());
+            tvHeaderName.setText(name);
+        }
+        if (!id.isEmpty()) tvHeaderId.setText("ID: " + id);
+
+        updateProgress();
+    }
+
+    private void updateProgress() {
+        int filled = 0, total = 9;
+        if (!etName.getText().toString().trim().isEmpty())    filled++;
+        if (!etId.getText().toString().trim().isEmpty())      filled++;
+        if (!etPhone.getText().toString().trim().isEmpty())   filled++;
+        if (!etDob.getText().toString().trim().isEmpty())     filled++;
+        if (!spGender.getText().toString().trim().isEmpty())  filled++;
+        if (!spBlood.getText().toString().trim().isEmpty())   filled++;
+        if (!etFather.getText().toString().trim().isEmpty())  filled++;
+        if (!etMother.getText().toString().trim().isEmpty())  filled++;
+        if (!etCountry.getText().toString().trim().isEmpty()) filled++;
+
+        int percent = (filled * 100) / total;
+        progressProfile.setProgress(percent);
+        tvProgressPercent.setText(percent + "%");
+    }
+
+    // ── LOAD FROM SERVER ─────────────────────────────────────
     private void loadData() {
         int userId = prefs.getInt("user_id", -1);
         if (userId == -1) return;
@@ -98,10 +145,12 @@ public class Account extends AppCompatActivity {
                             etMother.setText(data.optString("mother_name"));
                             etCountry.setText(data.optString("country"));
                             etPlace.setText(data.optString("place_of_birth"));
-
                             spGender.setText(data.optString("gender"), false);
                             spStatus.setText(data.optString("family_status"), false);
                             spBlood.setText(data.optString("blood_group"), false);
+
+                            // Update header after loading
+                            updateHeader();
                         }
                     } catch (Exception e) {
                         Toast.makeText(this, "Load error: " + e.getMessage(),
@@ -117,37 +166,29 @@ public class Account extends AppCompatActivity {
                 return map;
             }
         };
-
         queue.add(request);
     }
 
-    // ── UPDATE PROFILE ────────────────────────────────────────
+    // ── UPDATE ────────────────────────────────────────────────
     private void updateData() {
         StringRequest request = new StringRequest(Request.Method.POST, UPDATE_URL,
                 response -> {
                     try {
                         JSONObject obj = new JSONObject(response);
                         if (obj.getString("status").equals("success")) {
-
-                            // ✅ Mark profile as complete
-                            prefs.edit()
-                                    .putBoolean("isProfileComplete", true)
-                                    .apply();
-
+                            prefs.edit().putBoolean("isProfileComplete", true).apply();
                             Toast.makeText(this, "Profile updated!", Toast.LENGTH_SHORT).show();
-
+                            updateHeader();
                             Intent intent = new Intent(Account.this, HomeActivity.class);
                             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                                     | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                             startActivity(intent);
-
                         } else {
                             Toast.makeText(this,
                                     obj.optString("message", "Update failed"),
                                     Toast.LENGTH_SHORT).show();
                         }
                     } catch (Exception e) {
-                        // Handle plain "success" response too
                         if (response.trim().equals("success")) {
                             prefs.edit().putBoolean("isProfileComplete", true).apply();
                             Toast.makeText(this, "Profile updated!", Toast.LENGTH_SHORT).show();
@@ -165,22 +206,21 @@ public class Account extends AppCompatActivity {
             @Override
             protected Map<String, String> getParams() {
                 Map<String, String> map = new HashMap<>();
-                map.put("user_id",       String.valueOf(prefs.getInt("user_id", -1)));
-                map.put("full_name",     etName.getText().toString().trim());
-                map.put("national_id",   etId.getText().toString().trim());
-                map.put("phone",         etPhone.getText().toString().trim());
-                map.put("dob",           etDob.getText().toString().trim());
-                map.put("father_name",   etFather.getText().toString().trim());
-                map.put("mother_name",   etMother.getText().toString().trim());
-                map.put("country",       etCountry.getText().toString().trim());
-                map.put("place_of_birth",etPlace.getText().toString().trim());
-                map.put("gender",        spGender.getText().toString().trim());
-                map.put("family_status", spStatus.getText().toString().trim());
-                map.put("blood_group",   spBlood.getText().toString().trim());
+                map.put("user_id",        String.valueOf(prefs.getInt("user_id", -1)));
+                map.put("full_name",      etName.getText().toString().trim());
+                map.put("national_id",    etId.getText().toString().trim());
+                map.put("phone",          etPhone.getText().toString().trim());
+                map.put("dob",            etDob.getText().toString().trim());
+                map.put("father_name",    etFather.getText().toString().trim());
+                map.put("mother_name",    etMother.getText().toString().trim());
+                map.put("country",        etCountry.getText().toString().trim());
+                map.put("place_of_birth", etPlace.getText().toString().trim());
+                map.put("gender",         spGender.getText().toString().trim());
+                map.put("family_status",  spStatus.getText().toString().trim());
+                map.put("blood_group",    spBlood.getText().toString().trim());
                 return map;
             }
         };
-
         queue.add(request);
     }
 
@@ -195,8 +235,7 @@ public class Account extends AppCompatActivity {
                                     + "-" + String.format("%02d", day)),
                     c.get(Calendar.YEAR),
                     c.get(Calendar.MONTH),
-                    c.get(Calendar.DAY_OF_MONTH))
-                    .show();
+                    c.get(Calendar.DAY_OF_MONTH)).show();
         });
     }
 
@@ -205,11 +244,9 @@ public class Account extends AppCompatActivity {
         spGender.setAdapter(new ArrayAdapter<>(this,
                 android.R.layout.simple_list_item_1,
                 new String[]{"Male", "Female", "Other"}));
-
         spStatus.setAdapter(new ArrayAdapter<>(this,
                 android.R.layout.simple_list_item_1,
                 new String[]{"Single", "Married", "Divorced", "Widowed"}));
-
         spBlood.setAdapter(new ArrayAdapter<>(this,
                 android.R.layout.simple_list_item_1,
                 new String[]{"A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"}));
@@ -219,7 +256,6 @@ public class Account extends AppCompatActivity {
     private void setupBottomNav() {
         BottomNavigationView bottomNav = findViewById(R.id.bottomNavigation);
         bottomNav.setSelectedItemId(R.id.nav_profile);
-
         bottomNav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
             if (id == R.id.nav_home) {
