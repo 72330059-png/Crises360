@@ -34,12 +34,10 @@ public class Account extends AppCompatActivity {
     static final String GET_URL    = "http://10.0.2.2/crises_api/get_members.php";
     static final String UPDATE_URL = "http://10.0.2.2/crises_api/update_member.php";
 
-    // Fields
     TextInputEditText etName, etId, etPhone, etDob,
             etFather, etMother, etCountry, etPlace;
     AutoCompleteTextView spGender, spStatus, spBlood;
 
-    // Header views
     TextView tvAvatarInitials, tvHeaderName, tvHeaderId, tvProgressPercent;
     ProgressBar progressProfile;
 
@@ -57,19 +55,16 @@ public class Account extends AppCompatActivity {
         setupCalendar();
         setupBottomNav();
 
-        // Pre-fill from registration data saved in prefs
         String savedName = prefs.getString("full_name", "");
         String savedId   = prefs.getString("national_id", "");
         if (!savedName.isEmpty()) etName.setText(savedName);
         if (!savedId.isEmpty())   etId.setText(savedId);
 
-        // Load full profile from server
         loadData();
 
         findViewById(R.id.btnSave).setOnClickListener(v -> updateData());
     }
 
-    // ── INIT ─────────────────────────────────────────────────
     private void initViews() {
         etName    = findViewById(R.id.etName);
         etId      = findViewById(R.id.etId);
@@ -90,13 +85,13 @@ public class Account extends AppCompatActivity {
         progressProfile   = findViewById(R.id.progressProfile);
     }
 
-    // ── HEADER + PROGRESS ────────────────────────────────────
+    // ── HEADER ────────────────────────────────────────────────
     private void updateHeader() {
         String name = etName.getText().toString().trim();
         String id   = etId.getText().toString().trim();
 
         if (!name.isEmpty()) {
-            String[] parts = name.split(" ");
+            String[] parts = name.trim().split("\\s+");
             String initials = parts.length >= 2
                     ? String.valueOf(parts[0].charAt(0)) + parts[1].charAt(0)
                     : String.valueOf(parts[0].charAt(0));
@@ -108,24 +103,34 @@ public class Account extends AppCompatActivity {
         updateProgress();
     }
 
+    // ── PROGRESS — FIXED ──────────────────────────────────────
     private void updateProgress() {
         int filled = 0, total = 9;
-        if (!etName.getText().toString().trim().isEmpty())    filled++;
-        if (!etId.getText().toString().trim().isEmpty())      filled++;
-        if (!etPhone.getText().toString().trim().isEmpty())   filled++;
-        if (!etDob.getText().toString().trim().isEmpty())     filled++;
-        if (!spGender.getText().toString().trim().isEmpty())  filled++;
-        if (!spBlood.getText().toString().trim().isEmpty())   filled++;
-        if (!etFather.getText().toString().trim().isEmpty())  filled++;
-        if (!etMother.getText().toString().trim().isEmpty())  filled++;
-        if (!etCountry.getText().toString().trim().isEmpty()) filled++;
+
+        // ✅ FIXED: use isRealValue() to avoid counting "null" string as filled
+        if (isRealValue(etName.getText().toString()))    filled++;
+        if (isRealValue(etId.getText().toString()))      filled++;
+        if (isRealValue(etPhone.getText().toString()))   filled++;
+        if (isRealValue(etDob.getText().toString()))     filled++;
+        if (isRealValue(spGender.getText().toString()))  filled++;
+        if (isRealValue(spBlood.getText().toString()))   filled++;
+        if (isRealValue(etFather.getText().toString()))  filled++;
+        if (isRealValue(etMother.getText().toString()))  filled++;
+        if (isRealValue(etCountry.getText().toString())) filled++;
 
         int percent = (filled * 100) / total;
         progressProfile.setProgress(percent);
         tvProgressPercent.setText(percent + "%");
     }
 
-    // ── LOAD FROM SERVER ─────────────────────────────────────
+    // ✅ Returns true only if value is non-empty AND not the literal string "null"
+    private boolean isRealValue(String val) {
+        if (val == null) return false;
+        String trimmed = val.trim();
+        return !trimmed.isEmpty() && !trimmed.equalsIgnoreCase("null");
+    }
+
+    // ── LOAD ──────────────────────────────────────────────────
     private void loadData() {
         int userId = prefs.getInt("user_id", -1);
         if (userId == -1) return;
@@ -137,19 +142,24 @@ public class Account extends AppCompatActivity {
                         if (obj.getString("status").equals("success")) {
                             JSONObject data = obj.getJSONObject("data");
 
-                            etName.setText(data.optString("full_name"));
-                            etId.setText(data.optString("national_id"));
-                            etPhone.setText(data.optString("phone"));
-                            etDob.setText(data.optString("dob"));
-                            etFather.setText(data.optString("father_name"));
-                            etMother.setText(data.optString("mother_name"));
-                            etCountry.setText(data.optString("country"));
-                            etPlace.setText(data.optString("place_of_birth"));
-                            spGender.setText(data.optString("gender"), false);
-                            spStatus.setText(data.optString("family_status"), false);
-                            spBlood.setText(data.optString("blood_group"), false);
+                            // ✅ FIXED: use cleanField() to avoid setting "null" text
+                            etName.setText(cleanField(data.optString("full_name")));
+                            etId.setText(cleanField(data.optString("national_id")));
+                            etPhone.setText(cleanField(data.optString("phone")));
+                            etDob.setText(cleanField(data.optString("dob")));
+                            etFather.setText(cleanField(data.optString("father_name")));
+                            etMother.setText(cleanField(data.optString("mother_name")));
+                            etCountry.setText(cleanField(data.optString("country")));
+                            etPlace.setText(cleanField(data.optString("place_of_birth")));
 
-                            // Update header after loading
+                            // ✅ FIXED: only set dropdown if real value
+                            String gender = cleanField(data.optString("gender"));
+                            String status = cleanField(data.optString("family_status"));
+                            String blood  = cleanField(data.optString("blood_group"));
+                            if (!gender.isEmpty()) spGender.setText(gender, false);
+                            if (!status.isEmpty()) spStatus.setText(status, false);
+                            if (!blood.isEmpty())  spBlood.setText(blood, false);
+
                             updateHeader();
                         }
                     } catch (Exception e) {
@@ -167,6 +177,13 @@ public class Account extends AppCompatActivity {
             }
         };
         queue.add(request);
+    }
+
+    // ✅ Returns empty string if value is null or "null"
+    private String cleanField(String val) {
+        if (val == null) return "";
+        String trimmed = val.trim();
+        return trimmed.equalsIgnoreCase("null") ? "" : trimmed;
     }
 
     // ── UPDATE ────────────────────────────────────────────────
@@ -239,17 +256,26 @@ public class Account extends AppCompatActivity {
         });
     }
 
-    // ── DROPDOWNS ─────────────────────────────────────────────
+    // ── DROPDOWNS — FIXED ─────────────────────────────────────
     private void setupDropdowns() {
+        // ✅ FIXED: threshold(1) shows dropdown on first tap
+        spGender.setThreshold(1);
         spGender.setAdapter(new ArrayAdapter<>(this,
-                android.R.layout.simple_list_item_1,
+                android.R.layout.simple_dropdown_item_1line,
                 new String[]{"Male", "Female", "Other"}));
+        spGender.setOnClickListener(v -> spGender.showDropDown());
+
+        spStatus.setThreshold(1);
         spStatus.setAdapter(new ArrayAdapter<>(this,
-                android.R.layout.simple_list_item_1,
+                android.R.layout.simple_dropdown_item_1line,
                 new String[]{"Single", "Married", "Divorced", "Widowed"}));
+        spStatus.setOnClickListener(v -> spStatus.showDropDown());
+
+        spBlood.setThreshold(1);
         spBlood.setAdapter(new ArrayAdapter<>(this,
-                android.R.layout.simple_list_item_1,
+                android.R.layout.simple_dropdown_item_1line,
                 new String[]{"A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"}));
+        spBlood.setOnClickListener(v -> spBlood.showDropDown());
     }
 
     // ── BOTTOM NAV ────────────────────────────────────────────

@@ -27,7 +27,8 @@ import java.util.Scanner;
 public class Verify extends AppCompatActivity {
 
     EditText etCode;
-    Button btnVerify, btnResend;
+    Button btnVerify;
+    TextView btnResend;
     TextView tvEmailSentTo, tvTimer;
 
     String email;
@@ -49,15 +50,15 @@ public class Verify extends AppCompatActivity {
         prefs = getSharedPreferences("user_session", MODE_PRIVATE);
         email = getIntent().getStringExtra("email");
 
-        etCode       = findViewById(R.id.etCode);
-        btnVerify    = findViewById(R.id.btnVerify);
-        btnResend    = findViewById(R.id.btnResend);
+        etCode        = findViewById(R.id.etCode);
+        btnVerify     = findViewById(R.id.btnVerify);
+        btnResend     = findViewById(R.id.btnResend);
         tvEmailSentTo = findViewById(R.id.tvEmailSentTo);
-        tvTimer      = findViewById(R.id.tvTimer);
+        tvTimer       = findViewById(R.id.tvTimer);
 
         tvEmailSentTo.setText("A 6-digit code was sent to:\n" + email);
 
-        // ✅ Send code automatically when screen opens
+        // Send code automatically when screen opens
         sendCode();
 
         // ── Verify button ─────────────────────────────────────
@@ -71,10 +72,12 @@ public class Verify extends AppCompatActivity {
             verifyCode(code);
         });
 
-        // ── Resend button ─────────────────────────────────────
+        // ── Resend button (TextView) ──────────────────────────
         btnResend.setOnClickListener(v -> {
             etCode.setText("");
-            btnResend.setEnabled(false);
+            // ✅ FIXED: use setAlpha + setClickable instead of setEnabled
+            btnResend.setAlpha(0.4f);
+            btnResend.setClickable(false);
             sendCode();
         });
     }
@@ -116,7 +119,8 @@ public class Verify extends AppCompatActivity {
                                     Toast.LENGTH_LONG).show();
                         }
                     } catch (Exception e) {
-                        Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Error: " + e.getMessage(),
+                                Toast.LENGTH_SHORT).show();
                     }
                 });
 
@@ -161,14 +165,13 @@ public class Verify extends AppCompatActivity {
 
                             if (countDownTimer != null) countDownTimer.cancel();
 
-                            // ✅ 2FA passed — NOW mark as fully logged in
+                            // ✅ 2FA passed — mark as fully logged in
                             prefs.edit()
                                     .putBoolean("isLoggedIn", true)
                                     .apply();
 
                             Toast.makeText(this, "Verified!", Toast.LENGTH_SHORT).show();
 
-                            // ✅ Go to dashboard
                             Intent intent = new Intent(Verify.this, HomeActivity.class);
                             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                                     | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -180,7 +183,8 @@ public class Verify extends AppCompatActivity {
                                     Toast.LENGTH_LONG).show();
                         }
                     } catch (Exception e) {
-                        Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Error: " + e.getMessage(),
+                                Toast.LENGTH_SHORT).show();
                     }
                 });
 
@@ -198,7 +202,10 @@ public class Verify extends AppCompatActivity {
     // ── COUNTDOWN TIMER ───────────────────────────────────────
     private void startCountdown() {
         if (countDownTimer != null) countDownTimer.cancel();
-        btnResend.setEnabled(false);
+
+        // ✅ FIXED: disable resend using alpha + clickable
+        btnResend.setAlpha(0.4f);
+        btnResend.setClickable(false);
 
         countDownTimer = new CountDownTimer(10 * 60 * 1000, 1000) {
             public void onTick(long ms) {
@@ -208,7 +215,9 @@ public class Verify extends AppCompatActivity {
             }
             public void onFinish() {
                 tvTimer.setText("Code expired — tap Resend");
-                btnResend.setEnabled(true);
+                // ✅ FIXED: re-enable resend
+                btnResend.setAlpha(1.0f);
+                btnResend.setClickable(true);
             }
         }.start();
     }
