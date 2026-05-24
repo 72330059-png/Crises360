@@ -1,7 +1,9 @@
 package com.example.crises;
 
 import android.os.Bundle;
-import android.util.Log;
+import android.view.View;
+import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -19,6 +21,7 @@ import java.util.ArrayList;
 public class News extends AppCompatActivity {
 
     RecyclerView recyclerView;
+    ProgressBar progressBar;
     ArrayList<Newsss> list;
     NewsAdapter adapter;
 
@@ -28,19 +31,20 @@ public class News extends AppCompatActivity {
         setContentView(R.layout.activity_news);
 
         recyclerView = findViewById(R.id.recyclerView);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        progressBar  = findViewById(R.id.progressBar);
 
-        list = new ArrayList<>();
-        adapter = new NewsAdapter(list);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        list    = new ArrayList<>();
+        adapter = new NewsAdapter(this, list);
         recyclerView.setAdapter(adapter);
+
+        findViewById(R.id.btnBack).setOnClickListener(v -> finish());
 
         loadNews();
     }
 
     private void loadNews() {
-
         new Thread(() -> {
-
             try {
                 URL url = new URL("http://10.0.2.2/crises_api/get_news.php");
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -49,37 +53,42 @@ public class News extends AppCompatActivity {
                 conn.setReadTimeout(10000);
 
                 BufferedReader br = new BufferedReader(
-                        new InputStreamReader(conn.getInputStream())
-                );
-
+                        new InputStreamReader(conn.getInputStream()));
                 StringBuilder sb = new StringBuilder();
                 String line;
-
-                while ((line = br.readLine()) != null) {
-                    sb.append(line);
-                }
+                while ((line = br.readLine()) != null) sb.append(line);
+                br.close();
 
                 JSONArray array = new JSONArray(sb.toString());
-
                 list.clear();
 
                 for (int i = 0; i < array.length(); i++) {
-
                     JSONObject obj = array.getJSONObject(i);
-
                     list.add(new Newsss(
+                            obj.optInt("id"),
                             obj.optString("title"),
-                            obj.optString("content"),        // FIXED
-                            obj.optString("category"),       // FIXED
-                            obj.optString("type"),           // OK
-                            obj.optString("publish_date")    // FIXED
+                            obj.optString("content"),
+                            obj.optString("category"),
+                            obj.optString("type"),
+                            obj.optString("status"),
+                            obj.optInt("featured"),
+                            obj.optString("image"),
+                            obj.optInt("views"),
+                            obj.optString("publish_date"),
+                            obj.optString("created_at")
                     ));
                 }
 
-                runOnUiThread(() -> adapter.notifyDataSetChanged());
+                runOnUiThread(() -> {
+                    progressBar.setVisibility(View.GONE);
+                    adapter.notifyDataSetChanged();
+                });
 
             } catch (Exception e) {
-                Log.e("NEWS_ERROR", e.toString());
+                runOnUiThread(() -> {
+                    progressBar.setVisibility(View.GONE);
+                    Toast.makeText(this, "Could not load news", Toast.LENGTH_SHORT).show();
+                });
             }
         }).start();
     }

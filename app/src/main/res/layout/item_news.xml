@@ -1,126 +1,178 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="10dp"
-    card_view:cardCornerRadius="18dp"
-    card_view:cardElevation="8dp">
+    android:orientation="vertical"
+    android:paddingHorizontal="16dp"
+    android:paddingBottom="4dp">
 
-    <LinearLayout
+    <!-- ── FEATURED CARD (position 0) ─────────────────────── -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardFeatured"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:layout_marginBottom="12dp"
+        android:visibility="gone"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="0dp"
+        app:cardBackgroundColor="#FFFFFF">
 
-        <!-- 🔴 LEFT GREEN BAR (KEEP SAME DESIGN) -->
-        <View
-            android:id="@+id/severityBar"
-            android:layout_width="6dp"
-            android:layout_height="match_parent"
-            android:background="#4CAF50"/>
-
-        <!-- MAIN CONTENT -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="14dp">
+            android:orientation="vertical">
 
-            <!-- TOP ROW -->
+            <!-- Gradient header -->
             <LinearLayout
+                android:id="@+id/featuredHeader"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:layout_height="160dp"
+                android:orientation="vertical"
+                android:gravity="bottom"
+                android:padding="14dp"
+                android:background="#1E3A5F">
 
-                <!-- TYPE -->
                 <TextView
-                    android:id="@+id/type"
+                    android:id="@+id/tvFeaturedCategory"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="TYPE"
-                    android:textSize="11sp"
+                    android:textSize="9sp"
                     android:textStyle="bold"
                     android:textColor="#FFFFFF"
-                    android:background="#1E3A5F"
-                    android:paddingHorizontal="10dp"
-                    android:paddingVertical="3dp"/>
+                    android:background="#33FFFFFF"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="3dp"
+                    android:letterSpacing="0.08"
+                    android:layout_marginBottom="6dp" />
 
-                <!-- DATE (publish_date from DB) -->
                 <TextView
-                    android:id="@+id/date"
+                    android:id="@+id/tvFeaturedTitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Date"
-                    android:textSize="11sp"
-                    android:textColor="#888"
-                    android:gravity="end"/>
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:textColor="#FFFFFF"
+                    android:lineSpacingExtra="2dp" />
             </LinearLayout>
 
-            <!-- TITLE -->
-            <TextView
-                android:id="@+id/title"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="News Title"
-                android:textStyle="bold"
-                android:textSize="17sp"
-                android:textColor="#1E2A38"
-                android:layout_marginTop="6dp"/>
-
-            <!-- CONTENT (THIS = your DB 'content') -->
-            <TextView
-                android:id="@+id/description"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Content here..."
-                android:textSize="14sp"
-                android:textColor="#555"
-                android:layout_marginTop="4dp"
-                android:maxLines="3"
-                android:ellipsize="end"/>
-
-            <!-- OPTIONAL FIELD (keep or hide in adapter) -->
-            <TextView
-                android:id="@+id/severity"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text=""
-                android:visibility="gone"
-                android:layout_marginTop="6dp"/>
-
-            <!-- BOTTOM ROW -->
+            <!-- Footer -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:layout_marginTop="10dp"
-                android:weightSum="2">
+                android:gravity="center_vertical"
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="10dp"
+                android:background="#FFFFFF">
 
-                <!-- CATEGORY (optional from DB) -->
                 <TextView
-                    android:id="@+id/location"
+                    android:id="@+id/tvFeaturedDate"
                     android:layout_width="0dp"
-                    android:layout_weight="1"
                     android:layout_height="wrap_content"
-                    android:text="Category"
-                    android:textSize="12sp"
-                    android:textColor="#666"/>
+                    android:layout_weight="1"
+                    android:textSize="11sp"
+                    android:textColor="#98A2B3" />
 
-                <!-- TYPE / STATUS / VIEWS AREA -->
                 <TextView
-                    android:id="@+id/source"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
+                    android:id="@+id/tvFeaturedViews"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text=""
-                    android:textSize="12sp"
-                    android:textColor="#666"
-                    android:gravity="end"/>
+                    android:layout_marginEnd="12dp"
+                    android:textSize="11sp"
+                    android:textColor="#98A2B3" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Read more →"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:textColor="#1976D2" />
             </LinearLayout>
+        </LinearLayout>
 
+    </androidx.cardview.widget.CardView>
+
+    <!-- ── SMALL CARD (position 1+) ───────────────────────── -->
+    <LinearLayout
+        android:id="@+id/cardSmall"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingVertical="10dp"
+        android:visibility="gone">
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_marginEnd="12dp"
+            app:cardCornerRadius="10dp"
+            app:cardElevation="0dp">
+            <View
+                android:id="@+id/thumbColor"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#1E3A5F" />
+        </androidx.cardview.widget.CardView>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvSmallCategory"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="9sp"
+                android:textStyle="bold"
+                android:textColor="#185FA5"
+                android:layout_marginBottom="3dp" />
+
+            <TextView
+                android:id="@+id/tvSmallTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:textColor="#1D2A44"
+                android:lineSpacingExtra="1dp"
+                android:maxLines="2"
+                android:ellipsize="end" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="4dp">
+
+                <TextView
+                    android:id="@+id/tvSmallDate"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textSize="10sp"
+                    android:textColor="#98A2B3" />
+
+                <TextView
+                    android:id="@+id/tvSmallViews"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="10sp"
+                    android:textColor="#98A2B3" />
+            </LinearLayout>
         </LinearLayout>
 
     </LinearLayout>
 
-</androidx.cardview.widget.CardView>
+    <View
+        android:id="@+id/divider"
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:background="#F1F5F9"
+        android:visibility="gone" />
+
+</LinearLayout>
