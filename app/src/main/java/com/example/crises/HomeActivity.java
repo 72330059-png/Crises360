@@ -9,6 +9,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
@@ -21,6 +22,7 @@ public class HomeActivity extends BaseActivity {
 
     SharedPreferences prefs;
     Button quickCall;
+    private QuoteTickerManager quoteTicker;
 
     @Override
     protected void attachBaseContext(Context newBase) {
@@ -34,7 +36,6 @@ public class HomeActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
 
-        // ✅ SESSION CHECK — if not logged in go to login
         prefs = getSharedPreferences("user_session", MODE_PRIVATE);
         if (!prefs.getBoolean("isLoggedIn", false)) {
             startActivity(new Intent(this, Login.class)
@@ -50,12 +51,36 @@ public class HomeActivity extends BaseActivity {
         initQuickActions();
         initQuickCall();
         initNewsSection();
+        initQuoteTicker();
         initBottomNavigation();
     }
+    private void initQuoteTicker() {
+        View quoteCard = findViewById(R.id.quoteCardInclude);
+        if (quoteCard == null) return;
 
-    // ── TOP BAR ───────────────────────────────────────────────
+        quoteTicker = new QuoteTickerManager(
+                getResources(),
+                quoteCard.findViewById(R.id.tvQuoteText),
+                quoteCard.findViewById(R.id.tvQuoteAuthor),
+                quoteCard.findViewById(R.id.quoteAccentStrip),
+                quoteCard.findViewById(R.id.quoteProgress)
+        );
+        quoteTicker.start();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (quoteTicker != null) quoteTicker.start();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (quoteTicker != null) quoteTicker.stop();
+    }
+
     private void initTopAppBar() {
-        // ✅ Show full_name instead of username
         TextView tvHello = findViewById(R.id.appBrandName);
         if (tvHello != null) {
             String name = prefs.getString("full_name", "");
@@ -65,12 +90,11 @@ public class HomeActivity extends BaseActivity {
         ImageButton notificationBtn = findViewById(R.id.notificationBtn);
         ImageButton settingsBtn     = findViewById(R.id.settingsBtn);
 
-        if (notificationBtn != null) {
+        if (notificationBtn != null)
             notificationBtn.setOnClickListener(v ->
                     startActivity(new Intent(this, Tips.class)));
-        }
 
-        if (settingsBtn != null) {
+        if (settingsBtn != null)
             settingsBtn.setOnClickListener(v -> {
                 try {
                     startActivity(new Intent(this, Settings.class));
@@ -79,36 +103,30 @@ public class HomeActivity extends BaseActivity {
                             "Settings not found!", android.widget.Toast.LENGTH_SHORT).show();
                 }
             });
-        }
     }
 
-    // ── PROFILE COMPLETION BANNER ─────────────────────────────
-    // ✅ Shows a yellow banner for new users who haven't filled their profile
     private void initProfileBanner() {
         View banner = findViewById(R.id.profileBanner);
-        if (banner == null) return; // banner not in XML yet — safe to skip
+        if (banner == null) return;
 
         boolean profileComplete = prefs.getBoolean("isProfileComplete", false);
 
         if (!profileComplete) {
             banner.setVisibility(View.VISIBLE);
             Button btnComplete = findViewById(R.id.btnCompleteProfile);
-            if (btnComplete != null) {
+            if (btnComplete != null)
                 btnComplete.setOnClickListener(v ->
                         startActivity(new Intent(this, Account.class)));
-            }
         } else {
             banner.setVisibility(View.GONE);
         }
     }
 
-    // ── NEWS ──────────────────────────────────────────────────
     private void initNewsSection() {
         CardView newsCard = findViewById(R.id.newsCard);
-        if (newsCard != null) {
+        if (newsCard != null)
             newsCard.setOnClickListener(v ->
                     startActivity(new Intent(this, News.class)));
-        }
     }
 
     // ── SOS BUTTON ────────────────────────────────────────────
@@ -152,7 +170,7 @@ public class HomeActivity extends BaseActivity {
                     startActivity(new Intent(this, Needs.class)));
     }
 
-    // ── BOTTOM NAV ────────────────────────────────────────────
+
     private void initBottomNavigation() {
         BottomNavigationView bottomNav = findViewById(R.id.bottomNavigation);
         if (bottomNav == null) return;
@@ -165,13 +183,9 @@ public class HomeActivity extends BaseActivity {
 
             Intent intent = null;
 
-            if (id == R.id.nav_alerts) {
-                intent = new Intent(this, Alerts.class);
-            } else if (id == R.id.nav_map) {
-                intent = new Intent(this, MapActivity.class);
-            } else if (id == R.id.nav_profile) {
-                intent = new Intent(this, Account.class);
-            }
+            if (id == R.id.nav_alerts)        intent = new Intent(this, Alerts.class);
+            else if (id == R.id.nav_map)      intent = new Intent(this, MapActivity.class);
+            else if (id == R.id.nav_profile)  intent = new Intent(this, Account.class);
 
             if (intent != null) {
                 startActivity(intent);
@@ -180,22 +194,5 @@ public class HomeActivity extends BaseActivity {
             }
             return false;
         });
-    }
-
-    // ── LOGOUT ────────────────────────────────────────────────
-    public void logout() {
-        new AlertDialog.Builder(this)
-                .setTitle("Log Out")
-                .setMessage("Are you sure you want to log out?")
-                .setPositiveButton("Log Out", (d, w) -> {
-                    prefs.edit().clear().apply();
-                    Intent intent = new Intent(this, StartingActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                            | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                    startActivity(intent);
-                    finish();
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
     }
 }

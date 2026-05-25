@@ -1,3 +1,24 @@
 <resources>
     <string name="app_name">Crises</string>
+    <string-array name="quotes_text">
+        <item>"In the middle of every difficulty lies opportunity. Prepare, respond, recover."</item>
+        <item>"Safety is not a gadget but a state of mind. Know your surroundings, trust your instincts."</item>
+        <item>"Disasters don\'t plan ahead — but you can. Every second of preparation counts."</item>
+        <item>"Community is the greatest emergency resource. Look after one another."</item>
+        <item>"Courage is not the absence of fear — it is acting despite it. Help is always within reach."</item>
+        <item>"A single alert shared on time can save an entire neighborhood. Information is protection."</item>
+        <item>"When the unexpected strikes, a calm mind is your greatest asset. Breathe. Act. Survive."</item>
+        <item>"No one is ever truly alone in a crisis. Reach out — help is closer than you think."</item>
+    </string-array>
+
+    <string-array name="quotes_author">
+        <item>— Adapted from Albert Einstein</item>
+        <item>— Eleanor Everet</item>
+        <item>— Crises360</item>
+        <item>— United Nations OCHA</item>
+        <item>— Crises360</item>
+        <item>— FEMA</item>
+        <item>— Red Cross</item>
+        <item>— Crises360</item>
+    </string-array>
 </resources>

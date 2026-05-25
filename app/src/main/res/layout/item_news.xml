@@ -23,40 +23,59 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- Gradient header -->
-            <LinearLayout
+            <!-- Gradient header with image -->
+            <FrameLayout
                 android:id="@+id/featuredHeader"
                 android:layout_width="match_parent"
                 android:layout_height="160dp"
-                android:orientation="vertical"
-                android:gravity="bottom"
-                android:padding="14dp"
                 android:background="#1E3A5F">
 
-                <TextView
-                    android:id="@+id/tvFeaturedCategory"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="9sp"
-                    android:textStyle="bold"
-                    android:textColor="#FFFFFF"
-                    android:background="#33FFFFFF"
-                    android:paddingHorizontal="8dp"
-                    android:paddingVertical="3dp"
-                    android:letterSpacing="0.08"
-                    android:layout_marginBottom="6dp" />
+                <!-- Image fills the header (loaded by Glide) -->
+                <ImageView
+                    android:id="@+id/imgFeatured"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop" />
 
-                <TextView
-                    android:id="@+id/tvFeaturedTitle"
+                <!-- Dark gradient overlay so text stays readable -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/gradient_overlay" />
+
+                <!-- Category + Title pinned to bottom -->
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textSize="15sp"
-                    android:textStyle="bold"
-                    android:textColor="#FFFFFF"
-                    android:lineSpacingExtra="2dp" />
-            </LinearLayout>
+                    android:layout_gravity="bottom"
+                    android:orientation="vertical"
+                    android:padding="14dp">
 
-            <!-- Footer -->
+                    <TextView
+                        android:id="@+id/tvFeaturedCategory"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="9sp"
+                        android:textStyle="bold"
+                        android:textColor="#FFFFFF"
+                        android:background="#33FFFFFF"
+                        android:paddingHorizontal="8dp"
+                        android:paddingVertical="3dp"
+                        android:letterSpacing="0.08"
+                        android:layout_marginBottom="6dp" />
+
+                    <TextView
+                        android:id="@+id/tvFeaturedTitle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:textColor="#FFFFFF"
+                        android:lineSpacingExtra="2dp" />
+                </LinearLayout>
+            </FrameLayout>
+
+            <!-- Footer row -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -104,17 +123,21 @@
         android:paddingVertical="10dp"
         android:visibility="gone">
 
+        <!-- Thumbnail with real image -->
         <androidx.cardview.widget.CardView
             android:layout_width="60dp"
             android:layout_height="60dp"
             android:layout_marginEnd="12dp"
             app:cardCornerRadius="10dp"
             app:cardElevation="0dp">
-            <View
-                android:id="@+id/thumbColor"
+
+            <ImageView
+                android:id="@+id/thumbImage"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:scaleType="centerCrop"
                 android:background="#1E3A5F" />
+
         </androidx.cardview.widget.CardView>
 
         <LinearLayout

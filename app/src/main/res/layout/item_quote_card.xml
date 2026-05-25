@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="16dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="#FFFFFF">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <!-- Colored accent strip on the left -->
+        <View
+            android:id="@+id/quoteAccentStrip"
+            android:layout_width="5dp"
+            android:layout_height="match_parent"
+            android:background="#378ADD" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- Quote icon -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="❝"
+                android:textSize="28sp"
+                android:textColor="#D0D5DD"
+                android:layout_marginBottom="6dp" />
+
+            <!-- Quote text -->
+            <TextView
+                android:id="@+id/tvQuoteText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textColor="#1D2A44"
+                android:textSize="15sp"
+                android:lineSpacingExtra="4dp" />
+
+            <!-- Author -->
+            <TextView
+                android:id="@+id/tvQuoteAuthor"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text=""
+                android:textColor="#667085"
+                android:textSize="12sp"
+                android:textStyle="italic" />
+
+            <!-- Progress bar -->
+            <ProgressBar
+                android:id="@+id/quoteProgress"
+                style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="4dp"
+                android:layout_marginTop="14dp"
+                android:max="100"
+                android:progress="0"
+                android:progressTint="#378ADD"
+                android:progressBackgroundTint="#E4E7EC" />
+
+        </LinearLayout>
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

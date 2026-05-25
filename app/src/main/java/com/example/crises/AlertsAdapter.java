@@ -20,41 +20,73 @@ public class AlertsAdapter extends RecyclerView.Adapter<AlertsAdapter.ViewHolder
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-
         TextView txtType, txtMessage, txtLocation, txtTime;
         View strip;
 
         public ViewHolder(View itemView) {
             super(itemView);
-
-            txtType = itemView.findViewById(R.id.txtType);
-            txtMessage = itemView.findViewById(R.id.txtMessage);
+            txtType     = itemView.findViewById(R.id.txtType);
+            txtMessage  = itemView.findViewById(R.id.txtMessage);
             txtLocation = itemView.findViewById(R.id.txtLocation);
-            txtTime = itemView.findViewById(R.id.txtTime);
-            strip = itemView.findViewById(R.id.priorityStrip);
+            txtTime     = itemView.findViewById(R.id.txtTime);
+            strip       = itemView.findViewById(R.id.priorityStrip);
         }
     }
 
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-
         View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_alert, parent, false);
-
         return new ViewHolder(v);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-
         AlertModel alert = list.get(position);
 
         holder.txtMessage.setText(alert.getMessage());
         holder.txtLocation.setText("📍 " + alert.getLocation());
         holder.txtTime.setText(alert.getTime());
-        holder.txtType.setText("🚨 Alert");
-        holder.strip.setBackgroundColor(Color.parseColor("#526D82"));
+
+        String severity = alert.getSeverity() != null ? alert.getSeverity() : "";
+
+        switch (severity.toLowerCase()) {
+            case "warning":
+                applyStyle(holder,
+                        "⚠️ Warning",
+                        "#F59E0B",
+                        "#F59E0B",
+                        R.drawable.badge_warning_bg);
+                break;
+
+            case "update":
+                applyStyle(holder,
+                        "📢 Update",
+                        "#2F66F6",
+                        "#2F66F6",
+                        R.drawable.badge_update_bg);
+                break;
+
+            default: // danger / critical / anything else
+                applyStyle(holder,
+                        "🚨 Danger",
+                        "#EF4444",
+                        "#EF4444",
+                        R.drawable.badge_danger_bg);
+                break;
+        }
+    }
+
+    private void applyStyle(ViewHolder holder,
+                            String label,
+                            String stripColor,
+                            String textColor,
+                            int badgeBackground) {
+        holder.txtType.setText(label);
+        holder.txtType.setTextColor(Color.parseColor(textColor));
+        holder.txtType.setBackgroundResource(badgeBackground);
+        holder.strip.setBackgroundColor(Color.parseColor(stripColor));
     }
 
     @Override

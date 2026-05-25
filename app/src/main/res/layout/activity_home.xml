@@ -92,7 +92,19 @@
             android:orientation="vertical"
             android:padding="20dp">
 
+            <!-- QUOTES TICKER CARD -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:text="💬 Quote of the Moment"
+                android:textColor="#1D2A44"
+                android:textSize="16sp"
+                android:textStyle="bold" />
 
+            <include
+                android:id="@+id/quoteCardInclude"
+                layout="@layout/item_quote_card" />
 
             <!-- SAFE CARD (FIX ONLY ICON TINT) -->
             <androidx.cardview.widget.CardView
@@ -444,6 +456,7 @@
                 android:textSize="16sp"
                 android:textStyle="bold" />
 
+            <!-- Replace your existing newsCard CardView with this -->
             <androidx.cardview.widget.CardView
                 android:id="@+id/newsCard"
                 android:layout_width="match_parent"
@@ -462,39 +475,82 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
-                    <!-- CATEGORY -->
-                    <TextView
-                        android:id="@+id/newsCategory"
-                        android:layout_width="wrap_content"
+                    <!-- TOP ROW: category badge + arrow icon -->
+                    <RelativeLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="SAFETY UPDATE"
-                        android:textColor="#2F66F6"
-                        android:textSize="11sp"
-                        android:textStyle="bold"
-                        android:letterSpacing="0.08" />
+                        android:layout_marginBottom="10dp">
+
+                        <TextView
+                            android:id="@+id/newsCategory"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentStart="true"
+                            android:layout_centerVertical="true"
+                            android:background="@drawable/badge_blue_bg"
+                            android:paddingHorizontal="10dp"
+                            android:paddingVertical="4dp"
+                            android:text="SAFETY UPDATE"
+                            android:textColor="#2F66F6"
+                            android:textSize="10sp"
+                            android:textStyle="bold"
+                            android:letterSpacing="0.08" />
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_alignParentEnd="true"
+                            android:layout_centerVertical="true"
+                            android:src="@android:drawable/ic_menu_more"
+                            android:alpha="0.35" />
+
+                    </RelativeLayout>
 
                     <!-- TITLE -->
                     <TextView
                         android:id="@+id/newsTitle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
                         android:text="New emergency response guidelines released by authorities"
                         android:textColor="#111827"
-                        android:textSize="17sp"
+                        android:textSize="15sp"
                         android:textStyle="bold"
-                        android:lineSpacingExtra="3dp" />
+                        android:lineSpacingExtra="3dp"
+                        android:layout_marginBottom="12dp" />
 
-                    <!-- SIMPLE FOOTER TAG ONLY -->
-                    <TextView
-                        android:id="@+id/newsTag"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
-                        android:text="#Breaking"
-                        android:textColor="#9CA3AF"
-                        android:textSize="12sp"
-                        android:textStyle="bold" />
+                    <!-- DIVIDER -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="0.8dp"
+                        android:background="#F2F4F7"
+                        android:layout_marginBottom="12dp" />
+
+                    <!-- BOTTOM ROW: tag + read more -->
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <TextView
+                            android:id="@+id/newsTag"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentStart="true"
+                            android:layout_centerVertical="true"
+                            android:text="#Breaking"
+                            android:textColor="#9CA3AF"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentEnd="true"
+                            android:layout_centerVertical="true"
+                            android:text="Read more →"
+                            android:textColor="#2F66F6"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+
+                    </RelativeLayout>
 
                 </LinearLayout>
 

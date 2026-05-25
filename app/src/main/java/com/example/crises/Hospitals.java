@@ -1,9 +1,6 @@
 package com.example.crises;
 
 import android.os.Bundle;
-import android.widget.ArrayAdapter;
-import android.widget.AdapterView;
-import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -14,6 +11,7 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.android.material.tabs.TabLayout;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -28,9 +26,10 @@ public class Hospitals extends AppCompatActivity {
     ArrayList<Hospital> hospitalList = new ArrayList<>();
     ArrayList<Hospital> filteredList = new ArrayList<>();
 
-    Spinner regionSpinner;
+    TabLayout statusTabLayout;
 
-    String[] regions = {"All", "Achrafieh", "Tripoli", "Byblos", "bntjbeil", "hhhh", "mmmm"};
+    // Updated to match your exact status categories
+    String[] statuses = {"All", "Safe", "Warning", "Dangerous"};
 
     RequestQueue queue;
 
@@ -40,19 +39,22 @@ public class Hospitals extends AppCompatActivity {
         setContentView(R.layout.activity_hospitals);
 
         recyclerView = findViewById(R.id.hospitalRecycler);
-        regionSpinner = findViewById(R.id.regionSpinner);
+        statusTabLayout = findViewById(R.id.statusTabLayout);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
+        // Connect the adapter directly to filteredList on startup
+        adapter = new HospitalAdapter(filteredList);
+        recyclerView.setAdapter(adapter);
+
         queue = Volley.newRequestQueue(this);
 
-        setupSpinner();
+        setupTabs();
         loadHospitals();
     }
 
     // ---------------- LOAD FROM PHP ----------------
     private void loadHospitals() {
-
         String url = "http://10.0.2.2/crises_api/get_hospitals.php";
 
         JsonObjectRequest request = new JsonObjectRequest(
@@ -60,26 +62,21 @@ public class Hospitals extends AppCompatActivity {
                 url,
                 null,
                 response -> {
-
                     try {
-
                         hospitalList.clear();
-
                         JSONArray arr = response.getJSONArray("data");
 
                         for (int i = 0; i < arr.length(); i++) {
-
                             JSONObject obj = arr.getJSONObject(i);
 
                             String name = obj.getString("name");
                             String location = obj.getString("location");
-
-                            String region = location; // or real region column if you have
+                            String region = location;
 
                             int total = Integer.parseInt(obj.getString("total_beds"));
                             int available = Integer.parseInt(obj.getString("available_beds"));
                             int occupied = Integer.parseInt(obj.getString("occupied_beds"));
-                            String status = obj.getString("hospital_status");
+                            String status = obj.getString("hospital_status"); // pulling status value
 
                             hospitalList.add(new Hospital(
                                     name,
@@ -92,13 +89,12 @@ public class Hospitals extends AppCompatActivity {
                             ));
                         }
 
-                        adapter = new HospitalAdapter(hospitalList);
-                        recyclerView.setAdapter(adapter);
+                        // Run default list filter configuration (displays "All" by default)
+                        filterByStatus(statusTabLayout.getSelectedTabPosition());
 
                     } catch (Exception e) {
                         Toast.makeText(this, "Parse Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
                     }
-
                 },
                 error -> Toast.makeText(this, "Network Error: " + error.getMessage(), Toast.LENGTH_LONG).show()
         );
@@ -106,42 +102,43 @@ public class Hospitals extends AppCompatActivity {
         queue.add(request);
     }
 
-    // ---------------- FILTER ----------------
-    private void setupSpinner() {
+    // ---------------- TAB LOGIC & FILTERING ----------------
+    private void setupTabs() {
+        // Build tab elements dynamically out of the string array
+        for (String status : statuses) {
+            statusTabLayout.addTab(statusTabLayout.newTab().setText(status));
+        }
 
-        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(
-                this,
-                android.R.layout.simple_spinner_dropdown_item,
-                regions
-        );
-
-        regionSpinner.setAdapter(spinnerAdapter);
-
-        regionSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-
+        statusTabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
-            public void onItemSelected(AdapterView<?> parent, android.view.View view, int position, long id) {
-
-                String selected = regions[position];
-
-                filteredList.clear();
-
-                if (selected.equals("All")) {
-                    filteredList.addAll(hospitalList);
-                } else {
-                    for (Hospital h : hospitalList) {
-                        if (h.getLocation().equalsIgnoreCase(selected)) {
-                            filteredList.add(h);
-                        }
-                    }
-                }
-
-                adapter = new HospitalAdapter(filteredList);
-                recyclerView.setAdapter(adapter);
+            public void onTabSelected(TabLayout.Tab tab) {
+                filterByStatus(tab.getPosition());
             }
 
             @Override
-            public void onNothingSelected(AdapterView<?> parent) {}
+            public void onTabUnselected(TabLayout.Tab tab) {}
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {}
         });
+    }
+
+    private void filterByStatus(int position) {
+        String selectedStatus = statuses[position];
+        filteredList.clear();
+
+        if (selectedStatus.equalsIgnoreCase("All")) {
+            filteredList.addAll(hospitalList);
+        } else {
+            for (Hospital h : hospitalList) {
+                // Ensure h.getStatus() matches the string values stored inside your DB
+                if (h.getStatus() != null && h.getStatus().equalsIgnoreCase(selectedStatus)) {
+                    filteredList.add(h);
+                }
+            }
+        }
+
+        // Notify adapter to draw the filtered results safely
+        adapter.notifyDataSetChanged();
     }
 }

@@ -1,15 +1,23 @@
 package com.example.crises;
 
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.bitmap.CenterCrop;
+import com.bumptech.glide.request.RequestOptions;
+
 public class NewsDetailActivity extends AppCompatActivity {
+
+    private static final String IMAGE_BASE_URL = "http://10.0.2.2/crises_api/uploads/";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,27 +29,41 @@ public class NewsDetailActivity extends AppCompatActivity {
         String category = getIntent().getStringExtra("category");
         String date     = getIntent().getStringExtra("date");
         String type     = getIntent().getStringExtra("type");
+        String image    = getIntent().getStringExtra("image");
         int    views    = getIntent().getIntExtra("views", 0);
 
-        // ── BACK ──────────────────────────────────────────────
+        // ── BACK ──────────────────────────────────────────────────────────
         CardView btnBack = findViewById(R.id.btnBack);
         btnBack.setOnClickListener(v -> finish());
 
-        // ── HERO COLOR ────────────────────────────────────────
-        View hero = findViewById(R.id.heroBackground);
-        hero.setBackgroundColor(getCategoryColor(category));
+        // ── HERO ──────────────────────────────────────────────────────────
+        View hero         = findViewById(R.id.heroBackground);
+        ImageView heroImg = findViewById(R.id.heroImage);
+        int color         = getCategoryColor(category);
 
-        // ── TEXTS ─────────────────────────────────────────────
+        hero.setBackgroundColor(color); // fallback color always set first
+
+        if (image != null && !image.isEmpty()) {
+            String fullUrl = image.startsWith("http") ? image : IMAGE_BASE_URL + image;
+            Glide.with(this)
+                    .load(fullUrl)
+                    .apply(new RequestOptions()
+                            .placeholder(new ColorDrawable(color))
+                            .error(new ColorDrawable(color))
+                            .transform(new CenterCrop()))
+                    .into(heroImg);
+        }
+
+        // ── TEXTS ─────────────────────────────────────────────────────────
         ((TextView) findViewById(R.id.tvDetailCategory))
                 .setText(category != null ? category.toUpperCase() : "NEWS");
         ((TextView) findViewById(R.id.tvDetailTitle)).setText(title);
         ((TextView) findViewById(R.id.tvDetailContent)).setText(content);
 
-        // Date + views
         TextView tvDate = findViewById(R.id.tvDetailDate);
         tvDate.setText(date + "  ·  " + views + " views");
 
-        // ── TAGS ──────────────────────────────────────────────
+        // ── TAGS ──────────────────────────────────────────────────────────
         LinearLayout tagsRow = findViewById(R.id.tagsRow);
         if (category != null && !category.isEmpty())
             addTag(tagsRow, "#" + category, false);

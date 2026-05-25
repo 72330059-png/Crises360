@@ -19,14 +19,21 @@
                 android:layout_width="match_parent"
                 android:layout_height="220dp">
 
-                <!-- Gradient background (color set in Java by category) -->
+                <!-- Solid color fallback (set in Java) -->
                 <View
                     android:id="@+id/heroBackground"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:background="#1E3A5F" />
 
-                <!-- Dark overlay at bottom -->
+                <!-- Real image (loaded by Glide, sits on top of color) -->
+                <ImageView
+                    android:id="@+id/heroImage"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop" />
+
+                <!-- Dark gradient overlay for text readability -->
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
@@ -86,7 +93,6 @@
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="0dp"
                 app:cardCornerRadius="0dp"
                 app:cardElevation="0dp"
                 app:cardBackgroundColor="#FFFFFF">
@@ -158,9 +164,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:layout_marginBottom="16dp">
-                        <!-- Tags added programmatically -->
-                    </LinearLayout>
+                        android:layout_marginBottom="16dp" />
 
                     <!-- Content -->
                     <TextView
