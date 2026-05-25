@@ -1,8 +1,0 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
-
-    <style name="Base.Theme.Crises" parent="Theme.Material3.DayNight.NoActionBar">
-
-    </style>
-
-    <style name="Theme.Crises" parent="Base.Theme.Crises" />
-</resources>
