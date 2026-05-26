@@ -51,16 +51,26 @@ class incident extends DAL
         ]);
     }
 
+
     public function updateIncident($id, $name, $location, $severity, $status)
     {
-        $sql = "UPDATE incidents SET incident_name = ?, location = ?, severity = ?, status = ?  WHERE id = ?";
-        return $this->executeSafe($sql, [
-            $name,
-            $location,
-            $severity,
-            $status,
-            $id
-        ]);
+        $sql = "UPDATE incidents SET incident_name = ?, location = ?, severity = ?, status = ? WHERE id = ?";
+        $result = $this->executeSafe($sql, [$name, $location, $severity, $status, $id]);
+        // If resolved → deactivate all linked map data
+        if ($status === 'Resolved') {
+            $this->executeSafe("UPDATE map_alerts SET is_active=0 WHERE incident_id=?", [(int)$id]);
+            $this->executeSafe("UPDATE map_zones  SET is_active=0 WHERE incident_id=?", [(int)$id]);
+            $this->executeSafe("UPDATE map_roads  SET is_active=0 WHERE incident_id=?", [(int)$id]);
+            // ADD THESE:
+            $this->executeSafe("UPDATE police_roads SET is_active=0 WHERE incident_id=?", [(int)$id]);
+            $this->executeSafe("UPDATE map_routes  SET is_active=0 WHERE incident_id=?", [(int)$id]);
+            // Free the police units
+            $this->executeSafe("UPDATE police_units SET incident_id=NULL, current_mission_id=NULL, status='available' WHERE incident_id=?",
+                [(int)$id]
+            );
+        }
+
+        return $result;
     }
 
 
@@ -126,6 +136,72 @@ class incident extends DAL
 
         $data = $this->getdata($sql);
 
+        return $data[0]['total'];
+    }
+    public function incidentsThisWeek()
+    {
+        $sql = "SELECT DAYNAME(reported_at) as day_name,
+                   DAYOFWEEK(reported_at) as day_num,
+                   COUNT(*) as total
+            FROM incidents
+            WHERE reported_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+            GROUP BY DAYNAME(reported_at), DAYOFWEEK(reported_at)
+            ORDER BY DAYOFWEEK(reported_at)";
+
+        return $this->getdata($sql);
+    }
+
+    public function totalIncidentsThisWeek()
+    {
+        $sql = "SELECT COUNT(*) total FROM incidents
+            WHERE reported_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)";
+        $data = $this->getdata($sql);
+        return $data[0]['total'];
+    }
+
+    public function resolvedIncidentsThisWeek()
+    {
+        $sql = "SELECT COUNT(*) total FROM incidents
+            WHERE reported_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+            AND status = 'Resolved'";
+        $data = $this->getdata($sql);
+        return $data[0]['total'];
+    }
+    public function incidentsLastMonth()
+    {
+        $sql = "SELECT DATE(reported_at) as day_date,
+                   COUNT(*) as total
+            FROM incidents
+            WHERE reported_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+            GROUP BY DATE(reported_at)
+            ORDER BY day_date ASC";
+
+        return $this->getdata($sql);
+    }
+
+    public function totalIncidentsLastMonth()
+    {
+        $sql = "SELECT COUNT(*) total FROM incidents
+            WHERE reported_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)";
+        $data = $this->getdata($sql);
+        return $data[0]['total'];
+    }
+
+    public function resolvedIncidentsLastMonth()
+    {
+        $sql = "SELECT COUNT(*) total FROM incidents
+            WHERE reported_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+            AND status = 'Resolved'";
+        $data = $this->getdata($sql);
+        return $data[0]['total'];
+    }
+    public function activeIncidentsLastWeek()
+    {
+        $sql = "SELECT COUNT(*) total FROM incidents
+            WHERE status != 'Resolved'
+            AND reported_at >= DATE_SUB(NOW(), INTERVAL 14 DAY)
+            AND reported_at < DATE_SUB(NOW(), INTERVAL 7 DAY)";
+        $data = $this->getdata($sql);
         return $data[0]['total'];
     }
 }

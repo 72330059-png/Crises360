@@ -1,22 +1,28 @@
 <?php
 session_start();
 require_once("class/police.class.php");
+require_once("class/incidents.class.php");
 
 if (!isset($_SESSION['logged_in']) || $_SESSION['role'] !== 'admin') {
     header("Location: login.php");
     exit;
 }
 $police = new police();
-$safeZones = $police->getSafeZones();
+$incidentObj = new incident();
+
 $blockedRoads = $police->getBlockedRoads();
 $totalUnits = $police->getTotalUnits();
-$sentallerts = $police->getTotalAlertsnb();
+$safeRoads      = $police->getSafeRoadsCount();
+$evacRouteCount = $police->getEvacRoutesCount();
+$recentUpdates  = $police->getRecentPoliceUpdates();
 $unitsOnMission = $police->getUnitsOnMission();
 $policeUnits = $police->getPoliceUnits();
-$recentAlerts = $police->getRecentAlerts();
 $missions = $police->getPoliceMissions();
-// $units = $police->getUnitsForMission();
 $units = $police->getAvailableUnits();
+$activeIncidents = $incidentObj->getAllIncidents();
+$activeIncidents = array_filter($activeIncidents, function ($i) {
+    return $i['status'] !== 'Resolved';
+});
 ?>
 
 <!DOCTYPE html>
@@ -88,23 +94,23 @@ $units = $police->getAvailableUnits();
 
         .db-stat-card {
             background: #fff;
-            padding: 20px;
-            border-radius: 20px;
+            padding: 14px 16px;
+            border-radius: 16px;
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 12px;
             border: 1px solid #f0f2f5;
             height: 100%;
         }
 
         .db-icon-box {
-            width: 56px;
-            height: 56px;
-            border-radius: 15px;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.4rem;
+            font-size: 1.1rem;
             flex-shrink: 0;
         }
 
@@ -114,14 +120,14 @@ $units = $police->getAvailableUnits();
         }
 
         .db-label {
-            font-size: 0.85rem;
+            font-size: 0.78rem;
             color: #a3aed0;
             font-weight: 500;
             white-space: nowrap;
         }
 
         .db-main-value {
-            font-size: 1.5rem;
+            font-size: 1.3rem;
             font-weight: 700;
             color: #1b2559;
             line-height: 1.2;
@@ -246,6 +252,11 @@ $units = $police->getAvailableUnits();
             background: #fff;
             border-radius: 28px;
             padding: 28px;
+            /* min-height: 460px; */
+        }
+
+        .updates-feed {
+            margin-top: 10px;
         }
 
         /* TABLE */
@@ -362,9 +373,96 @@ $units = $police->getAvailableUnits();
             padding-bottom: 16px !important;
             vertical-align: middle;
         }
+
+        /* FEED */
+        .updates-feed {
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+            position: relative;
+        }
+
+        /* ITEM */
+        .update-item {
+            display: flex;
+            gap: 16px;
+            position: relative;
+        }
+
+        /* LINE */
+        .update-line {
+            position: absolute;
+            left: 28px;
+            top: 60px;
+            width: 2px;
+            height: 100%;
+            background: #edf2f7;
+        }
+
+        .update-item:last-child .update-line {
+            display: none;
+        }
+
+        /* ICON */
+        .alert-icon {
+            width: 58px;
+            height: 58px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+            z-index: 2;
+            position: relative;
+        }
+
+        /* CONTENT */
+        .update-content {
+            flex: 1;
+            padding-top: 4px;
+        }
+
+        .alert-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 4px;
+        }
+
+        .alert-subtext {
+            font-size: 13px;
+            color: #94a3b8;
+        }
+
+        /* TIME */
+        .update-time {
+            font-size: 12px;
+            color: #94a3b8;
+            font-weight: 600;
+        }
+
+        /* DATE */
+        .update-date {
+            margin-top: 6px;
+            font-size: 12px;
+            color: #c0c8db;
+        }
+
+        .updates-wrapper::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .updates-wrapper::-webkit-scrollbar-thumb {
+            background: #dbe4f0;
+            border-radius: 20px;
+        }
+
+        .updates-wrapper::-webkit-scrollbar-track {
+            background: transparent;
+        }
     </style>
 </head>
-<!-- ADD UNIT MODAL -->
 <div class="modal fade" id="addUnitModal" tabindex="-1">
 
     <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -587,7 +685,18 @@ $units = $police->getAvailableUnits();
                             required></textarea>
 
                     </div>
-
+                    <div class="mb-3">
+                        <label class="form-label">Related Incident</label>
+                        <select name="incident_id" class="form-select">
+                            <option value="0">— No specific incident —</option>
+                            <?php foreach ($activeIncidents as $inc): ?>
+                                <option value="<?= $inc['id']; ?>">
+                                    🚨 <?= htmlspecialchars($inc['incident_name']); ?>
+                                    — <?= htmlspecialchars($inc['location']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
                     <div class="mb-3">
 
                         <label class="form-label">
@@ -659,7 +768,7 @@ $units = $police->getAvailableUnits();
                 <input type="text"
                     id="policeSearch"
                     class="form-control"
-                    placeholder="Search police units..."
+                    placeholder="Search units"
                     style="max-width:250px; border-radius:12px;">
 
                 <!-- REGION FILTER -->
@@ -724,8 +833,8 @@ $units = $police->getAvailableUnits();
                         <i class="fa-solid fa-shield-heart"></i>
                     </div>
                     <div class="db-content-area">
-                        <span class="db-label">Safe Areas</span>
-                        <span class="db-main-value"><?= $safeZones ?></span>
+                        <span class="db-label">Safe Roads</span>
+                        <span class="db-main-value"><?= $safeRoads ?></span>
                     </div>
                 </div>
             </div>
@@ -750,11 +859,11 @@ $units = $police->getAvailableUnits();
             <div class="col">
                 <div class="db-stat-card">
                     <div class="db-icon-box" style="background: #fffaf0; color: #ffb547;">
-                        <i class="fa-solid fa-bell"></i>
+                        <i class="fa-solid fa-route"></i>
                     </div>
                     <div class="db-content-area">
-                        <span class="db-label">Alerts Sent</span>
-                        <span class="db-main-value"><?= $sentallerts ?></span>
+                        <span class="db-label">Evacuation Routes</span>
+                        <span class="db-main-value"><?= $evacRouteCount ?></span>
                     </div>
                 </div>
             </div>
@@ -872,63 +981,72 @@ $units = $police->getAvailableUnits();
                 <div class="modern-card alerts-card">
                     <!-- HEADER -->
                     <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h6 class="fw-bold mb-0">
-                            Recent Alerts Sent
-                        </h6>
+                        <h6 class="fw-bold mb-0">Recent Field Updates</h6>
+                        <a href="maps.php" style="font-size:13px;font-weight:600;color:#1d6ef5;text-decoration:none;display:flex;align-items:center;gap:4px;">
+                            View All <i class="fa-solid fa-arrow-right" style="font-size:11px;"></i>
+                        </a>
                     </div>
-                    <!-- TABLE -->
-                    <div class="table-responsive">
-                        <table class="table alerts-table align-middle" id="alertstablep">
-                            <thead>
-                                <tr>
-                                    <th></th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($recentAlerts as $alert): ?>
-                                    <?php
-                                    $iconClass = '';
-                                    $icon = '';
-                                    if ($alert['severity'] == 'danger') {
-                                        $iconClass = 'danger-alert';
-                                        $icon = 'fa-triangle-exclamation';
-                                    } elseif ($alert['severity'] == 'warning') {
-                                        $iconClass = 'warning-alert';
-                                        $icon = 'fa-bullhorn';
-                                    } elseif ($alert['severity'] == 'safe') {
-                                        $iconClass = 'safe-alert';
-                                        $icon = 'fa-circle-check';
-                                    }
+                    <div class="updates-feed">
 
-                                    ?>
-                                    <tr>
-                                        <td class="alert-icon-td">
-                                            <div class="alert-icon <?= $iconClass; ?>">
-                                                <i class="fa-solid <?= $icon; ?>"></i>
-                                            </div>
-                                        </td>
-                                        <td>
+                        <?php foreach ($recentUpdates as $update): ?>
+
+                            <?php
+                            $iconClass = $update['update_type'] === 'road'
+                                ? ($update['severity'] === 'blocked'
+                                    ? 'danger-alert'
+                                    : ($update['severity'] === 'warning'
+                                        ? 'warning-alert'
+                                        : 'safe-alert'))
+                                : 'safe-alert';
+
+                            $icon = $update['update_type'] === 'route'
+                                ? 'fa-route'
+                                : 'fa-road';
+                            ?>
+
+                            <div class="update-item">
+
+                                <div class="update-line"></div>
+
+                                <div class="alert-icon <?= $iconClass ?>">
+                                    <i class="fa-solid <?= $icon ?>"></i>
+                                </div>
+
+                                <div class="update-content">
+
+                                    <div class="d-flex justify-content-between align-items-start">
+
+                                        <div>
                                             <div class="alert-title">
-                                                <?= $alert['title']; ?>
+                                                <?= $update['title'] ?>
                                             </div>
-                                            <div class="alert-subtext">
 
-                                                <?= $alert['organization_name']; ?>
-                                                •
-                                                <?= date('d M Y', strtotime($alert['created_at'])); ?>
+                                            <div class="alert-subtext">
+                                                <?= $update['organization_name'] ?>
                                             </div>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
+                                        </div>
+
+                                        <span class="update-time">
+                                            <?= date('H:i', strtotime($update['created_at'])) ?>
+                                        </span>
+
+                                    </div>
+
+                                    <div class="update-date">
+                                        <?= date('d M Y', strtotime($update['created_at'])) ?>
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        <?php endforeach; ?>
+
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- MISSION MANAGEMENT SECTION -->
         <div class="row g-3 mt-2">
             <div class="col-12">
                 <div class="modern-card">
@@ -958,6 +1076,7 @@ $units = $police->getAvailableUnits();
                             <thead>
                                 <tr>
                                     <th>Mission Name</th>
+                                    <th>Incident</th>
                                     <th>Priority</th>
                                     <th>Assigned Units</th>
                                     <th>Description</th>
@@ -994,6 +1113,18 @@ $units = $police->getAvailableUnits();
                                         <td class="fw-bold text-dark mission_title">
                                             <?= $mission['title']; ?>
                                         </td>
+                                        <td>
+                                            <?php if (!empty($mission['incident_name'])): ?>
+                                                <span style="font-size:12px;font-weight:600;color:#e53935;">
+                                                    🚨 <?= htmlspecialchars($mission['incident_name']); ?>
+                                                </span>
+                                                <div style="font-size:11px;color:#94a3b8;">
+                                                    <?= htmlspecialchars($mission['incident_location'] ?? ''); ?>
+                                                </div>
+                                            <?php else: ?>
+                                                <span style="font-size:12px;color:#94a3b8;">General</span>
+                                            <?php endif; ?>
+                                        </td>
                                         <!-- Priority -->
                                         <td class="mission_priority">
                                             <span class="badge rounded-pill <?= $priorityClass; ?>">
@@ -1022,13 +1153,7 @@ $units = $police->getAvailableUnits();
                                         <!-- Status -->
                                         <td class="mission_status">
                                             <span class="<?= $statusClass; ?>">
-                                                <?php
-                                                if ($mission['status'] == 'active') {
-                                                    echo 'In Progress';
-                                                } else {
-                                                    echo ucfirst($mission['status']);
-                                                }
-                                                ?>
+                                                <?= $mission['status']; ?>
                                             </span>
                                         </td>
 
@@ -1036,7 +1161,8 @@ $units = $police->getAvailableUnits();
 
                                             <i class="fa fa-edit text-muted me-2 editMissionBtn"
                                                 style="cursor:pointer;"
-                                                data-id="<?= $mission['mission_id']; ?>">
+                                                data-id="<?= $mission['mission_id']; ?>"
+                                                data-incident="<?= $mission['incident_id'] ?? 0; ?>">
                                             </i>
 
                                         </td>
@@ -1092,7 +1218,11 @@ $units = $police->getAvailableUnits();
                 table.column(3).search(this.value).draw();
 
             });
-
+            // Enable tooltips
+            var tooltipEls = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipEls.forEach(function(el) {
+                new bootstrap.Tooltip(el);
+            });
         });
 
         $(document).ready(function() {
@@ -1239,7 +1369,6 @@ $units = $police->getAvailableUnits();
 
         });
 
-        //unit_action unit_status unit_mission unit_type callsign  police_location police_name 
         $(document).on('click', '.editpol', function() {
             let unitId = $(this).data('unitid');
             let orgId = $(this).data('orgid');
@@ -1401,6 +1530,21 @@ $units = $police->getAvailableUnits();
 
             row.find('.mission_title').html(`<input type="text"class="form-control edit-mission-title" value="${title}">`);
 
+
+            let incidentId = $(this).data('incident');
+
+            // Add this after row.find('.mission_title').html(...)
+            row.find('td:nth-child(2)').html(`
+            <select class="form-select edit-incident-id">
+            <option value="0">— No incident —</option>
+           <?php foreach ($activeIncidents as $inc): ?>
+           <option value="<?= $inc['id']; ?>" 
+           ${incidentId == <?= $inc['id']; ?> ? 'selected' : ''}>
+           🚨 <?= htmlspecialchars($inc['incident_name']); ?>
+           </option>
+           <?php endforeach; ?>
+           </select>`);
+
             row.find('.mission_priority').html(`
             <select class="form-select edit-mission-priority">
             <option value="low" ${priority == 'low' ? 'selected' : ''}> Low </option>
@@ -1418,10 +1562,12 @@ $units = $police->getAvailableUnits();
             <?php endforeach; ?>
             </select>`);
 
-            row.find('.edit-units option').each(function () {
-            let text = $(this).text().trim();
-            if (assignedUnits.includes(text)) {
-            $(this).prop('selected', true);}});
+            row.find('.edit-units option').each(function() {
+                let text = $(this).text().trim();
+                if (assignedUnits.includes(text)) {
+                    $(this).prop('selected', true);
+                }
+            });
 
             row.find('.mission_description').html(`<textarea class="form-control edit-mission-description">${description}</textarea> `);
 
@@ -1430,6 +1576,8 @@ $units = $police->getAvailableUnits();
             <option value="active" ${status == 'active' ? 'selected' : ''}> Active </option>
             <option value="completed" ${status == 'completed' ? 'selected' : ''}> Completed </option>
             <option value="late" ${status == 'late' ? 'selected' : ''}> Late </option>
+            <option value="sent " ${status == 'sent' ? 'selected' : ''}> Sent </option>
+            <option value="rejected " ${status == 'rejected' ? 'selected' : ''}> Rejected </option>
             </select> `);
 
             row.find('.mission_action').html(`<button class="btn btn-success btn-sm saveMissionBtn" data-id="${missionId}">
@@ -1449,6 +1597,7 @@ $units = $police->getAvailableUnits();
             let units = row.find('.edit-units').val();
             let description = row.find('.edit-mission-description').val();
             let status = row.find('.edit-mission-status').val();
+            let incident_id = row.find('.edit-incident-id').val() || 0;
 
             $.ajax({
                 url: 'actions/update_mission.php',
@@ -1456,6 +1605,7 @@ $units = $police->getAvailableUnits();
                 data: {
                     mission_id: missionId,
                     title: title,
+                    incident_id: incident_id,
                     priority: priority,
                     description: description,
                     status: status,

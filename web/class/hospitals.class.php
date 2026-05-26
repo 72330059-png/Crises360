@@ -360,8 +360,22 @@ class hospital extends DAL
 
         return $data[0]['total'];
     }
+    public function totalTeamsAllHospitals()
+    {
+        $sql = "SELECT COUNT(*) as total FROM hospital_teams";
+        $data = $this->getdata($sql);
+        return $data[0]['total'] ?? 0;
+    }
 
-
+    public function totalTeamsLastWeek()
+    {
+        $sql = "SELECT COUNT(*) as total 
+            FROM hospital_teams 
+            WHERE created_at >= DATE_SUB(NOW(), INTERVAL 2 WEEK)
+              AND created_at < DATE_SUB(NOW(), INTERVAL 1 WEEK)";
+        $data = $this->getdata($sql);
+        return $data[0]['total'] ?? 0;
+    }
     public function teamsNeedingSupport($hospital_id)
     {
         $sql = "SELECT COUNT(*) total

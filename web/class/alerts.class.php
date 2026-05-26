@@ -255,4 +255,33 @@ class alert extends DAL
 
         return $this->getdata($sql, [$date]);
     }
+
+    // =========================
+// TOTAL ALERTS LAST WEEK
+// =========================
+public function totalAlertsLastWeek()
+{
+    $sql = "SELECT COUNT(*) total
+            FROM alerts
+            WHERE created_at >= DATE_SUB(NOW(), INTERVAL 2 WEEK)
+              AND created_at < DATE_SUB(NOW(), INTERVAL 1 WEEK)";
+
+    $data = $this->getdata($sql);
+
+    return $data[0]['total'] ?? 0;
+}
+
+
+// =========================
+// GET RECENT ALERTS
+// =========================
+public function getRecentAlerts($limit = 4)
+{
+    $sql = "SELECT *
+            FROM alerts
+            ORDER BY created_at DESC
+            LIMIT ?";
+
+    return $this->getdata($sql, [$limit]);
+}
 }

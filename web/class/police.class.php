@@ -17,7 +17,6 @@ class police extends DAL
 
         return $result['total'];
     }
-
     public function getPoliceMissions()
     {
         $sql = "SELECT
@@ -26,22 +25,25 @@ class police extends DAL
                 pm.title,
                 pm.description,
                 pm.status,
-
-                GROUP_CONCAT(pu.callsign SEPARATOR ', ')
-                as assigned_units
-
+                pm.created_at,
+                MIN(pu.incident_id) AS incident_id,
+                GROUP_CONCAT(pu.callsign SEPARATOR ', ') AS assigned_units,
+                GROUP_CONCAT(DISTINCT i.incident_name SEPARATOR ', ') AS incident_name,
+                GROUP_CONCAT(DISTINCT i.location SEPARATOR ', ') AS incident_location
             FROM police_missions pm
-
-            LEFT JOIN police_units pu
-            ON pu.current_mission_id = pm.mission_id
-
-            GROUP BY pm.mission_id
-
+            LEFT JOIN police_units pu ON pu.current_mission_id = pm.mission_id
+            LEFT JOIN incidents i ON pu.incident_id = i.id
+            GROUP BY 
+                pm.mission_id,
+                pm.priority,
+                pm.title,
+                pm.description,
+                pm.status,
+                pm.created_at
             ORDER BY pm.created_at DESC";
 
         return $this->getdata($sql);
     }
-
 
 
     public function getPoliceUnits()
@@ -70,33 +72,6 @@ class police extends DAL
         return $this->getdata($sql);
     }
 
-
-    public function getTotalAlertsnb()
-    {
-        $sql = "SELECT COUNT(*) as total
-            FROM police_alerts pa
-            INNER JOIN organizations o
-            ON pa.organization_id = o.id
-            WHERE o.type = 'police'";
-
-        $result = $this->getRowSafe($sql);
-
-        return $result['total'];
-    }
-
-    public function getSafeZones()
-    {
-        $sql = "SELECT COUNT(*) as total
-            FROM police_zones pz
-            INNER JOIN organizations o
-            ON pz.organization_id = o.id
-            WHERE o.type = 'police'
-            AND pz.zone_type = 'safe'";
-
-        $result = $this->getRowSafe($sql);
-        return $result['total'];
-    }
-
     public function getBlockedRoads()
     {
         $sql = "SELECT COUNT(*) as total
@@ -108,22 +83,6 @@ class police extends DAL
 
         $result = $this->getRowSafe($sql);
         return $result['total'];
-    }
-
-    public function getRecentAlerts()
-    {
-        $sql = "SELECT
-                pa.title,
-                pa.severity,
-                pa.created_at,
-                o.name as organization_name
-            FROM police_alerts pa
-            INNER JOIN organizations o
-            ON pa.organization_id = o.id
-            WHERE o.type = 'police'
-            ORDER BY pa.created_at DESC ";
-
-        return $this->getdata($sql);
     }
 
     public function getUnitsOnMission()
@@ -170,6 +129,15 @@ class police extends DAL
             'available'
         ]);
     }
+
+    public function countAvailableUnits()
+    {
+        $sql = "SELECT COUNT(*) as total
+            FROM police_units
+            WHERE status = 'available'";
+        $result = $this->getRowSafe($sql);
+        return $result['total'];
+    }
     public function deletepolice($id)
     {
         $sql = "DELETE FROM organizations WHERE id = ?";
@@ -207,7 +175,7 @@ class police extends DAL
 
         return $this->getdata($sql);
     }
-    public function addMission($title, $priority, $description, $status, $units = [])
+    public function addMission($title, $priority, $description, $status, $units = [], $incident_id = 0)
     {
         // insert mission
         $sql = "INSERT INTO police_missions
@@ -228,11 +196,13 @@ class police extends DAL
 
                 $sql2 = "UPDATE police_units
                     SET current_mission_id = ?,
-                        status = 'on_mission'
+                        status = 'pending',
+                        incident_id = ?
                     WHERE unit_id = ?";
 
                 $this->executeSafe($sql2, [
                     $mission_id,
+                    (int)$incident_id,
                     $unit_id
                 ]);
             }
@@ -241,33 +211,44 @@ class police extends DAL
         return $mission_id;
     }
 
-    public function updateMission($mission_id, $title, $priority, $description, $status, $units = [])
+   
+    public function updateMission($mission_id, $title, $priority, $description, $status, $units = null, $incident_id = 0)
     {
-        // update mission
-        $sql = "UPDATE police_missions  SET title=?, priority=?, description=?, status=?   WHERE mission_id=?";
-        $this->executeSafe($sql, [
-            $title,
-            $priority,
-            $description,
-            $status,
-            $mission_id
-        ]);
-        // remove old units
-        $sql2 = "UPDATE police_units  SET current_mission_id = NULL,  status = 'available' WHERE current_mission_id = ?";
-        $this->executeSafe($sql2, [$mission_id]);
-        // assign new units
-        if (!empty($units)) {
+        $this->executeSafe(
+            "UPDATE police_missions SET title=?, priority=?, description=?, status=? WHERE mission_id=?",
+            [
+                $this->escape($title),
+                $this->escape($priority),
+                $this->escape($description),
+                $this->escape($status),
+                (int)$mission_id
+            ]
+        );
+
+        if ($units !== null && !empty($units)) {
+            // Clear old
+            $this->executeSafe(
+                "UPDATE police_units SET current_mission_id=NULL, incident_id=NULL, status='available' 
+              WHERE current_mission_id=?",
+                [(int)$mission_id]
+            );
+            // Assign new
             foreach ($units as $unit_id) {
-                $sql3 = "UPDATE police_units SET current_mission_id = ?, status = 'on_mission' WHERE unit_id = ?";
-                $this->executeSafe($sql3, [
-                    $mission_id,
-                    $unit_id
-                ]);
+                $this->executeSafe(
+                    "UPDATE police_units SET current_mission_id=?, status='pending', incident_id=? 
+                  WHERE unit_id=?",
+                    [(int)$mission_id, (int)$incident_id, (int)$unit_id]
+                );
             }
+        } elseif ($incident_id > 0) {
+            $this->executeSafe(
+                "UPDATE police_units SET incident_id=? WHERE current_mission_id=?",
+                [(int)$incident_id, (int)$mission_id]
+            );
         }
+
         return true;
     }
-
     public function getAvailableUnits()
     {
 
@@ -275,5 +256,59 @@ class police extends DAL
             WHERE status = 'available'";
 
         return $this->getdata($sql);
+    }
+    public function getSafeRoadsCount()
+    {
+        $row = $this->getRowSafe(
+            "SELECT COUNT(*) as total FROM police_roads 
+         WHERE road_type = 'safe' AND is_active = 1"
+        );
+        return $row ? (int)$row['total'] : 0;
+    }
+
+    public function getEvacRoutesCount()
+    {
+        $row = $this->getRowSafe(
+            "SELECT COUNT(*) as total FROM map_routes"
+        );
+        return $row ? (int)$row['total'] : 0;
+    }
+
+    public function getRecentPoliceUpdates()
+    {
+        // Get last 5 from police_roads
+        $roads = $this->getdata(
+            "SELECT 
+            pr.road_name AS title,
+            pr.road_type AS severity,
+            pr.created_at,
+            o.name AS organization_name,
+            'road' AS update_type
+         FROM police_roads pr
+         JOIN organizations o ON pr.organization_id = o.id
+         WHERE pr.is_active = 1
+         ORDER BY pr.created_at DESC LIMIT 5"
+        );
+
+        // Get last 5 from map_routes
+        $routes = $this->getdata(
+            "SELECT 
+            CONCAT(mr.from_name, ' → ', mr.to_name) AS title,
+            mr.route_status AS severity,
+            mr.created_at,
+            o.name AS organization_name,
+            'route' AS update_type
+         FROM map_routes mr
+         JOIN organizations o ON mr.organization_id = o.id
+         ORDER BY mr.created_at DESC LIMIT 5"
+        );
+
+        // Merge and sort by date
+        $all = array_merge($roads, $routes);
+        usort($all, function ($a, $b) {
+            return strtotime($b['created_at']) - strtotime($a['created_at']);
+        });
+
+        return array_slice($all, 0, 3);
     }
 }
