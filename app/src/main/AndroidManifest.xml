@@ -22,6 +22,15 @@
         android:theme="@style/Theme.Crises"
         android:usesCleartextTraffic="true">
         <activity
+            android:name=".CounselorChat"
+            android:exported="false" />
+        <activity
+            android:name=".SelfHelp"
+            android:exported="false" />
+        <activity
+            android:name=".PsychologicalSupport"
+            android:exported="false" />
+        <activity
             android:name=".NewsDetailActivity"
             android:exported="false" />
         <activity
@@ -85,9 +94,10 @@
         <activity
             android:name=".News"
             android:exported="false" />
+
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyCKwvSWcIruP3Y4rWt6QtxfSIqhi4igqKM "/>
+            android:value="AIzaSyCKwvSWcIruP3Y4rWt6QtxfSIqhi4igqKM " />
     </application>
 
 </manifest>
