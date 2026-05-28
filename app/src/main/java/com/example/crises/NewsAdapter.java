@@ -135,27 +135,36 @@ public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.ViewHolder> {
     }
 
     private int getCategoryIcon(String category) {
-        if (category == null) return R.drawable.ic_news;
+        if (category == null) return R.drawable.ic_general;
         switch (category.toLowerCase()) {
-            case "alert":   case "warning":  return R.drawable.ic_alert;
-            case "health":  case "medical":  return R.drawable.ic_health;
-            case "relief":  case "aid":      return R.drawable.ic_relief;
-            case "shelter": case "housing":  return R.drawable.ic_shelter;
-            default:                         return R.drawable.ic_news;
+            case "weather":        return R.drawable.ic_weather;
+            case "traffic":        return R.drawable.ic_traffic;
+            case "safety":         return R.drawable.ic_safety;
+            case "medical":        return R.drawable.ic_medical;
+            case "infrastructure": return R.drawable.ic_infrastructure;
+            case "tech":           return R.drawable.ic_tech;
+            case "sports":         return R.drawable.ic_sports;
+            case "politics":       return R.drawable.ic_politics;
+            case "economy":        return R.drawable.ic_economy;
+            default:               return R.drawable.ic_general;
         }
     }
 
     private int getCategoryColor(String category) {
         if (category == null) return Color.parseColor("#1E3A5F");
         switch (category.toLowerCase()) {
-            case "alert":   case "warning":  return Color.parseColor("#A32D2D");
-            case "relief":  case "aid":      return Color.parseColor("#3B6D11");
-            case "health":  case "medical":  return Color.parseColor("#0C447C");
-            case "shelter": case "housing":  return Color.parseColor("#854F0B");
-            default:                         return Color.parseColor("#1E3A5F");
+            case "weather":        return Color.parseColor("#1565A8"); // sky blue
+            case "traffic":        return Color.parseColor("#B94C00"); // burnt orange
+            case "safety":         return Color.parseColor("#2E6B3E"); // forest green
+            case "medical":        return Color.parseColor("#0C447C"); // deep blue
+            case "infrastructure": return Color.parseColor("#5C3D8F"); // purple
+            case "tech":           return Color.parseColor("#1A6B6B"); // teal
+            case "sports":         return Color.parseColor("#A3521D"); // amber brown
+            case "politics":       return Color.parseColor("#7B2D2D"); // deep red
+            case "economy":        return Color.parseColor("#3B5E1E"); // dark green
+            default:               return Color.parseColor("#1E3A5F"); // navy
         }
     }
-
     private int dpToPx(int dp) {
         return Math.round(dp * context.getResources().getDisplayMetrics().density);
     }
