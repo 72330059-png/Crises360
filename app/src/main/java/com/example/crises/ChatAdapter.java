@@ -40,21 +40,20 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MessageViewHol
 
         if (msg.getType() == ChatMessage.TYPE_USER) {
 
-            // Hide avatar
+
             holder.layoutAvatar.setVisibility(View.GONE);
 
-            // Purple bubble, white text
             holder.tvMessage.setBackgroundResource(R.drawable.bubble_user_bg);
             holder.tvMessage.setTextColor(0xFFFFFFFF);
 
-            // Align message container to the right
+
             RelativeLayout.LayoutParams msgParams =
                     (RelativeLayout.LayoutParams) holder.tvMessage.getLayoutParams();
             msgParams.addRule(RelativeLayout.ALIGN_PARENT_END);
             msgParams.removeRule(RelativeLayout.ALIGN_PARENT_START);
             holder.tvMessage.setLayoutParams(msgParams);
 
-            // Align time to the right
+
             RelativeLayout.LayoutParams timeParams =
                     (RelativeLayout.LayoutParams) holder.tvTime.getLayoutParams();
             timeParams.addRule(RelativeLayout.ALIGN_PARENT_END);
@@ -90,10 +89,6 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MessageViewHol
     public int getItemCount() {
         return messages.size();
     }
-
-    // ----------------------------------------------------------------
-    // ViewHolder
-    // ----------------------------------------------------------------
 
     public static class MessageViewHolder extends RecyclerView.ViewHolder {
 

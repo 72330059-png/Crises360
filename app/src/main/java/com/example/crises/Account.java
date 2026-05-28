@@ -107,7 +107,6 @@ public class Account extends AppCompatActivity {
     private void updateProgress() {
         int filled = 0, total = 9;
 
-        // ✅ FIXED: use isRealValue() to avoid counting "null" string as filled
         if (isRealValue(etName.getText().toString()))    filled++;
         if (isRealValue(etId.getText().toString()))      filled++;
         if (isRealValue(etPhone.getText().toString()))   filled++;
@@ -123,14 +122,13 @@ public class Account extends AppCompatActivity {
         tvProgressPercent.setText(percent + "%");
     }
 
-    // ✅ Returns true only if value is non-empty AND not the literal string "null"
+
     private boolean isRealValue(String val) {
         if (val == null) return false;
         String trimmed = val.trim();
         return !trimmed.isEmpty() && !trimmed.equalsIgnoreCase("null");
     }
 
-    // ── LOAD ──────────────────────────────────────────────────
     private void loadData() {
         int userId = prefs.getInt("user_id", -1);
         if (userId == -1) return;
@@ -142,7 +140,7 @@ public class Account extends AppCompatActivity {
                         if (obj.getString("status").equals("success")) {
                             JSONObject data = obj.getJSONObject("data");
 
-                            // ✅ FIXED: use cleanField() to avoid setting "null" text
+
                             etName.setText(cleanField(data.optString("full_name")));
                             etId.setText(cleanField(data.optString("national_id")));
                             etPhone.setText(cleanField(data.optString("phone")));
@@ -152,7 +150,7 @@ public class Account extends AppCompatActivity {
                             etCountry.setText(cleanField(data.optString("country")));
                             etPlace.setText(cleanField(data.optString("place_of_birth")));
 
-                            // ✅ FIXED: only set dropdown if real value
+
                             String gender = cleanField(data.optString("gender"));
                             String status = cleanField(data.optString("family_status"));
                             String blood  = cleanField(data.optString("blood_group"));
@@ -179,14 +177,12 @@ public class Account extends AppCompatActivity {
         queue.add(request);
     }
 
-    // ✅ Returns empty string if value is null or "null"
     private String cleanField(String val) {
         if (val == null) return "";
         String trimmed = val.trim();
         return trimmed.equalsIgnoreCase("null") ? "" : trimmed;
     }
 
-    // ── UPDATE ────────────────────────────────────────────────
     private void updateData() {
         StringRequest request = new StringRequest(Request.Method.POST, UPDATE_URL,
                 response -> {
@@ -241,7 +237,7 @@ public class Account extends AppCompatActivity {
         queue.add(request);
     }
 
-    // ── CALENDAR ─────────────────────────────────────────────
+
     private void setupCalendar() {
         etDob.setOnClickListener(v -> {
             Calendar c = Calendar.getInstance();
@@ -256,7 +252,6 @@ public class Account extends AppCompatActivity {
         });
     }
 
-    // ── DROPDOWNS — FIXED ─────────────────────────────────────
     private void setupDropdowns() {
         // ✅ FIXED: threshold(1) shows dropdown on first tap
         spGender.setThreshold(1);
@@ -278,7 +273,7 @@ public class Account extends AppCompatActivity {
         spBlood.setOnClickListener(v -> spBlood.showDropDown());
     }
 
-    // ── BOTTOM NAV ────────────────────────────────────────────
+
     private void setupBottomNav() {
         BottomNavigationView bottomNav = findViewById(R.id.bottomNavigation);
         bottomNav.setSelectedItemId(R.id.nav_profile);
