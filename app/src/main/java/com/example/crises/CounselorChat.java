@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -26,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -34,48 +36,54 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 public class CounselorChat extends AppCompatActivity {
 
-    // ---------------------------------------------------------------
-    // IMPORTANT: Replace with your actual Anthropic API key.
-    // For production, store this securely (e.g. backend proxy, not
-    // hard-coded in client code).
-    // ---------------------------------------------------------------
-    private static final String ANTHROPIC_API_KEY = "YOUR_ANTHROPIC_API_KEY";
-    private static final String API_URL           = "https://api.anthropic.com/v1/messages";
-    private static final String MODEL             = "claude-sonnet-4-20250514";
+    // ── API CONFIG — key is now safe on your PHP server ───────────────
+    private static final String API_URL = "http://10.0.2.2/crises_api/chat.php";
 
-    // System prompt that shapes the AI counselor persona
     private static final String SYSTEM_PROMPT =
-            "You are a compassionate, professional AI psychological counselor. " +
-                    "Your role is to provide empathetic emotional support, active listening, " +
-                    "and evidence-based coping strategies. Always respond with warmth, " +
-                    "without judgment, and in a calm, supportive tone. " +
-                    "If someone expresses thoughts of self-harm or suicide, gently encourage " +
-                    "them to call the emergency hotline (+961 70 123 456) or seek immediate " +
-                    "professional help. Do not provide medical diagnoses. Keep responses " +
-                    "concise (2-4 sentences) unless the user needs more detail. " +
-                    "Always validate the user's feelings before offering advice.";
+            "You are a warm, professional psychological counselor specialized in " +
+                    "crisis support for people living through war, conflict, and natural disasters. " +
+                    "You respond like a real human counselor — with empathy, validation, and " +
+                    "practical psychological first aid. " +
+                    "Your responses are conversational (3-5 sentences), never clinical or robotic. " +
+                    "You never dismiss or minimize what the person is feeling. " +
+                    "If the person expresses suicidal thoughts or immediate danger, " +
+                    "gently urge them to call the emergency hotline (+961 70 123 456) immediately. " +
+                    "Do not diagnose. Do not give medical advice. " +
+                    "Always start by acknowledging what the person shared before offering any guidance.";
 
-    private RecyclerView    rvMessages;
-    private EditText        etMessage;
-    private FrameLayout     btnSend;
-    private LinearLayout    layoutTyping;
+    // ── UI ────────────────────────────────────────────────────────────
+    private RecyclerView  rvMessages;
+    private EditText      etMessage;
+    private FrameLayout   btnSend;
+    private LinearLayout  layoutTyping;
 
-    private ChatAdapter         adapter;
-    private List<ChatMessage>   messageList;
+    // ── Data ──────────────────────────────────────────────────────────
+    private ChatAdapter       adapter;
+    private List<ChatMessage> messageList;
+    private final JSONArray   history = new JSONArray();
 
-    // Keeps full conversation history for context (role + content pairs)
-    private final JSONArray conversationHistory = new JSONArray();
+    // ── Network ───────────────────────────────────────────────────────
+    private final OkHttpClient http = new OkHttpClient.Builder()
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(60,    TimeUnit.SECONDS)
+            .writeTimeout(30,   TimeUnit.SECONDS)
+            .build();
 
-    private final OkHttpClient httpClient = new OkHttpClient();
-    private final Handler      mainHandler = new Handler(Looper.getMainLooper());
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
+
+    // ─────────────────────────────────────────────────────────────────
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_counselor_chat);
+
+        ImageButton btnBack = findViewById(R.id.btnBack);
+        if (btnBack != null) btnBack.setOnClickListener(v -> finish());
 
         rvMessages   = findViewById(R.id.rvMessages);
         etMessage    = findViewById(R.id.etMessage);
@@ -84,140 +92,103 @@ public class CounselorChat extends AppCompatActivity {
 
         messageList = new ArrayList<>();
         adapter     = new ChatAdapter(this, messageList);
-
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-        layoutManager.setStackFromEnd(true);
-        rvMessages.setLayoutManager(layoutManager);
+        LinearLayoutManager lm = new LinearLayoutManager(this);
+        lm.setStackFromEnd(true);
+        rvMessages.setLayoutManager(lm);
         rvMessages.setAdapter(adapter);
 
-        // Back button
-        findViewById(R.id.btnBack).setOnClickListener(v -> finish());
-
-        // Send button
         btnSend.setOnClickListener(v -> sendMessage());
 
-        // Quick suggestion chips
-        setSuggestionChip(R.id.suggestionAnxiety, "I'm feeling anxious");
-        setSuggestionChip(R.id.suggestionSad,     "I feel sad");
-        setSuggestionChip(R.id.suggestionStress,  "I can't sleep");
-        setSuggestionChip(R.id.suggestionLonely,  "I feel lonely");
+        setChip(R.id.suggestionAnxiety, "I'm feeling very anxious right now");
+        setChip(R.id.suggestionSad,     "I feel hopeless and overwhelmed");
+        setChip(R.id.suggestionStress,  "I can't sleep because of fear");
+        setChip(R.id.suggestionLonely,  "I lost someone and I don't know how to cope");
 
-        // Opening greeting from AI
-        addAiMessage("Hello 💜 I'm here for you. This is a safe space — feel free to share whatever is on your mind. How are you feeling today?");
+        addAiMessage("Hello 💜 I'm here with you. Whatever you're going through right now, " +
+                "you don't have to face it alone. How are you feeling today?");
     }
 
-    // ----------------------------------------------------------------
-    // Helpers
-    // ----------------------------------------------------------------
+    // ── Send flow ─────────────────────────────────────────────────────
 
-    private void setSuggestionChip(int viewId, String text) {
-        TextView chip = findViewById(viewId);
-        chip.setOnClickListener(v -> {
+    private void setChip(int id, String text) {
+        TextView chip = findViewById(id);
+        if (chip != null) chip.setOnClickListener(v -> {
             etMessage.setText(text);
             sendMessage();
         });
     }
 
-    private String currentTime() {
-        return new SimpleDateFormat("hh:mm a", Locale.getDefault()).format(new Date());
-    }
-
-    private void addAiMessage(String text) {
-        messageList.add(new ChatMessage(text, ChatMessage.TYPE_AI, currentTime()));
-        adapter.notifyItemInserted(messageList.size() - 1);
-        rvMessages.scrollToPosition(messageList.size() - 1);
-    }
-
-    private void addUserMessage(String text) {
-        messageList.add(new ChatMessage(text, ChatMessage.TYPE_USER, currentTime()));
-        adapter.notifyItemInserted(messageList.size() - 1);
-        rvMessages.scrollToPosition(messageList.size() - 1);
-    }
-
-    // ----------------------------------------------------------------
-    // Send flow
-    // ----------------------------------------------------------------
-
     private void sendMessage() {
-        String userText = etMessage.getText().toString().trim();
-        if (TextUtils.isEmpty(userText)) return;
-
-        // Clear input and hide keyboard
+        String text = etMessage.getText().toString().trim();
+        if (TextUtils.isEmpty(text)) return;
         etMessage.setText("");
         hideKeyboard();
-
-        // Show user bubble
-        addUserMessage(userText);
-
-        // Add to conversation history
-        try {
-            JSONObject userMsg = new JSONObject();
-            userMsg.put("role", "user");
-            userMsg.put("content", userText);
-            conversationHistory.put(userMsg);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        // Show typing indicator and call API
+        addUserMessage(text);
+        appendHistory("user", text);
         showTyping(true);
-        callClaudeApi();
+        callClaude();
     }
 
-    // ----------------------------------------------------------------
-    // Claude API call
-    // ----------------------------------------------------------------
+    // ── Claude API via PHP proxy ───────────────────────────────────────
 
-    private void callClaudeApi() {
+    private void callClaude() {
         try {
-            JSONObject requestBody = new JSONObject();
-            requestBody.put("model",      MODEL);
-            requestBody.put("max_tokens", 1024);
-            requestBody.put("system",     SYSTEM_PROMPT);
-            requestBody.put("messages",   conversationHistory);
-
-            RequestBody body = RequestBody.create(
-                    requestBody.toString(),
-                    MediaType.parse("application/json; charset=utf-8")
-            );
+            JSONObject body = new JSONObject();
+            body.put("system",   SYSTEM_PROMPT);
+            body.put("messages", history);
 
             Request request = new Request.Builder()
                     .url(API_URL)
-                    .header("x-api-key",         ANTHROPIC_API_KEY)
-                    .header("anthropic-version", "2023-06-01")
-                    .header("Content-Type",      "application/json")
-                    .post(body)
+                    .addHeader("Content-Type", "application/json")
+                    .post(RequestBody.create(
+                            body.toString(),
+                            MediaType.get("application/json; charset=utf-8")))
                     .build();
 
-            httpClient.newCall(request).enqueue(new Callback() {
+            http.newCall(request).enqueue(new Callback() {
+
                 @Override
                 public void onFailure(@NonNull Call call, @NonNull IOException e) {
                     mainHandler.post(() -> {
                         showTyping(false);
-                        addAiMessage("I'm sorry, I couldn't connect right now. Please check your internet and try again 💜");
+                        addAiMessage(
+                                "I'm having trouble connecting right now. " +
+                                        "Please check your internet and try again 💜");
                     });
                 }
 
                 @Override
-                public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                    String responseBody = response.body() != null ? response.body().string() : "";
+                public void onResponse(@NonNull Call call,
+                                       @NonNull Response response) throws IOException {
+                    ResponseBody rb  = response.body();
+                    String       raw = rb != null ? rb.string() : "";
+
                     mainHandler.post(() -> {
                         showTyping(false);
                         try {
-                            JSONObject json    = new JSONObject(responseBody);
-                            JSONArray  content = json.getJSONArray("content");
-                            String     aiText  = content.getJSONObject(0).getString("text");
+                            if (!response.isSuccessful()) {
+                                // Show the actual error for debugging
+                                android.util.Log.e("CHAT_ERROR",
+                                        "HTTP " + response.code() + ": " + raw);
+                                addAiMessage(
+                                        "Connection error (HTTP " + response.code() +
+                                                "). Please try again 💜");
+                                return;
+                            }
 
-                            // Add AI reply to conversation history
-                            JSONObject assistantMsg = new JSONObject();
-                            assistantMsg.put("role",    "assistant");
-                            assistantMsg.put("content", aiText);
-                            conversationHistory.put(assistantMsg);
+                            JSONObject json   = new JSONObject(raw);
+                            String     aiText = json
+                                    .getJSONArray("content")
+                                    .getJSONObject(0)
+                                    .getString("text");
 
+                            appendHistory("assistant", aiText);
                             addAiMessage(aiText);
 
                         } catch (Exception e) {
-                            addAiMessage("I'm having trouble understanding right now. Please try again 💜");
+                            android.util.Log.e("CHAT_ERROR", "Parse error: " + raw);
+                            addAiMessage(
+                                    "Something went wrong. Please try again 💜");
                         }
                     });
                 }
@@ -225,25 +196,54 @@ public class CounselorChat extends AppCompatActivity {
 
         } catch (Exception e) {
             showTyping(false);
-            Toast.makeText(this, "Error building request", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this,
+                    "Request error: " + e.getMessage(),
+                    Toast.LENGTH_LONG).show();
         }
     }
 
-    // ----------------------------------------------------------------
-    // UI helpers
-    // ----------------------------------------------------------------
+    // ── UI helpers ────────────────────────────────────────────────────
+
+    private void appendHistory(String role, String content) {
+        try {
+            JSONObject m = new JSONObject();
+            m.put("role",    role);
+            m.put("content", content);
+            history.put(m);
+        } catch (Exception ignored) {}
+    }
+
+    private void addAiMessage(String text) {
+        messageList.add(new ChatMessage(text, ChatMessage.TYPE_AI, now()));
+        adapter.notifyItemInserted(messageList.size() - 1);
+        rvMessages.scrollToPosition(messageList.size() - 1);
+    }
+
+    private void addUserMessage(String text) {
+        messageList.add(new ChatMessage(text, ChatMessage.TYPE_USER, now()));
+        adapter.notifyItemInserted(messageList.size() - 1);
+        rvMessages.scrollToPosition(messageList.size() - 1);
+    }
 
     private void showTyping(boolean show) {
-        layoutTyping.setVisibility(show ? View.VISIBLE : View.GONE);
-        btnSend.setEnabled(!show);
-        btnSend.setAlpha(show ? 0.5f : 1f);
+        if (layoutTyping != null)
+            layoutTyping.setVisibility(show ? View.VISIBLE : View.GONE);
+        if (btnSend != null) {
+            btnSend.setEnabled(!show);
+            btnSend.setAlpha(show ? 0.45f : 1f);
+        }
     }
 
     private void hideKeyboard() {
-        InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
-        View currentFocus = getCurrentFocus();
-        if (imm != null && currentFocus != null) {
-            imm.hideSoftInputFromWindow(currentFocus.getWindowToken(), 0);
-        }
+        InputMethodManager imm =
+                (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+        View focus = getCurrentFocus();
+        if (imm != null && focus != null)
+            imm.hideSoftInputFromWindow(focus.getWindowToken(), 0);
+    }
+
+    private String now() {
+        return new SimpleDateFormat("hh:mm a", Locale.getDefault())
+                .format(new Date());
     }
 }
