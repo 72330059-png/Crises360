@@ -325,7 +325,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
-                            android:text="+961 70 123 456"
+                            android:text="1564"
                             android:textColor="#1A1A2E"
                             android:textSize="13sp"
                             android:textStyle="bold" />

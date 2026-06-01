@@ -50,9 +50,37 @@
                 android:layout_centerVertical="true"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
+                <FrameLayout
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginEnd="12dp">
 
+                    <ImageButton
+                        android:id="@+id/notificationBtn"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:padding="8dp"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/ic_bell"
+                        app:tint="#1D2A44" />
+
+                    <TextView
+                        android:id="@+id/notificationBadge"
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:layout_gravity="top|end"
+                        android:background="@drawable/badge_red_circle"
+                        android:gravity="center"
+                        android:text="1"
+                        android:textColor="#FFFFFF"
+                        android:textSize="9sp"
+                        android:textStyle="bold"
+                        android:visibility="gone" />
+
+                </FrameLayout>
                 <ImageButton
-                    android:id="@+id/notificationBtn"
+                    android:id="@+id/tipsBtn"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:layout_marginEnd="12dp"
@@ -93,14 +121,7 @@
             android:padding="20dp">
 
             <!-- QUOTES TICKER CARD -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                android:text="💬 Quote of the Moment"
-                android:textColor="#1D2A44"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+
 
             <include
                 android:id="@+id/quoteCardInclude"

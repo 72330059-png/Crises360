@@ -10,7 +10,7 @@ import com.example.crises.R;
 
 public class PsychologicalSupport extends AppCompatActivity {
 
-    private static final String HOTLINE_NUMBER = "+96170123456";
+    private static final String HOTLINE_NUMBER = "1564";
 
     private CardView cardCounselor;
     private CardView cardSelfHelp;

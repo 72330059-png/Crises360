@@ -5,6 +5,7 @@
     android:layout_height="match_parent"
     android:background="#F4F6FA">
 
+    <!-- Header -->
     <LinearLayout
         android:id="@+id/headerContainer"
         android:layout_width="match_parent"
@@ -37,40 +38,70 @@
                 android:textSize="12sp"
                 android:textColor="#667085"
                 android:layout_marginTop="2dp" />
+
         </LinearLayout>
 
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tabFilters"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:tabMode="fixed"
+            android:background="#FFFFFF"
             app:tabGravity="fill"
-            app:tabSelectedTextColor="#2F66F6"
-            app:tabTextColor="#98A2B3"
             app:tabIndicatorColor="#2F66F6"
             app:tabIndicatorHeight="3dp"
+            app:tabMode="fixed"
             app:tabRippleColor="@android:color/transparent"
-            android:background="#FFFFFF">
+            app:tabSelectedTextColor="#2F66F6"
+            app:tabTextColor="#98A2B3">
 
             <com.google.android.material.tabs.TabItem
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="All Alerts" />
+                android:text="All" />
 
             <com.google.android.material.tabs.TabItem
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Warnings" />
+                android:text="Warning" />
 
             <com.google.android.material.tabs.TabItem
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Updates" />
+                android:text="Critical" />
+
+            <com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Info" />
 
         </com.google.android.material.tabs.TabLayout>
 
     </LinearLayout>
 
+    <!-- Loading -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@id/headerContainer"
+        android:layout_marginTop="40dp"
+        android:visibility="gone" />
+
+    <!-- Empty state -->
+    <TextView
+        android:id="@+id/tvEmpty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/headerContainer"
+        android:layout_marginTop="40dp"
+        android:gravity="center"
+        android:text="No alerts found."
+        android:textColor="#98A2B3"
+        android:textSize="14sp"
+        android:visibility="gone" />
+
+    <!-- List -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerAlerts"
         android:layout_width="match_parent"
@@ -80,16 +111,17 @@
         android:padding="16dp"
         android:clipToPadding="false" />
 
+    <!-- Bottom nav -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"
         android:layout_height="75dp"
         android:layout_alignParentBottom="true"
         android:background="@drawable/footer_background"
+        app:elevation="12dp"
         app:itemIconTint="#526D82"
         app:itemTextColor="#526D82"
         app:labelVisibilityMode="labeled"
-        app:menu="@menu/bottom_nav_menu"
-        app:elevation="12dp" />
+        app:menu="@menu/bottom_nav_menu" />
 
 </RelativeLayout>

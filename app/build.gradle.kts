@@ -32,6 +32,7 @@ android {
 }
 
 dependencies {
+    implementation("androidx.work:work-runtime:2.9.0")
     implementation("androidx.cardview:cardview:1.0.0")
     implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")

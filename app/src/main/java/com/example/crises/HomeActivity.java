@@ -19,6 +19,11 @@ import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AlertDialog;
 import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
+import androidx.work.Constraints;
+import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.NetworkType;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -40,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 public class HomeActivity extends BaseActivity {
 
@@ -52,27 +58,37 @@ public class HomeActivity extends BaseActivity {
     private TextView tvSafetyLastUpdated;
     private CardView safetyCard;
 
+    // ── Notification badge ─────────────────────────────────────────────────
+    private TextView notificationBadge;
+    private NotificationRepository notifRepo;
+
     // ── Location ───────────────────────────────────────────────────────────
     private FusedLocationProviderClient fusedLocationClient;
     private LocationCallback locationCallback;
     private static final int LOCATION_PERMISSION_REQUEST = 99;
-    private static final String API_URL = "http://10.0.2.2/crises_api/get_map_data.php";
+    private static final String API_URL =
+            "http://10.0.2.2/crises_api/get_map_data.php";
     private final List<JSONObject> zoneList = new ArrayList<>();
     private boolean zonesLoaded = false;
 
+    // ──────────────────────────────────────────────────────────────────────
     @Override
     protected void attachBaseContext(Context newBase) {
-        SharedPreferences prefs = newBase.getSharedPreferences("settings", MODE_PRIVATE);
+        SharedPreferences prefs =
+                newBase.getSharedPreferences("settings", MODE_PRIVATE);
         String lang = prefs.getString("lang", "en");
         super.attachBaseContext(LocaleHelper.setLocale(newBase, lang));
     }
 
+    // ──────────────────────────────────────────────────────────────────────
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
 
-        prefs = getSharedPreferences("user_session", MODE_PRIVATE);
+        prefs     = getSharedPreferences("user_session", MODE_PRIVATE);
+        notifRepo = new NotificationRepository(this);
+
         if (!prefs.getBoolean("isLoggedIn", false)) {
             startActivity(new Intent(this, Login.class)
                     .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
@@ -91,18 +107,101 @@ public class HomeActivity extends BaseActivity {
         initQuoteTicker();
         initBottomNavigation();
         initSafetyCard();
+        initNotificationWorker();
+    }
+
+    // ──────────────────────────────────────────────────────────────────────
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Always refresh badge when returning to this screen
+        // (covers: returning from Notifications, worker fired while away, etc.)
+        refreshBadge();
+    }
+
+    // ── Badge refresh ──────────────────────────────────────────────────────
+    private void refreshBadge() {
+        if (notificationBadge == null) return;
+        int count = notifRepo.getUnreadCount();
+        if (count > 0) {
+            notificationBadge.setVisibility(View.VISIBLE);
+            notificationBadge.setText(count > 9 ? "9+" : String.valueOf(count));
+        } else {
+            notificationBadge.setVisibility(View.GONE);
+        }
+    }
+
+    // ── WorkManager: background polling every 15 min ───────────────────────
+    private void initNotificationWorker() {
+        // Small delay so the main thread finishes rendering first
+        new android.os.Handler(Looper.getMainLooper()).postDelayed(() -> {
+            PeriodicWorkRequest workRequest =
+                    new PeriodicWorkRequest.Builder(
+                            NotificationWorker.class,
+                            15, TimeUnit.MINUTES)
+                            .setInitialDelay(5, TimeUnit.SECONDS)
+                            .setConstraints(new Constraints.Builder()
+                                    .setRequiredNetworkType(NetworkType.CONNECTED)
+                                    .build())
+                            .build();
+
+            WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+                    "crises_notif_worker",
+                    ExistingPeriodicWorkPolicy.KEEP,
+                    workRequest);
+        }, 5000);
+    }
+
+    // ── Top app bar ────────────────────────────────────────────────────────
+    private void initTopAppBar() {
+        TextView tvHello = findViewById(R.id.appBrandName);
+        if (tvHello != null) {
+            String name = prefs.getString("full_name", "");
+            tvHello.setText(
+                    name.isEmpty() ? "Hello!" : "Hello, " + name.split(" ")[0]);
+        }
+
+        // Bell button + badge
+        notificationBadge = findViewById(R.id.notificationBadge);
+        ImageButton notificationBtn = findViewById(R.id.notificationBtn);
+        ImageButton tipsBtn         = findViewById(R.id.tipsBtn);
+        ImageButton settingsBtn     = findViewById(R.id.settingsBtn);
+
+        if (notificationBtn != null)
+            notificationBtn.setOnClickListener(v -> {
+                // Do NOT clear the badge here.
+                // Notifications.java calls repo.clearUnread() after rendering
+                // the list, so onResume() here will read 0 and hide the badge
+                // automatically when the user comes back.
+                startActivity(new Intent(this, Notifications.class));
+            });
+
+        if (tipsBtn != null)
+            tipsBtn.setOnClickListener(v ->
+                    startActivity(new Intent(this, Tips.class)));
+
+        if (settingsBtn != null)
+            settingsBtn.setOnClickListener(v -> {
+                try {
+                    startActivity(new Intent(this, Settings.class));
+                } catch (Exception e) {
+                    android.widget.Toast.makeText(this,
+                            "Settings not found!",
+                            android.widget.Toast.LENGTH_SHORT).show();
+                }
+            });
+
+        // Show correct badge count on first draw
+        refreshBadge();
     }
 
     // ── Safety card init ───────────────────────────────────────────────────
     private void initSafetyCard() {
-        safetyCard        = findViewById(R.id.safetyCard);
-        tvSafetyStatus    = findViewById(R.id.tvSafetyStatus);
+        safetyCard          = findViewById(R.id.safetyCard);
+        tvSafetyStatus      = findViewById(R.id.tvSafetyStatus);
         tvSafetyLastUpdated = findViewById(R.id.tvSafetyLastUpdated);
 
-        // Set default state while loading
         updateSafetyCard("loading", null);
-
-        // Load zones first, then start GPS
         loadZonesFromApi();
     }
 
@@ -111,7 +210,8 @@ public class HomeActivity extends BaseActivity {
         new Thread(() -> {
             try {
                 URL url = new URL(API_URL);
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                HttpURLConnection conn =
+                        (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("GET");
                 conn.setConnectTimeout(8000);
                 conn.setReadTimeout(8000);
@@ -128,18 +228,15 @@ public class HomeActivity extends BaseActivity {
                 JSONArray  alerts = data.getJSONArray("alerts");
 
                 zoneList.clear();
-                for (int i = 0; i < zones.length(); i++) {
+                for (int i = 0; i < zones.length(); i++)
                     zoneList.add(zones.getJSONObject(i));
-                }
 
-                // Also add alerts as danger zones (within 1km = danger)
                 for (int i = 0; i < alerts.length(); i++) {
-                    JSONObject alert = alerts.getJSONObject(i);
-                    // Wrap alert as a pseudo-zone for distance checking
+                    JSONObject alert     = alerts.getJSONObject(i);
                     JSONObject alertZone = new JSONObject();
                     alertZone.put("center_lat",    alert.getDouble("lat"));
                     alertZone.put("center_lng",    alert.getDouble("lng"));
-                    alertZone.put("radius_meters", 1000); // 1km danger radius
+                    alertZone.put("radius_meters", 1000);
                     alertZone.put("type",          "danger");
                     alertZone.put("name",          alert.optString("title"));
                     zoneList.add(alertZone);
@@ -170,20 +267,22 @@ public class HomeActivity extends BaseActivity {
 
     // ── Start GPS updates ──────────────────────────────────────────────────
     private void startLocationUpdates() {
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        fusedLocationClient =
+                LocationServices.getFusedLocationProviderClient(this);
 
-        LocationRequest locationRequest = new LocationRequest.Builder(
-                Priority.PRIORITY_HIGH_ACCURACY, 10000) // every 10 seconds
-                .setMinUpdateIntervalMillis(5000)
-                .build();
+        LocationRequest locationRequest =
+                new LocationRequest.Builder(
+                        Priority.PRIORITY_HIGH_ACCURACY, 10000)
+                        .setMinUpdateIntervalMillis(5000)
+                        .build();
 
         locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult result) {
                 if (result == null || result.getLastLocation() == null) return;
-                double lat = result.getLastLocation().getLatitude();
-                double lng = result.getLastLocation().getLongitude();
-                checkUserZone(lat, lng);
+                checkUserZone(
+                        result.getLastLocation().getLatitude(),
+                        result.getLastLocation().getLongitude());
             }
         };
 
@@ -192,13 +291,12 @@ public class HomeActivity extends BaseActivity {
                 == PackageManager.PERMISSION_GRANTED) {
             fusedLocationClient.requestLocationUpdates(
                     locationRequest, locationCallback, Looper.getMainLooper());
-
-            // Also get last known location immediately
-            fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
-                if (location != null) {
-                    checkUserZone(location.getLatitude(), location.getLongitude());
-                }
-            });
+            fusedLocationClient.getLastLocation()
+                    .addOnSuccessListener(location -> {
+                        if (location != null)
+                            checkUserZone(location.getLatitude(),
+                                    location.getLongitude());
+                    });
         }
     }
 
@@ -206,11 +304,8 @@ public class HomeActivity extends BaseActivity {
     private void checkUserZone(double userLat, double userLng) {
         if (!zonesLoaded) return;
 
-        String detectedType = "safe"; // default = safe if no zone found
-        String detectedName = null;
-
-        // Priority: danger > warning > safe
         String highestThreat = "none";
+        String detectedName  = null;
 
         for (JSONObject zone : zoneList) {
             try {
@@ -224,8 +319,8 @@ public class HomeActivity extends BaseActivity {
                         userLat, userLng, centerLat, centerLng, results);
 
                 if (results[0] <= radiusMeters) {
-                    // User is inside this zone — pick highest threat
-                    if (type.equals("danger") && !highestThreat.equals("danger")) {
+                    if (type.equals("danger")
+                            && !highestThreat.equals("danger")) {
                         highestThreat = "danger";
                         detectedName  = zone.optString("name");
                     } else if (type.equals("warning")
@@ -243,8 +338,8 @@ public class HomeActivity extends BaseActivity {
             }
         }
 
-        // If no zone found at all, still show safe
-        detectedType = highestThreat.equals("none") ? "safe" : highestThreat;
+        String detectedType =
+                highestThreat.equals("none") ? "safe" : highestThreat;
         updateSafetyCard(detectedType, detectedName);
     }
 
@@ -284,14 +379,10 @@ public class HomeActivity extends BaseActivity {
                 break;
         }
 
-        // Update card background
         safetyCard.setCardBackgroundColor(cardColor);
-
-        // Update status text
         tvSafetyStatus.setText(statusText);
         tvSafetyStatus.setTextColor(statusColor);
 
-        // Update last updated time
         if (tvSafetyLastUpdated != null) {
             String time = new SimpleDateFormat("hh:mm a", Locale.getDefault())
                     .format(new Date());
@@ -301,11 +392,13 @@ public class HomeActivity extends BaseActivity {
         }
     }
 
-    // ── Handle permission result ───────────────────────────────────────────
+    // ── Permission result ──────────────────────────────────────────────────
     @Override
     public void onRequestPermissionsResult(int requestCode,
-                                           String[] permissions, int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+                                           String[] permissions,
+                                           int[] grantResults) {
+        super.onRequestPermissionsResult(
+                requestCode, permissions, grantResults);
         if (requestCode == LOCATION_PERMISSION_REQUEST
                 && grantResults.length > 0
                 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -315,7 +408,7 @@ public class HomeActivity extends BaseActivity {
         }
     }
 
-    // ── Stop location when activity stops ─────────────────────────────────
+    // ── Lifecycle ──────────────────────────────────────────────────────────
     @Override
     protected void onStop() {
         super.onStop();
@@ -330,8 +423,7 @@ public class HomeActivity extends BaseActivity {
         if (quoteTicker != null) quoteTicker.start();
     }
 
-    // ── All your existing methods below (unchanged) ────────────────────────
-
+    // ── Quote ticker ───────────────────────────────────────────────────────
     private void initQuoteTicker() {
         View quoteCard = findViewById(R.id.quoteCardInclude);
         if (quoteCard == null) return;
@@ -340,41 +432,16 @@ public class HomeActivity extends BaseActivity {
                 quoteCard.findViewById(R.id.tvQuoteText),
                 quoteCard.findViewById(R.id.tvQuoteAuthor),
                 quoteCard.findViewById(R.id.quoteAccentStrip),
-                quoteCard.findViewById(R.id.quoteProgress)
-        );
+                quoteCard.findViewById(R.id.quoteProgress));
         quoteTicker.start();
     }
 
-    private void initTopAppBar() {
-        TextView tvHello = findViewById(R.id.appBrandName);
-        if (tvHello != null) {
-            String name = prefs.getString("full_name", "");
-            tvHello.setText(name.isEmpty() ? "Hello!" : "Hello, " + name.split(" ")[0]);
-        }
-
-        ImageButton notificationBtn = findViewById(R.id.notificationBtn);
-        ImageButton settingsBtn     = findViewById(R.id.settingsBtn);
-
-        if (notificationBtn != null)
-            notificationBtn.setOnClickListener(v ->
-                    startActivity(new Intent(this, Tips.class)));
-
-        if (settingsBtn != null)
-            settingsBtn.setOnClickListener(v -> {
-                try {
-                    startActivity(new Intent(this, Settings.class));
-                } catch (Exception e) {
-                    android.widget.Toast.makeText(this,
-                            "Settings not found!",
-                            android.widget.Toast.LENGTH_SHORT).show();
-                }
-            });
-    }
-
+    // ── Profile banner ─────────────────────────────────────────────────────
     private void initProfileBanner() {
         View banner = findViewById(R.id.profileBanner);
         if (banner == null) return;
-        boolean profileComplete = prefs.getBoolean("isProfileComplete", false);
+        boolean profileComplete =
+                prefs.getBoolean("isProfileComplete", false);
         if (!profileComplete) {
             banner.setVisibility(View.VISIBLE);
             Button btnComplete = findViewById(R.id.btnCompleteProfile);
@@ -386,6 +453,7 @@ public class HomeActivity extends BaseActivity {
         }
     }
 
+    // ── News section ───────────────────────────────────────────────────────
     private void initNewsSection() {
         CardView newsCard = findViewById(R.id.newsCard);
         if (newsCard != null)
@@ -393,6 +461,7 @@ public class HomeActivity extends BaseActivity {
                     startActivity(new Intent(this, News.class)));
     }
 
+    // ── SOS button ─────────────────────────────────────────────────────────
     private void initQuickCall() {
         quickCall = findViewById(R.id.sosButton);
         quickCall.setOnClickListener(v -> {
@@ -413,11 +482,12 @@ public class HomeActivity extends BaseActivity {
         });
     }
 
+    // ── Quick actions ──────────────────────────────────────────────────────
     private void initQuickActions() {
         LinearLayout findShelter = findViewById(R.id.btnFindShelter);
         LinearLayout medicalHelp = findViewById(R.id.btnMedicalHelp);
         LinearLayout needs       = findViewById(R.id.btnNeeds);
-        LinearLayout emotional = findViewById(R.id.btnEmotionalSupport);
+        LinearLayout emotional   = findViewById(R.id.btnEmotionalSupport);
 
         if (findShelter != null)
             findShelter.setOnClickListener(v ->
@@ -433,17 +503,22 @@ public class HomeActivity extends BaseActivity {
                     startActivity(new Intent(this, PsychologicalSupport.class)));
     }
 
+    // ── Bottom navigation ──────────────────────────────────────────────────
     private void initBottomNavigation() {
-        BottomNavigationView bottomNav = findViewById(R.id.bottomNavigation);
+        BottomNavigationView bottomNav =
+                findViewById(R.id.bottomNavigation);
         if (bottomNav == null) return;
         bottomNav.setSelectedItemId(R.id.nav_home);
         bottomNav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
             if (id == R.id.nav_home) return true;
             Intent intent = null;
-            if (id == R.id.nav_alerts)       intent = new Intent(this, Alerts.class);
-            else if (id == R.id.nav_map)     intent = new Intent(this, MapActivity.class);
-            else if (id == R.id.nav_profile) intent = new Intent(this, Account.class);
+            if (id == R.id.nav_alerts)
+                intent = new Intent(this, Alerts.class);
+            else if (id == R.id.nav_map)
+                intent = new Intent(this, MapActivity.class);
+            else if (id == R.id.nav_profile)
+                intent = new Intent(this, Account.class);
             if (intent != null) {
                 startActivity(intent);
                 overridePendingTransition(0, 0);

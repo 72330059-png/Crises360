@@ -21,7 +21,7 @@ public class AlertsAdapter extends RecyclerView.Adapter<AlertsAdapter.ViewHolder
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView txtType, txtMessage, txtLocation, txtTime;
-        View strip;
+        View     strip;
 
         public ViewHolder(View itemView) {
             super(itemView);
@@ -49,7 +49,8 @@ public class AlertsAdapter extends RecyclerView.Adapter<AlertsAdapter.ViewHolder
         holder.txtLocation.setText("📍 " + alert.getLocation());
         holder.txtTime.setText(alert.getTime());
 
-        String severity = alert.getSeverity() != null ? alert.getSeverity() : "";
+        String severity = alert.getSeverity() != null
+                ? alert.getSeverity() : "";
 
         switch (severity.toLowerCase()) {
             case "warning":
@@ -60,17 +61,18 @@ public class AlertsAdapter extends RecyclerView.Adapter<AlertsAdapter.ViewHolder
                         R.drawable.badge_warning_bg);
                 break;
 
-            case "update":
+            case "info":
                 applyStyle(holder,
-                        "📢 Update",
+                        "📢 Info",
                         "#2F66F6",
                         "#2F66F6",
                         R.drawable.badge_update_bg);
                 break;
 
-            default: // danger / critical / anything else
+            case "critical":
+            default:
                 applyStyle(holder,
-                        "🚨 Danger",
+                        "🚨 Critical",
                         "#EF4444",
                         "#EF4444",
                         R.drawable.badge_danger_bg);

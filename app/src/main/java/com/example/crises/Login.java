@@ -19,6 +19,9 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 import java.util.Scanner;
 
 public class Login extends AppCompatActivity {
@@ -44,7 +47,6 @@ public class Login extends AppCompatActivity {
             return;
         }
 
-        // etUsername in XML is now used for email
         etEmail          = findViewById(R.id.etUsername);
         etPassword       = findViewById(R.id.etPassword);
         btnLogin         = findViewById(R.id.btnLogin);
@@ -116,15 +118,28 @@ public class Login extends AppCompatActivity {
                     try {
                         if (json.getString("status").equals("success")) {
 
+                            // ✅ Save login date to notification_prefs
+                            // This is used to filter out old alerts/notifications
+                            // that existed before the user logged in.
+                            String loginDate = new SimpleDateFormat(
+                                    "yyyy-MM-dd", Locale.getDefault()).format(new Date());
+                            getSharedPreferences("notification_prefs", MODE_PRIVATE)
+                                    .edit()
+                                    .putString("login_date", loginDate)
+                                    // ✅ Reset the seed flag so NotificationWorker
+                                    //    re-seeds with the new login date baseline
+                                    .putBoolean("initial_seed_done", false)
+                                    .apply();
+
                             // ✅ Save partial session — NOT logged in yet, 2FA comes next
                             prefs.edit()
-                                    .putInt("user_id",          json.getInt("user_id"))
-                                    .putString("email",         email)
-                                    .putString("full_name",     json.optString("full_name", ""))
-                                    .putString("national_id",   json.optString("national_id", ""))
+                                    .putInt("user_id",       json.getInt("user_id"))
+                                    .putString("email",      email)
+                                    .putString("full_name",  json.optString("full_name", ""))
+                                    .putString("national_id",json.optString("national_id", ""))
                                     .putBoolean("isProfileComplete",
                                             json.optBoolean("profile_complete", false))
-                                    .putBoolean("isLoggedIn",   false) // ← 2FA not done yet
+                                    .putBoolean("isLoggedIn", false) // ← 2FA not done yet
                                     .apply();
 
                             // ✅ Go to 2FA screen
