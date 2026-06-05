@@ -36,7 +36,8 @@
             android:exported="false" />
         <activity
             android:name=".CounselorChat"
-            android:exported="false" />
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".SelfHelp"
             android:exported="false" />
