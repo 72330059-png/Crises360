@@ -587,13 +587,13 @@
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"
-        android:layout_height="75dp"
+        android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:background="@drawable/footer_background"
+        android:paddingBottom="8dp"
         app:elevation="12dp"
         app:itemIconTint="#526D82"
         app:itemTextColor="#526D82"
         app:labelVisibilityMode="labeled"
         app:menu="@menu/bottom_nav_menu" />
-
 </RelativeLayout>

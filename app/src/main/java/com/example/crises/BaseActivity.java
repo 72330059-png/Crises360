@@ -9,7 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 public class BaseActivity extends AppCompatActivity {
 
     protected boolean checkProfileCompletion() {
-        SharedPreferences prefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
+        SharedPreferences prefs = getSharedPreferences("user_session", MODE_PRIVATE);
         boolean isComplete = prefs.getBoolean("isProfileComplete", false);
 
         if (!isComplete) {

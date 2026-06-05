@@ -24,7 +24,7 @@ public class Needs extends AppCompatActivity {
     ArrayList<Need> fullList;
     TabLayout tabLayout;
 
-    String url = "http://10.0.2.2/crises_api/get_needs.php";
+    String url = "http://192.168.0.109/crises_api/get_needs.php";
 
     // Tab label → DB category value(s) it matches
     // Tab label is what user sees, dbValue is what we compare against DB

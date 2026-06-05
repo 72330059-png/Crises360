@@ -37,12 +37,12 @@ public class Notifications extends AppCompatActivity {
     // Login date anchor — items created before this date are hidden
     private String loginDate;
 
-    private static final String API_ALERTS    = "http://10.0.2.2/crises_api/get_alerts.php";
-    private static final String API_MAP       = "http://10.0.2.2/crises_api/get_map_data.php";
-    private static final String API_NEWS      = "http://10.0.2.2/crises_api/get_news.php";
-    private static final String API_HOSPITALS = "http://10.0.2.2/crises_api/get_hospitals.php";
-    private static final String API_NEEDS     = "http://10.0.2.2/crises_api/get_needs.php";
-    private static final String API_SHELTERS  = "http://10.0.2.2/crises_api/get_shelters.php";
+    private static final String API_ALERTS    = "http://192.168.0.109/crises_api/get_alerts.php";
+    private static final String API_MAP       = "http://192.168.0.109/crises_api/get_map_data.php";
+    private static final String API_NEWS      = "http://192.168.0.109/crises_api/get_news.php";
+    private static final String API_HOSPITALS = "http://192.168.0.109/crises_api/get_hospitals.php";
+    private static final String API_NEEDS     = "http://192.168.0.109/crises_api/get_needs.php";
+    private static final String API_SHELTERS  = "http://192.168.0.109/crises_api/get_shelters.php";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

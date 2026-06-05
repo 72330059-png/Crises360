@@ -41,7 +41,7 @@ import okhttp3.ResponseBody;
 public class CounselorChat extends AppCompatActivity {
 
     // ── API CONFIG — key is now safe on your PHP server ───────────────
-    private static final String API_URL = "http://10.0.2.2/crises_api/chat.php";
+    private static final String API_URL = "http://192.168.0.109/crises_api/chat.php";
 
     private static final String SYSTEM_PROMPT =
             "You are a warm, professional psychological counselor specialized in " +

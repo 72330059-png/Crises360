@@ -7,8 +7,10 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -65,9 +67,11 @@ public class HomeActivity extends BaseActivity {
     // ── Location ───────────────────────────────────────────────────────────
     private FusedLocationProviderClient fusedLocationClient;
     private LocationCallback locationCallback;
-    private static final int LOCATION_PERMISSION_REQUEST = 99;
+    private static final int LOCATION_PERMISSION_REQUEST   = 99;
+    private static final int BACKGROUND_LOCATION_REQUEST   = 100;
+    private static final int NOTIFICATION_PERMISSION_REQUEST = 101; // NEW
     private static final String API_URL =
-            "http://10.0.2.2/crises_api/get_map_data.php";
+            "http://192.168.0.109/crises_api/get_map_data.php";
     private final List<JSONObject> zoneList = new ArrayList<>();
     private boolean zonesLoaded = false;
 
@@ -99,6 +103,9 @@ public class HomeActivity extends BaseActivity {
 
         setContentView(R.layout.activity_home);
 
+        // ── NEW: request notification permission on Android 13+ ──────────
+        requestNotificationPermission();
+
         initTopAppBar();
         initProfileBanner();
         initQuickActions();
@@ -114,9 +121,20 @@ public class HomeActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Always refresh badge when returning to this screen
-        // (covers: returning from Notifications, worker fired while away, etc.)
         refreshBadge();
+    }
+
+    // ── Request POST_NOTIFICATIONS permission (Android 13+ required) ──────
+    private void requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // Android 13+
+            if (ActivityCompat.checkSelfPermission(this,
+                    Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                        NOTIFICATION_PERMISSION_REQUEST);
+            }
+        }
     }
 
     // ── Badge refresh ──────────────────────────────────────────────────────
@@ -133,7 +151,6 @@ public class HomeActivity extends BaseActivity {
 
     // ── WorkManager: background polling every 15 min ───────────────────────
     private void initNotificationWorker() {
-        // Small delay so the main thread finishes rendering first
         new android.os.Handler(Looper.getMainLooper()).postDelayed(() -> {
             PeriodicWorkRequest workRequest =
                     new PeriodicWorkRequest.Builder(
@@ -161,20 +178,14 @@ public class HomeActivity extends BaseActivity {
                     name.isEmpty() ? "Hello!" : "Hello, " + name.split(" ")[0]);
         }
 
-        // Bell button + badge
         notificationBadge = findViewById(R.id.notificationBadge);
         ImageButton notificationBtn = findViewById(R.id.notificationBtn);
         ImageButton tipsBtn         = findViewById(R.id.tipsBtn);
         ImageButton settingsBtn     = findViewById(R.id.settingsBtn);
 
         if (notificationBtn != null)
-            notificationBtn.setOnClickListener(v -> {
-                // Do NOT clear the badge here.
-                // Notifications.java calls repo.clearUnread() after rendering
-                // the list, so onResume() here will read 0 and hide the badge
-                // automatically when the user comes back.
-                startActivity(new Intent(this, Notifications.class));
-            });
+            notificationBtn.setOnClickListener(v ->
+                    startActivity(new Intent(this, Notifications.class)));
 
         if (tipsBtn != null)
             tipsBtn.setOnClickListener(v ->
@@ -191,7 +202,6 @@ public class HomeActivity extends BaseActivity {
                 }
             });
 
-        // Show correct badge count on first draw
         refreshBadge();
     }
 
@@ -252,16 +262,41 @@ public class HomeActivity extends BaseActivity {
         }).start();
     }
 
-    // ── Request location permission ────────────────────────────────────────
+    // ── Request location permission (foreground first, then background) ────
     private void requestLocationPermission() {
         if (ActivityCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED) {
-            startLocationUpdates();
-        } else {
+                != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                     LOCATION_PERMISSION_REQUEST);
+        } else {
+            startLocationUpdates();
+            requestBackgroundLocationIfNeeded();
+        }
+    }
+
+    // ── Request background location (Android 10+ requires separate ask) ───
+    private void requestBackgroundLocationIfNeeded() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            if (ActivityCompat.checkSelfPermission(this,
+                    Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                    != PackageManager.PERMISSION_GRANTED) {
+                new AlertDialog.Builder(this)
+                        .setTitle("Background Location Needed")
+                        .setMessage(
+                                "To alert you when you enter a danger or warning zone " +
+                                        "even while the app is closed, please select " +
+                                        "\"Allow all the time\" on the next screen.")
+                        .setPositiveButton("Continue", (d, w) ->
+                                ActivityCompat.requestPermissions(this,
+                                        new String[]{
+                                                Manifest.permission.ACCESS_BACKGROUND_LOCATION
+                                        },
+                                        BACKGROUND_LOCATION_REQUEST))
+                        .setNegativeButton("Not now", null)
+                        .show();
+            }
         }
     }
 
@@ -397,14 +432,36 @@ public class HomeActivity extends BaseActivity {
     public void onRequestPermissionsResult(int requestCode,
                                            String[] permissions,
                                            int[] grantResults) {
-        super.onRequestPermissionsResult(
-                requestCode, permissions, grantResults);
-        if (requestCode == LOCATION_PERMISSION_REQUEST
-                && grantResults.length > 0
-                && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            startLocationUpdates();
-        } else {
-            updateSafetyCard("unknown", null);
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == LOCATION_PERMISSION_REQUEST) {
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                startLocationUpdates();
+                requestBackgroundLocationIfNeeded();
+            } else {
+                updateSafetyCard("unknown", null);
+            }
+
+        } else if (requestCode == BACKGROUND_LOCATION_REQUEST) {
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Log.d("HomeActivity", "Background location granted");
+            } else {
+                Log.d("HomeActivity", "Background location denied");
+            }
+
+        } else if (requestCode == NOTIFICATION_PERMISSION_REQUEST) {
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Log.d("HomeActivity", "Notification permission granted — popups will work");
+            } else {
+                Log.d("HomeActivity", "Notification permission denied — no popups");
+                // Show a gentle message to the user
+                android.widget.Toast.makeText(this,
+                        "Enable notifications in Settings to receive crisis alerts",
+                        android.widget.Toast.LENGTH_LONG).show();
+            }
         }
     }
 

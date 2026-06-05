@@ -55,7 +55,7 @@ public class Hospitals extends AppCompatActivity {
 
     // ---------------- LOAD FROM PHP ----------------
     private void loadHospitals() {
-        String url = "http://10.0.2.2/crises_api/get_hospitals.php";
+        String url = "http://192.168.0.109/crises_api/get_hospitals.php";
 
         JsonObjectRequest request = new JsonObjectRequest(
                 Request.Method.GET,

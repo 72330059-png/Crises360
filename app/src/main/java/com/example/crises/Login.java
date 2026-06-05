@@ -91,7 +91,7 @@ public class Login extends AppCompatActivity {
     private void doLogin(String email, String password) {
         new Thread(() -> {
             try {
-                URL url = new URL("http://10.0.2.2/crises_api/login.php");
+                URL url = new URL("http://192.168.0.109/crises_api/login.php");
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("POST");
                 conn.setDoOutput(true);
@@ -196,7 +196,7 @@ public class Login extends AppCompatActivity {
     private void sendForgotPassword(String email) {
         new Thread(() -> {
             try {
-                URL url = new URL("http://10.0.2.2/crises_api/forgot_password.php");
+                URL url = new URL("http://192.168.0.109/crises_api/forgot_password.php");
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("POST");
                 conn.setDoOutput(true);

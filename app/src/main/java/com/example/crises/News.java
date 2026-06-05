@@ -46,7 +46,7 @@ public class News extends AppCompatActivity {
     private void loadNews() {
         new Thread(() -> {
             try {
-                URL url = new URL("http://10.0.2.2/crises_api/get_news.php");
+                URL url = new URL("http://192.168.0.109/crises_api/get_news.php");
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("GET");
                 conn.setConnectTimeout(10000);

@@ -902,12 +902,14 @@
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"
-        android:layout_height="70dp"
+        android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:background="@android:color/white"
-        app:elevation="8dp"
-        app:itemIconTint="#1E3A5F"
-        app:itemTextColor="#1E3A5F"
+        android:background="@drawable/footer_background"
+        android:paddingBottom="8dp"
+        app:elevation="12dp"
+        app:itemIconTint="#526D82"
+        app:itemTextColor="#526D82"
+        app:labelVisibilityMode="labeled"
         app:menu="@menu/bottom_nav_menu" />
 
 </RelativeLayout>
