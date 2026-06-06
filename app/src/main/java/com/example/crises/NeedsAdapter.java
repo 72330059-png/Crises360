@@ -1,6 +1,8 @@
 package com.example.crises;
 
+import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -53,10 +55,31 @@ public class NeedsAdapter extends RecyclerView.Adapter<NeedsAdapter.ViewHolder> 
         holder.name.setText(r.getName());
         holder.location.setText(r.getLocation());
         holder.category.setText(formatCategory(r.getCategory()));
-        holder.address.setText("📍 " + r.getAddress());
-        holder.contact.setText("📞 " + r.getContact());
-        holder.hours.setText("🕒 " + r.getHours());
-        holder.notes.setText(r.getNotes());
+        holder.address.setText(r.getAddress());
+        holder.hours.setText(r.getHours());
+
+        // ── NOTES — hide if empty ─────────────────────────────────────────
+        String notes = r.getNotes();
+        if (notes != null && !notes.trim().isEmpty()) {
+            holder.notes.setText(notes);
+            holder.notes.setVisibility(View.VISIBLE);
+        } else {
+            holder.notes.setVisibility(View.GONE);
+        }
+
+        // ── CONTACT — tappable to open dialer ─────────────────────────────
+        String phone = r.getContact();
+        holder.contact.setText(phone);
+        holder.contact.setTextColor(Color.parseColor("#2E7D32"));
+        if (phone != null && !phone.trim().isEmpty()) {
+            holder.contact.setOnClickListener(v -> {
+                Intent intent = new Intent(Intent.ACTION_DIAL);
+                intent.setData(Uri.parse("tel:" + phone.trim()));
+                v.getContext().startActivity(intent);
+            });
+        } else {
+            holder.contact.setOnClickListener(null);
+        }
 
         // ── STATUS BADGE ──────────────────────────────────────────────────
         String status = r.getStatus();
@@ -87,43 +110,35 @@ public class NeedsAdapter extends RecyclerView.Adapter<NeedsAdapter.ViewHolder> 
             holder.status.setPadding(20, 6, 20, 6);
         }
 
-        // ── ICON by DB category ───────────────────────────────────────────
+        // ── ICON ──────────────────────────────────────────────────────────
         holder.icon.setImageResource(getCategoryIcon(r.getCategory()));
     }
 
     @Override
     public int getItemCount() { return list.size(); }
 
-    // Maps DB category values to icons
     private int getCategoryIcon(String category) {
         if (category == null) return R.drawable.ic_category_other;
         switch (category.toLowerCase()) {
             case "food":
             case "bakery":
-            case "restaurant":      return R.drawable.ic_food;
-
+            case "restaurant":    return R.drawable.ic_food;
             case "water":
-            case "water_station":   return R.drawable.ic_water;
-
+            case "water_station": return R.drawable.ic_water;
             case "medical":
             case "pharmacy":
-            case "hospital":        return R.drawable.ic_medical;
-
+            case "hospital":      return R.drawable.ic_medical;
             case "fuel":
-            case "fuel_station":    return R.drawable.ic_fuel;
-
-            case "transport":       return R.drawable.ic_transport;
-
-            case "clothes":         return R.drawable.ic_clothes;
-
-            default:                return R.drawable.ic_category_other;
+            case "fuel_station":  return R.drawable.ic_fuel;
+            case "transport":     return R.drawable.ic_transport;
+            case "clothes":       return R.drawable.ic_clothes;
+            default:              return R.drawable.ic_category_other;
         }
     }
 
-    // Makes category label readable: "fuel_station" → "Fuel Station"
     private String formatCategory(String category) {
         if (category == null) return "";
-        return category.replace("_", " ").substring(0, 1).toUpperCase()
-                + category.replace("_", " ").substring(1);
+        String s = category.replace("_", " ");
+        return s.substring(0, 1).toUpperCase() + s.substring(1);
     }
 }

@@ -34,15 +34,14 @@ public class Notifications extends AppCompatActivity {
     private ProgressBar  progressBar;
     private NotificationRepository repo;
 
-    // Login date anchor — items created before this date are hidden
     private String loginDate;
 
-    private static final String API_ALERTS    = "http://192.168.0.109/crises_api/get_alerts.php";
-    private static final String API_MAP       = "http://192.168.0.109/crises_api/get_map_data.php";
-    private static final String API_NEWS      = "http://192.168.0.109/crises_api/get_news.php";
-    private static final String API_HOSPITALS = "http://192.168.0.109/crises_api/get_hospitals.php";
-    private static final String API_NEEDS     = "http://192.168.0.109/crises_api/get_needs.php";
-    private static final String API_SHELTERS  = "http://192.168.0.109/crises_api/get_shelters.php";
+    private static final String API_ALERTS    = "http://192.168.0.106/crises_api/get_alerts.php";
+    private static final String API_MAP       = "http://192.168.0.106/crises_api/get_map_data.php";
+    private static final String API_NEWS      = "http://192.168.0.106/crises_api/get_news.php";
+    private static final String API_HOSPITALS = "http://192.168.0.106/crises_api/get_hospitals.php";
+    private static final String API_NEEDS     = "http://192.168.0.106/crises_api/get_needs.php";
+    private static final String API_SHELTERS  = "http://192.168.0.106/crises_api/get_shelters.php";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,7 +49,7 @@ public class Notifications extends AppCompatActivity {
         setContentView(R.layout.activity_notifications);
 
         repo      = new NotificationRepository(this);
-        loginDate = repo.getLoginDate(); // e.g. "2025-06-01" — set at login
+        loginDate = repo.getLoginDate();
 
         container   = findViewById(R.id.notifContainer);
         tvEmpty     = findViewById(R.id.tvNoNotifications);

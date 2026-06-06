@@ -86,7 +86,7 @@ public class Verify extends AppCompatActivity {
     private void sendCode() {
         new Thread(() -> {
             try {
-                URL url = new URL("http://192.168.0.109/crises_api/send_2fa.php");
+                URL url = new URL("http://192.168.0.106/crises_api/send_2fa.php");
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("POST");
                 conn.setDoOutput(true);
@@ -137,7 +137,7 @@ public class Verify extends AppCompatActivity {
     private void verifyCode(String code) {
         new Thread(() -> {
             try {
-                URL url = new URL("http://192.168.0.109/crises_api/verify_2fa.php");
+                URL url = new URL("http://192.168.0.106/crises_api/verify_2fa.php");
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("POST");
                 conn.setDoOutput(true);

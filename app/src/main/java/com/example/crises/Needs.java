@@ -24,19 +24,17 @@ public class Needs extends AppCompatActivity {
     ArrayList<Need> fullList;
     TabLayout tabLayout;
 
-    String url = "http://192.168.0.109/crises_api/get_needs.php";
+    String url = "http://192.168.0.106/crises_api/get_needs.php";
 
-    // Tab label → DB category value(s) it matches
-    // Tab label is what user sees, dbValue is what we compare against DB
     private static final String[][] TABS = {
-            {"All",         "all"},
-            {"Food",        "food,bakery,restaurant"},
-            {"Water",       "water,water_station"},
-            {"Medical",     "medical,pharmacy,hospital"},
-            {"Fuel",        "fuel,fuel_station"},
-            {"Transport",   "transport"},
-            {"Clothes",     "clothes"},
-            {"Other",       "other"}
+            {"All",       "all"},
+            {"Food",      "food,bakery,restaurant"},
+            {"Water",     "water,water_station"},
+            {"Medical",   "medical,pharmacy,hospital"},
+            {"Fuel",      "fuel,fuel_station"},
+            {"Transport", "transport"},
+            {"Clothes",   "clothes"},
+            {"Other",     "other"}
     };
 
     @Override
@@ -53,6 +51,7 @@ public class Needs extends AppCompatActivity {
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
+        findViewById(R.id.btnBack).setOnClickListener(v -> finish());
 
         setupTabs();
         setupTabListener();
@@ -60,18 +59,15 @@ public class Needs extends AppCompatActivity {
     }
 
     private void setupTabs() {
-        for (String[] tab : TABS) {
+        for (String[] tab : TABS)
             tabLayout.addTab(tabLayout.newTab().setText(tab[0]));
-        }
     }
 
     private void setupTabListener() {
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
-                int pos = tab.getPosition();
-                String dbValues = TABS[pos][1];
-                filterByCategory(dbValues);
+                filterByCategory(TABS[tab.getPosition()][1]);
             }
             @Override public void onTabUnselected(TabLayout.Tab tab) {}
             @Override public void onTabReselected(TabLayout.Tab tab) {}
@@ -83,16 +79,13 @@ public class Needs extends AppCompatActivity {
         if (dbValues.equals("all")) {
             list.addAll(fullList);
         } else {
-            // dbValues can be comma-separated e.g. "food,bakery,restaurant"
             String[] values = dbValues.split(",");
             for (Need need : fullList) {
-                if (need.getCategory() != null) {
-                    for (String val : values) {
-                        if (need.getCategory().trim()
-                                .equalsIgnoreCase(val.trim())) {
-                            list.add(need);
-                            break;
-                        }
+                if (need.getCategory() == null) continue;
+                for (String val : values) {
+                    if (need.getCategory().trim().equalsIgnoreCase(val.trim())) {
+                        list.add(need);
+                        break;
                     }
                 }
             }
@@ -107,7 +100,6 @@ public class Needs extends AppCompatActivity {
                     try {
                         list.clear();
                         fullList.clear();
-
                         if (response.getString("status").equals("success")) {
                             JSONArray data = response.getJSONArray("data");
                             for (int i = 0; i < data.length(); i++) {

@@ -13,7 +13,7 @@ public class NotificationRepository {
     private static final String KEY_NOTIFIED = "notified_ids_";
     private static final String KEY_UNREAD   = "unread_count";
     private static final String KEY_SEEDED   = "initial_seed_done";
-    private static final String KEY_LOGIN    = "login_date";        // ← NEW
+    private static final String KEY_LOGIN    = "login_date";
 
     private final SharedPreferences prefs;
 
@@ -21,9 +21,7 @@ public class NotificationRepository {
         prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
     }
 
-    // ── Login date ─────────────────────────────────────────────────────────
-
-    /**
+        /**
      * Returns the date the user last logged in, formatted as "yyyy-MM-dd".
      * Returns null if never set (should not happen in normal flow).
      */
@@ -31,7 +29,7 @@ public class NotificationRepository {
         return prefs.getString(KEY_LOGIN, null);
     }
 
-    // ── UI "new" tracking (blue dot) ───────────────────────────────────────
+
 
     /** Returns true if the user has NOT yet seen this item in the list */
     public boolean isNew(String section, String id) {
@@ -47,9 +45,7 @@ public class NotificationRepository {
         prefs.edit().putStringSet(KEY_SEEN + section, existing).apply();
     }
 
-    // ── Worker "notified" tracking (system notification) ──────────────────
-
-    /** Returns true if a system notification has already been sent for this id */
+        /** Returns true if a system notification has already been sent for this id */
     public boolean isNotified(String section, String id) {
         Set<String> notified = prefs.getStringSet(KEY_NOTIFIED + section, new HashSet<>());
         return notified.contains(id);

@@ -33,8 +33,11 @@ public class PublicShelters extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_public_shelters);
 
+        // ── Back button ──────────────────────────────────────
+        findViewById(R.id.btnBack).setOnClickListener(v -> finish());
+
         recyclerView = findViewById(R.id.recyclerView);
-        tabLayout = findViewById(R.id.tabLayout);
+        tabLayout    = findViewById(R.id.tabLayout);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
@@ -45,39 +48,27 @@ public class PublicShelters extends AppCompatActivity {
         loadShelters();
     }
 
-    // =========================
-    // LOAD DATA FROM SERVER
-    // =========================
+    // ── Load data from server ─────────────────────────────────────────
     private void loadShelters() {
-
         new Thread(() -> {
-
             try {
-                URL url = new URL("http://192.168.0.109/crises_api/get_shelters.php");
+                URL url = new URL("http://192.168.0.106/crises_api/get_shelters.php");
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("GET");
                 conn.setConnectTimeout(10000);
                 conn.setReadTimeout(10000);
 
                 BufferedReader br = new BufferedReader(
-                        new InputStreamReader(conn.getInputStream())
-                );
-
+                        new InputStreamReader(conn.getInputStream()));
                 StringBuilder sb = new StringBuilder();
                 String line;
-
-                while ((line = br.readLine()) != null) {
-                    sb.append(line);
-                }
+                while ((line = br.readLine()) != null) sb.append(line);
 
                 JSONArray array = new JSONArray(sb.toString());
-
                 fullList.clear();
 
                 for (int i = 0; i < array.length(); i++) {
-
                     JSONObject obj = array.getJSONObject(i);
-
                     fullList.add(new PublicShelter(
                             obj.optString("shelter_name"),
                             obj.optString("location"),
@@ -98,11 +89,8 @@ public class PublicShelters extends AppCompatActivity {
         }).start();
     }
 
-    // =========================
-    // TAB FILTER SYSTEM
-    // =========================
+    // ── Tab filter system ─────────────────────────────────────────────
     private void setupTabs() {
-
         tabLayout.addTab(tabLayout.newTab().setText("ALL"));
         tabLayout.addTab(tabLayout.newTab().setText("OPEN"));
         tabLayout.addTab(tabLayout.newTab().setText("NEAR-FULL"));
@@ -112,33 +100,23 @@ public class PublicShelters extends AppCompatActivity {
 
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
-
                 String selected = tab.getText().toString().toLowerCase();
-
                 filteredList.clear();
 
                 for (PublicShelter s : fullList) {
-
                     String status = s.getStatus().toLowerCase().trim();
 
                     if (selected.equals("all")) {
                         filteredList.add(s);
-                    }
-
-                    else if (selected.equals("open") && status.equals("open")) {
+                    } else if (selected.equals("open") && status.equals("open")) {
                         filteredList.add(s);
-                    }
-
-                    else if (selected.equals("near-full")
+                    } else if (selected.equals("near-full")
                             && (status.contains("near") || status.contains("limited"))) {
                         filteredList.add(s);
-                    }
-
-                    else if (selected.equals("full") && status.equals("full")) {
+                    } else if (selected.equals("full") && status.equals("full")) {
                         filteredList.add(s);
                     }
                 }
-
                 adapter.notifyDataSetChanged();
             }
 

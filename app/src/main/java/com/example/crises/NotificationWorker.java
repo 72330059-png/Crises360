@@ -46,12 +46,12 @@ public class NotificationWorker extends Worker {
     private static final String CHANNEL_ID_DANGER = "crises_danger";
     private static final String PREF_LAST_ZONE   = "last_notified_zone";
 
-    private static final String API_ALERTS    = "http://192.168.0.109/crises_api/get_alerts.php";
-    private static final String API_MAP       = "http://192.168.0.109/crises_api/get_map_data.php";
-    private static final String API_NEWS      = "http://192.168.0.109/crises_api/get_news.php";
-    private static final String API_HOSPITALS = "http://192.168.0.109/crises_api/get_hospitals.php";
-    private static final String API_NEEDS     = "http://192.168.0.109/crises_api/get_needs.php";
-    private static final String API_SHELTERS  = "http://192.168.0.109/crises_api/get_shelters.php";
+    private static final String API_ALERTS    = "http://192.168.0.106/crises_api/get_alerts.php";
+    private static final String API_MAP       = "http://192.168.0.106/crises_api/get_map_data.php";
+    private static final String API_NEWS      = "http://192.168.0.106/crises_api/get_news.php";
+    private static final String API_HOSPITALS = "http://192.168.0.106/crises_api/get_hospitals.php";
+    private static final String API_NEEDS     = "http://192.168.0.106/crises_api/get_needs.php";
+    private static final String API_SHELTERS  = "http://192.168.0.106/crises_api/get_shelters.php";
 
     private NotificationRepository repo;
 

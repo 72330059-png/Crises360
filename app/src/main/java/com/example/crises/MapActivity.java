@@ -30,7 +30,7 @@ import java.net.URL;
 public class MapActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
-    private static final String API_URL = "http://192.168.0.109/crises_api/get_map_data.php";
+    private static final String API_URL = "http://192.168.0.106/crises_api/get_map_data.php";
 
     // Default center: Beirut
     private static final double DEFAULT_LAT = 33.8938;
