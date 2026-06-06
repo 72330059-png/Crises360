@@ -33,7 +33,8 @@
 
         <activity
             android:name=".Notifications"
-            android:exported="false" />
+            android:exported="false"
+            android:fitsSystemWindows="true" />
         <activity
             android:name=".CounselorChat"
             android:exported="false"
@@ -43,7 +44,8 @@
             android:exported="false" />
         <activity
             android:name=".PsychologicalSupport"
-            android:exported="false" />
+            android:exported="false"
+            android:fitsSystemWindows="true"/>
         <activity
             android:name=".NewsDetailActivity"
             android:exported="false" />
@@ -59,13 +61,16 @@
         <activity android:name=".Login" />
         <activity
             android:name=".PublicShelters"
-            android:exported="false" />
+            android:exported="false"
+            android:fitsSystemWindows="true" />
         <activity
             android:name=".Needs"
-            android:exported="false" />
+            android:exported="false"
+            android:fitsSystemWindows="true" />
         <activity
             android:name=".Hospitals"
-            android:exported="false" />
+            android:exported="false"
+            android:fitsSystemWindows="true" />
 
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -90,7 +95,8 @@
             android:exported="false" />
         <activity
             android:name=".Settings"
-            android:exported="false" />
+            android:exported="false"
+            android:fitsSystemWindows="true" />
         <activity
             android:name=".Tips"
             android:exported="false" />
@@ -103,10 +109,12 @@
             android:hardwareAccelerated="true" />
         <activity
             android:name=".Alerts"
-            android:exported="false" />
+            android:exported="false"
+            android:fitsSystemWindows="true" />
         <activity
             android:name=".News"
-            android:exported="false" />
+            android:exported="false"
+            android:fitsSystemWindows="true" />
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"

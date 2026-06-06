@@ -48,14 +48,14 @@ public class Hospitals extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
 
         queue = Volley.newRequestQueue(this);
-
+        findViewById(R.id.btnBack).setOnClickListener(v -> finish());
         setupTabs();
         loadHospitals();
     }
 
     // ---------------- LOAD FROM PHP ----------------
     private void loadHospitals() {
-        String url = "http://192.168.0.109/crises_api/get_hospitals.php";
+        String url = "http://192.168.0.106/crises_api/get_hospitals.php";
 
         JsonObjectRequest request = new JsonObjectRequest(
                 Request.Method.GET,

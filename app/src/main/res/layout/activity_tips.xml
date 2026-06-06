@@ -4,7 +4,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#DDE6ED">
+    android:background="#E8F4FD">
 
     <!-- HEADER -->
     <LinearLayout
@@ -34,7 +34,6 @@
     <!-- CONTENT -->
     <ScrollView
         android:layout_below="@id/header"
-        android:layout_above="@id/bottomNavigation"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:padding="12dp">
@@ -50,7 +49,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
                 app:cardCornerRadius="16dp"
-                app:cardElevation="4dp">
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="#FFFFFF">
 
                 <LinearLayout
                     android:padding="16dp"
@@ -91,7 +91,8 @@ Keep important documents like ID and medical info in a safe and accessible place
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
                 app:cardCornerRadius="16dp"
-                app:cardElevation="4dp">
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="#FFFFFF">
 
                 <LinearLayout
                     android:padding="16dp"
@@ -134,7 +135,8 @@ Stay informed using trusted news and official updates."/>
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
                 app:cardCornerRadius="16dp"
-                app:cardElevation="4dp">
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="#FFFFFF">
 
                 <LinearLayout
                     android:padding="16dp"
@@ -175,7 +177,8 @@ Always understand the risks in your area and prepare ahead."/>
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="20dp"
                 app:cardCornerRadius="16dp"
-                app:cardElevation="4dp">
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="#FFFFFF">
 
                 <LinearLayout
                     android:padding="16dp"
@@ -212,7 +215,5 @@ Adjust your kit based on weather and personal needs."/>
 
         </LinearLayout>
     </ScrollView>
-
-
 
 </RelativeLayout>

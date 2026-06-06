@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
@@ -71,7 +72,7 @@ public class HomeActivity extends BaseActivity {
     private static final int BACKGROUND_LOCATION_REQUEST   = 100;
     private static final int NOTIFICATION_PERMISSION_REQUEST = 101; // NEW
     private static final String API_URL =
-            "http://192.168.0.109/crises_api/get_map_data.php";
+            "http://192.168.0.106/crises_api/get_map_data.php";
     private final List<JSONObject> zoneList = new ArrayList<>();
     private boolean zonesLoaded = false;
 
@@ -564,6 +565,9 @@ public class HomeActivity extends BaseActivity {
     private void initBottomNavigation() {
         BottomNavigationView bottomNav =
                 findViewById(R.id.bottomNavigation);
+        bottomNav.setItemActiveIndicatorColor(
+                ColorStateList.valueOf(Color.parseColor("#EEF2FF"))
+        );
         if (bottomNav == null) return;
         bottomNav.setSelectedItemId(R.id.nav_home);
         bottomNav.setOnItemSelectedListener(item -> {
