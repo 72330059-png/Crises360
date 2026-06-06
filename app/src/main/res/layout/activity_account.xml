@@ -6,9 +6,6 @@
     android:layout_height="match_parent"
     android:background="#F1F5F9">
 
-    <!-- ════════════════════════════════════════════
-         HEADER
-         ════════════════════════════════════════════ -->
     <LinearLayout
         android:id="@+id/header"
         android:layout_width="match_parent"
@@ -60,9 +57,6 @@
 
     </LinearLayout>
 
-    <!-- ════════════════════════════════════════════
-         SCROLL BODY
-         ════════════════════════════════════════════ -->
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -76,11 +70,12 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- ── PROGRESS CARD ──────────────────── -->
+            <!-- PROGRESS CARD -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="14dp"
+                app:cardBackgroundColor="#FFFFFF"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="0dp"
                 app:strokeColor="#E2E8F0"
@@ -131,9 +126,7 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- ══════════════════════════════════════
-                 SECTION: PERSONAL IDENTITY
-                 ══════════════════════════════════════ -->
+            <!-- PERSONAL IDENTITY -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -149,6 +142,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="14dp"
+                app:cardBackgroundColor="#FFFFFF"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="0dp"
                 app:strokeColor="#E2E8F0"
@@ -333,9 +327,7 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- ══════════════════════════════════════
-                 SECTION: HEALTH INFO
-                 ══════════════════════════════════════ -->
+            <!-- HEALTH INFO -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -351,6 +343,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="14dp"
+                app:cardBackgroundColor="#FFFFFF"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="0dp"
                 app:strokeColor="#E2E8F0"
@@ -536,9 +529,7 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- ══════════════════════════════════════
-                 SECTION: FAMILY
-                 ══════════════════════════════════════ -->
+            <!-- FAMILY -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -554,6 +545,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="14dp"
+                app:cardBackgroundColor="#FFFFFF"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="0dp"
                 app:strokeColor="#E2E8F0"
@@ -738,9 +730,7 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- ══════════════════════════════════════
-                 SECTION: LOCATION
-                 ══════════════════════════════════════ -->
+            <!-- LOCATION -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -756,6 +746,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="20dp"
+                app:cardBackgroundColor="#FFFFFF"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="0dp"
                 app:strokeColor="#E2E8F0"
@@ -881,7 +872,7 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- ── SAVE BUTTON ──────────────────────── -->
+            <!-- SAVE BUTTON -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSave"
                 android:layout_width="match_parent"
@@ -898,7 +889,7 @@
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
-    <!-- ── BOTTOM NAV ──────────────────────────────── -->
+    <!-- BOTTOM NAV -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"
@@ -907,8 +898,9 @@
         android:background="@drawable/footer_background"
         android:paddingBottom="8dp"
         app:elevation="12dp"
-        app:itemIconTint="#526D82"
-        app:itemTextColor="#526D82"
+        app:itemIconTint="#2F66F6"
+        app:itemTextColor="#2F66F6"
+        app:itemBackground="@null"
         app:labelVisibilityMode="labeled"
         app:menu="@menu/bottom_nav_menu" />
 

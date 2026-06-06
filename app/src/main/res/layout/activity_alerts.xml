@@ -3,7 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F4F6FA">
+    android:background="#F4F6FA"
+    android:fitsSystemWindows="true">
 
     <!-- Header -->
     <LinearLayout
@@ -12,35 +13,44 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:background="#FFFFFF"
-        android:elevation="2dp">
+        android:elevation="2dp"
+        android:fitsSystemWindows="true">
 
-        <LinearLayout
+        <!-- Title row -->
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingStart="20dp"
-            android:paddingEnd="20dp"
-            android:paddingTop="22dp"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="16dp"
             android:paddingBottom="12dp">
 
-            <TextView
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Alerts Center"
-                android:textSize="22sp"
-                android:textStyle="bold"
-                android:textColor="#1D2A44" />
+                android:layout_centerInParent="true"
+                android:orientation="vertical"
+                android:gravity="center">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Stay informed. Stay safe."
-                android:textSize="12sp"
-                android:textColor="#667085"
-                android:layout_marginTop="2dp" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Alerts Center"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="#1D2A44" />
 
-        </LinearLayout>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Stay informed. Stay safe."
+                    android:textSize="11sp"
+                    android:textColor="#667085" />
+            </LinearLayout>
 
+        </RelativeLayout>
+
+        <!-- Tabs -->
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tabFilters"
             android:layout_width="match_parent"
@@ -120,8 +130,9 @@
         android:background="@drawable/footer_background"
         android:paddingBottom="8dp"
         app:elevation="12dp"
-        app:itemIconTint="#526D82"
-        app:itemTextColor="#526D82"
+        app:itemIconTint="#2F66F6"
+        app:itemTextColor="#2F66F6"
+        app:itemBackground="@null"
         app:labelVisibilityMode="labeled"
         app:menu="@menu/bottom_nav_menu" />
 

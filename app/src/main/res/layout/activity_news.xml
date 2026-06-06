@@ -3,54 +3,57 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F8FAFC">
+    android:background="#F8FAFC"
+    android:fitsSystemWindows="true">
 
     <!-- Header -->
-    <LinearLayout
+    <RelativeLayout
         android:id="@+id/newsHeader"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
         android:background="#FFFFFF"
-        android:paddingStart="20dp"
-        android:paddingEnd="20dp"
-        android:paddingTop="20dp"
-        android:paddingBottom="14dp">
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="12dp"
+        android:elevation="4dp"
+        android:fitsSystemWindows="true">
+
+        <ImageButton
+            android:id="@+id/btnBack"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_centerVertical="true"
+            android:layout_alignParentStart="true"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_arrow_back"
+            android:contentDescription="Back"
+            app:tint="#1D2A44" />
 
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
-
-            <ImageView
-                android:id="@+id/btnBack"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:src="@android:drawable/ic_media_previous"
-                android:padding="4dp"
-                android:layout_marginEnd="12dp"
-                app:tint="#1D2A44" />
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Latest News"
-                android:textSize="22sp"
-                android:textStyle="bold"
-                android:textColor="#1D2A44" />
-        </LinearLayout>
-
-        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Stay informed, stay safe."
-            android:textSize="13sp"
-            android:textColor="#667085"
-            android:layout_marginStart="44dp"
-            android:layout_marginTop="2dp" />
-    </LinearLayout>
+            android:layout_centerInParent="true"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Latest News"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#1D2A44" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Stay informed, stay safe."
+                android:textSize="11sp"
+                android:textColor="#667085" />
+        </LinearLayout>
+
+    </RelativeLayout>
 
     <!-- RecyclerView -->
     <androidx.recyclerview.widget.RecyclerView
