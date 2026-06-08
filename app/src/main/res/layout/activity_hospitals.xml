@@ -68,6 +68,28 @@
         app:tabMode="fixed"
         app:tabRippleColor="@null" />
 
+    <!-- ── LOCATION LABEL ─────────────────────────────────────────── -->
+    <TextView
+        android:id="@+id/locationLabel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:textSize="12sp"
+        android:textColor="#1E3A5F"
+        android:background="#EBF5FF"
+        android:gravity="center"
+        android:visibility="gone" />
+
+    <!-- ── LOADING BAR ────────────────────────────────────────────── -->
+    <ProgressBar
+        android:id="@+id/loadingBar"
+        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="4dp"
+        android:indeterminate="true"
+        android:indeterminateTint="#1E3A5F"
+        android:visibility="gone" />
+
     <!-- ── RECYCLER VIEW ──────────────────────────────────────────── -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/hospitalRecycler"

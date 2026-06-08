@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/drawable/shelter_border_nearfull.xml -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#FFFFFF" />
+    <stroke android:width="2dp" android:color="#F59E0B" />
+    <corners android:radius="16dp" />
+</shape>
