@@ -1,9 +1,17 @@
 package com.example.crises;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.widget.Toast;
+import android.util.Log;
+import android.view.View;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -11,6 +19,10 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.Priority;
+import com.google.android.gms.tasks.CancellationTokenSource;
 import com.google.android.material.tabs.TabLayout;
 
 import org.json.JSONArray;
@@ -20,125 +32,246 @@ import java.util.ArrayList;
 
 public class Hospitals extends AppCompatActivity {
 
-    RecyclerView recyclerView;
-    HospitalAdapter adapter;
+    private static final String TAG = "Hospitals";
 
-    ArrayList<Hospital> hospitalList = new ArrayList<>();
-    ArrayList<Hospital> filteredList = new ArrayList<>();
+    private RecyclerView    recyclerView;
+    private HospitalAdapter adapter;
+    private TabLayout       statusTabLayout;
+    private ProgressBar     loadingBar;
+    private TextView        locationLabel;
 
-    TabLayout statusTabLayout;
+    private final ArrayList<Hospital> hospitalList    = new ArrayList<>();
+    private final ArrayList<Hospital> recommendedList = new ArrayList<>(); // ← separate
 
-    // Updated to match your exact status categories
-    String[] statuses = {"All", "Safe", "Warning", "Dangerous"};
+    private final String[] statuses = {"All", "Safe", "Warning", "Dangerous"};
 
-    RequestQueue queue;
+    private RequestQueue queue;
+    private static final String BASE_URL  = "http://192.168.0.106/crises_api/get_hospitals.php";
+    private static final int    RADIUS_KM = 50;
+
+    private FusedLocationProviderClient fusedLocationClient;
+    private double userLat = Double.MIN_VALUE;
+    private double userLng = Double.MIN_VALUE;
+    private static final int LOCATION_PERMISSION_REQUEST = 1001;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_hospitals);
 
-        recyclerView = findViewById(R.id.hospitalRecycler);
+        recyclerView    = findViewById(R.id.hospitalRecycler);
         statusTabLayout = findViewById(R.id.statusTabLayout);
+        loadingBar      = findViewById(R.id.loadingBar);
+        locationLabel   = findViewById(R.id.locationLabel);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-        // Connect the adapter directly to filteredList on startup
-        adapter = new HospitalAdapter(filteredList);
+        adapter = new HospitalAdapter(new ArrayList<>(), new ArrayList<>());
         recyclerView.setAdapter(adapter);
 
         queue = Volley.newRequestQueue(this);
-        findViewById(R.id.btnBack).setOnClickListener(v -> finish());
+
+        if (findViewById(R.id.btnBack) != null)
+            findViewById(R.id.btnBack).setOnClickListener(v -> finish());
+
         setupTabs();
-        loadHospitals();
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        requestLocationAndLoad();
     }
 
-    // ---------------- LOAD FROM PHP ----------------
+    // ── LOCATION ──────────────────────────────────────────────────────────────
+
+    private void requestLocationAndLoad() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
+            getCurrentLocation();
+        } else {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    LOCATION_PERMISSION_REQUEST);
+        }
+    }
+
+    private void getCurrentLocation() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) return;
+
+        setLoading(true);
+        showLabel("📍 Getting your location...");
+
+        CancellationTokenSource cts = new CancellationTokenSource();
+        fusedLocationClient
+                .getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, cts.getToken())
+                .addOnSuccessListener(location -> {
+                    if (location != null) {
+                        userLat = location.getLatitude();
+                        userLng = location.getLongitude();
+                        Log.d(TAG, "GPS: " + userLat + ", " + userLng);
+                        showLabel("📍 Location found — finding nearby hospitals...");
+                        loadHospitals();
+                    } else {
+                        tryLastLocationFallback();
+                    }
+                })
+                .addOnFailureListener(e -> tryLastLocationFallback());
+    }
+
+    private void tryLastLocationFallback() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) return;
+
+        fusedLocationClient.getLastLocation()
+                .addOnSuccessListener(location -> {
+                    if (location != null) {
+                        userLat = location.getLatitude();
+                        userLng = location.getLongitude();
+                        showLabel("📍 Location found — finding nearby hospitals...");
+                    } else {
+                        showLabel("📡 GPS unavailable — showing all hospitals");
+                    }
+                    loadHospitals();
+                })
+                .addOnFailureListener(e -> {
+                    showLabel("📡 Location error — showing all hospitals");
+                    loadHospitals();
+                });
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == LOCATION_PERMISSION_REQUEST) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                getCurrentLocation();
+            } else {
+                showLabel("📡 Location denied — showing all hospitals");
+                loadHospitals();
+            }
+        }
+    }
+
+    // ── NETWORK ───────────────────────────────────────────────────────────────
+
     private void loadHospitals() {
-        String url = "http://192.168.0.106/crises_api/get_hospitals.php";
+        setLoading(true);
+
+        StringBuilder url = new StringBuilder(BASE_URL)
+                .append("?radius=").append(RADIUS_KM);
+
+        if (userLat != Double.MIN_VALUE && userLng != Double.MIN_VALUE) {
+            url.append("&lat=").append(userLat)
+                    .append("&lng=").append(userLng);
+        }
+
+        int tabPos = statusTabLayout.getSelectedTabPosition();
+        String sel = statuses[tabPos];
+        if (!sel.equalsIgnoreCase("All")) {
+            url.append("&status=").append(sel);
+        }
+
+        Log.d(TAG, "URL: " + url);
 
         JsonObjectRequest request = new JsonObjectRequest(
-                Request.Method.GET,
-                url,
-                null,
+                Request.Method.GET, url.toString(), null,
                 response -> {
                     try {
                         hospitalList.clear();
-                        JSONArray arr = response.getJSONArray("data");
+                        recommendedList.clear();
 
-                        for (int i = 0; i < arr.length(); i++) {
-                            JSONObject obj = arr.getJSONObject(i);
-
-                            String name = obj.getString("name");
-                            String location = obj.getString("location");
-                            String region = location;
-
-                            int total = Integer.parseInt(obj.getString("total_beds"));
-                            int available = Integer.parseInt(obj.getString("available_beds"));
-                            int occupied = Integer.parseInt(obj.getString("occupied_beds"));
-                            String status = obj.getString("hospital_status"); // pulling status value
-
-                            hospitalList.add(new Hospital(
-                                    name,
-                                    location,
-                                    region,
-                                    total,
-                                    available,
-                                    occupied,
-                                    status
-                            ));
+                        // ── Parse "recommended" array → header chips ──────────
+                        // This is ALWAYS the nearest ≤15 km, non-Dangerous hospitals
+                        // It never changes when user switches tabs — that's the point
+                        if (response.has("recommended")) {
+                            JSONArray recArr = response.getJSONArray("recommended");
+                            for (int i = 0; i < recArr.length(); i++) {
+                                Hospital h = parseHospital(recArr.getJSONObject(i));
+                                h.setRecommended(true);
+                                recommendedList.add(h);
+                            }
                         }
 
-                        // Run default list filter configuration (displays "All" by default)
-                        filterByStatus(statusTabLayout.getSelectedTabPosition());
+                        // ── Parse "data" array → full list ────────────────────
+                        // This respects the tab filter (Safe / Warning / Dangerous)
+                        JSONArray dataArr = response.getJSONArray("data");
+                        for (int i = 0; i < dataArr.length(); i++) {
+                            Hospital h = parseHospital(dataArr.getJSONObject(i));
+                            h.setRecommended(dataArr.getJSONObject(i)
+                                    .optBoolean("is_recommended", false));
+                            hospitalList.add(h);
+                        }
+
+                        showLabel(userLat != Double.MIN_VALUE
+                                ? "📍 " + recommendedList.size() + " hospitals found near you (within 15 km)"
+                                : "🏥 " + hospitalList.size() + " hospitals found");
+
+                        // Pass BOTH lists to adapter
+                        adapter.updateLists(
+                                new ArrayList<>(recommendedList),  // → header chips
+                                new ArrayList<>(hospitalList)      // → card list
+                        );
 
                     } catch (Exception e) {
-                        Toast.makeText(this, "Parse Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        Log.e(TAG, "Parse error: " + e.getMessage());
+                        showLabel("❌ Error loading data");
+                    } finally {
+                        setLoading(false);
                     }
                 },
-                error -> Toast.makeText(this, "Network Error: " + error.getMessage(), Toast.LENGTH_LONG).show()
+                error -> {
+                    Log.e(TAG, "Network: " + error.getMessage());
+                    setLoading(false);
+                    showLabel("❌ Network error — check connection");
+                }
         );
 
         queue.add(request);
     }
 
-    // ---------------- TAB LOGIC & FILTERING ----------------
+    // ── PARSE HOSPITAL FROM JSON ───────────────────────────────────────────────
+
+    private Hospital parseHospital(JSONObject obj) throws Exception {
+        return new Hospital(
+                obj.optString("name",     "—"),
+                obj.optString("location", "—"),
+                obj.optString("location", "—"),
+                obj.optString("phone",    ""),
+                obj.optInt("total_beds",     0),
+                obj.optInt("available_beds", 0),
+                obj.optInt("occupied_beds",  0),
+                obj.optDouble("occupancy_pct", 0),
+                obj.optDouble("lat", 0),
+                obj.optDouble("lng", 0),
+                (obj.has("distance_km") && !obj.isNull("distance_km"))
+                        ? obj.getDouble("distance_km") : -1,
+                obj.optString("hospital_status", ""),
+                obj.optString("updated_at", "")
+        );
+    }
+
+
     private void setupTabs() {
-        // Build tab elements dynamically out of the string array
-        for (String status : statuses) {
-            statusTabLayout.addTab(statusTabLayout.newTab().setText(status));
-        }
+        for (String s : statuses)
+            statusTabLayout.addTab(statusTabLayout.newTab().setText(s));
 
         statusTabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
-            @Override
-            public void onTabSelected(TabLayout.Tab tab) {
-                filterByStatus(tab.getPosition());
-            }
-
-            @Override
-            public void onTabUnselected(TabLayout.Tab tab) {}
-
-            @Override
-            public void onTabReselected(TabLayout.Tab tab) {}
+            @Override public void onTabSelected(TabLayout.Tab tab)   { loadHospitals(); }
+            @Override public void onTabUnselected(TabLayout.Tab tab) {}
+            @Override public void onTabReselected(TabLayout.Tab tab) {}
         });
     }
 
-    private void filterByStatus(int position) {
-        String selectedStatus = statuses[position];
-        filteredList.clear();
 
-        if (selectedStatus.equalsIgnoreCase("All")) {
-            filteredList.addAll(hospitalList);
-        } else {
-            for (Hospital h : hospitalList) {
-                // Ensure h.getStatus() matches the string values stored inside your DB
-                if (h.getStatus() != null && h.getStatus().equalsIgnoreCase(selectedStatus)) {
-                    filteredList.add(h);
-                }
-            }
+
+    private void setLoading(boolean on) {
+        if (loadingBar   != null) loadingBar.setVisibility(on ? View.VISIBLE : View.GONE);
+        if (recyclerView != null) recyclerView.setAlpha(on ? 0.4f : 1f);
+    }
+
+    private void showLabel(String text) {
+        if (locationLabel != null) {
+            locationLabel.setText(text);
+            locationLabel.setVisibility(View.VISIBLE);
         }
-
-        // Notify adapter to draw the filtered results safely
-        adapter.notifyDataSetChanged();
     }
 }

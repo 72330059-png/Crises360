@@ -2,61 +2,83 @@
 <androidx.cardview.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/hospitalCard"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="10dp"
+    android:layout_marginStart="12dp"
+    android:layout_marginEnd="12dp"
+    android:layout_marginTop="6dp"
+    android:layout_marginBottom="6dp"
     card_view:cardCornerRadius="16dp"
-    card_view:cardElevation="6dp"
-    android:background="#FFFFFF">
+    card_view:cardElevation="4dp"
+    card_view:cardBackgroundColor="#FFFFFF">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="14dp">
 
-
-        <TextView
-            android:id="@+id/hospitalName"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Hospital Name"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="#1E2A38"/>
-
-
-        <TextView
-            android:id="@+id/hospitalLocation"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="📍 Location"
-            android:textColor="#555"
-            android:layout_marginTop="4dp"/>
-
-
-        <TextView
-            android:id="@+id/hospitalRegion"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Region: Beirut"
-            android:textColor="#777"
-            android:layout_marginTop="2dp"/>
-
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="#E0E0E0"
-            android:layout_marginVertical="8dp"/>
-
-
+        <!-- ── Row 1: Status pill + Distance ─────────────────────────── -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:weightSum="3">
+            android:gravity="center_vertical"
+            android:layout_marginBottom="10dp">
 
+            <TextView
+                android:id="@+id/hospitalStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="SAFE"
+                android:textStyle="bold"
+                android:textSize="11sp"
+                android:textColor="#FFFFFF"
+                android:paddingLeft="12dp"
+                android:paddingRight="12dp"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp"
+                android:background="@drawable/pill_green" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/hospitalDistance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="#1E3A5F"
+                android:background="@drawable/badge_blue_outline"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <!-- ── Row 2: Letter icon + Name + Location + Region ─────────── -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="12dp">
+
+            <TextView
+                android:id="@+id/hospitalLetterIcon"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:gravity="center"
+                android:textStyle="bold"
+                android:textSize="20sp"
+                android:textColor="#FFFFFF"
+                android:background="@drawable/circle_green"
+                android:layout_marginEnd="12dp" />
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -64,77 +86,208 @@
                 android:layout_weight="1"
                 android:orientation="vertical">
 
+                <TextView
+                    android:id="@+id/recommendedBadge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="⭐ Recommended"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:textColor="#B45309"
+                    android:background="@drawable/badge_amber"
+                    android:paddingLeft="8dp"
+                    android:paddingRight="8dp"
+                    android:paddingTop="3dp"
+                    android:paddingBottom="3dp"
+                    android:layout_marginBottom="4dp"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/hospitalName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="#1E2A38" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="3dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="📍"
+                        android:textSize="11sp" />
+
+                    <TextView
+                        android:id="@+id/hospitalLocation"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="12sp"
+                        android:textColor="#607D8B"
+                        android:layout_marginStart="2dp" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/hospitalRegion"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="11sp"
+                    android:textColor="#94A3B8"
+                    android:layout_marginTop="1dp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- ── Divider ────────────────────────────────────────────────── -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#F1F5F9"
+            android:layout_marginBottom="10dp" />
+
+        <!-- ── Bed counts row ─────────────────────────────────────────── -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:weightSum="3"
+            android:layout_marginBottom="10dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center">
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Total"
-                    android:textColor="#888"
-                    android:textSize="12sp"/>
-
+                    android:textColor="#94A3B8"
+                    android:textSize="11sp" />
                 <TextView
+                    android:id="@+id/totalBeds"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:id="@+id/totalBeds"
-                    android:text="120"
-                    android:textStyle="bold"/>
+                    android:text="0"
+                    android:textStyle="bold"
+                    android:textSize="22sp"
+                    android:textColor="#1E2A38" />
             </LinearLayout>
 
+            <View
+                android:layout_width="1dp"
+                android:layout_height="match_parent"
+                android:background="#E2E8F0"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="4dp" />
 
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:orientation="vertical">
-
+                android:orientation="vertical"
+                android:gravity="center">
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Available"
-                    android:textColor="#4CAF50"
-                    android:textSize="12sp"/>
-
+                    android:textColor="#22C55E"
+                    android:textSize="11sp" />
                 <TextView
+                    android:id="@+id/availableBeds"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:id="@+id/availableBeds"
-                    android:text="40"
-                    android:textStyle="bold"/>
+                    android:text="0"
+                    android:textStyle="bold"
+                    android:textSize="22sp"
+                    android:textColor="#22C55E" />
             </LinearLayout>
 
+            <View
+                android:layout_width="1dp"
+                android:layout_height="match_parent"
+                android:background="#E2E8F0"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="4dp" />
 
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:orientation="vertical">
-
+                android:orientation="vertical"
+                android:gravity="center">
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Occupied"
-                    android:textColor="#F44336"
-                    android:textSize="12sp"/>
-
+                    android:textColor="#EF4444"
+                    android:textSize="11sp" />
                 <TextView
+                    android:id="@+id/occupiedBeds"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:id="@+id/occupiedBeds"
-                    android:text="80"
-                    android:textStyle="bold"/>
+                    android:text="0"
+                    android:textStyle="bold"
+                    android:textSize="22sp"
+                    android:textColor="#EF4444" />
             </LinearLayout>
-
         </LinearLayout>
 
+        <!-- ── Occupancy progress bar ─────────────────────────────────── -->
+        <ProgressBar
+            android:id="@+id/bedProgressBar"
+            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="8dp"
+            android:max="100"
+            android:progressBackgroundTint="#F1F5F9"
+            android:layout_marginBottom="4dp" />
 
         <TextView
-            android:id="@+id/hospitalStatus"
+            android:id="@+id/occupancyPct"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Status: Available"
+            android:layout_gravity="end"
+            android:text="0% occupied"
+            android:textSize="11sp"
             android:textStyle="bold"
-            android:textColor="#4CAF50"
-            android:layout_marginTop="10dp"/>
+            android:textColor="#22C55E"
+            android:layout_marginBottom="8dp" />
+
+        <!-- ── Divider ────────────────────────────────────────────────── -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#F1F5F9"
+            android:layout_marginBottom="10dp" />
+
+        <!-- ── Phone ─────────────────────────────────────────────────── -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="📞"
+                android:textSize="14sp"
+                android:layout_marginEnd="6dp" />
+
+            <TextView
+                android:id="@+id/hospitalPhone"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="13sp"
+                android:textColor="#2E7D32"
+                android:textStyle="bold" />
+        </LinearLayout>
 
     </LinearLayout>
-
 </androidx.cardview.widget.CardView>
