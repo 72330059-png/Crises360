@@ -122,8 +122,7 @@ if (is_array($result) && isset($result['status'])) {
     exit;
 }
 
-
 echo json_encode([
-    'status' => 'success',
+    'status'  => 'success',
     'message' => 'Shelter updated successfully'
 ]);

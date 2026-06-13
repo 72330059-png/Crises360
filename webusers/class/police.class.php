@@ -20,7 +20,26 @@ class Police extends DAL
 
         $incidentId      = $unitRow ? (int)($unitRow['incident_id'] ?? 0) : 0;
         $incident_status = $unitRow['incident_status'] ?? null;
-        $isResolved      = $incidentId && $incident_status === 'Resolved';
+        $mission_status  = $unitRow['mission_title'] ? 
+    $this->getRowSafe(
+        "SELECT pm.status FROM police_missions pm
+         JOIN police_units pu ON pu.current_mission_id = pm.mission_id
+         WHERE pu.organization_id = ? LIMIT 1",
+        [$org]
+    )['status'] ?? null 
+    : null;
+
+        $isResolved = ($incidentId && $incident_status === 'Resolved')
+            || ($mission_status === 'completed');
+
+
+
+
+
+
+
+
+
 
         $alerts = $incidentId ? $this->getRowSafe(
             "SELECT COUNT(*) AS cnt FROM map_alerts WHERE incident_id = ? AND is_active = 1",
@@ -95,9 +114,9 @@ class Police extends DAL
             'all_roads'        => $allroads ? $allroads['cnt'] : 0,
             'unit_roads_count' => $roadsmap ? (int)$roadsmap['cnt'] : 0,
             'incident_id'      => $incidentId,
-            'danger_alerts'     => $alerts   ? (int)$alerts['cnt']   : 0,  // ← ADD
+            'danger_alerts'     => $alerts   ? (int)$alerts['cnt']   : 0,  
             'safe_zones'        => $zones    ? (int)$zones['cnt']    : 0,
-            'is_resolved'       => $isResolved,                             // ← ADD
+            'is_resolved'       => $isResolved,                            
         ];
     }
 
@@ -136,25 +155,28 @@ class Police extends DAL
         $regionCode = $cityToRegion[$key] ?? $key;
         $reg = $this->escape($regionCode);
 
-        $unit_alerts = $this->getdata(
+
+        $unit_alerts = $incidentId ? $this->getdata(
             "SELECT id, title, severity, description, lat, lng, region
-               FROM map_alerts WHERE region = ? AND is_active = 1",
-            [$reg]
-        );
+       FROM map_alerts 
+      WHERE region = ? AND is_active = 1 AND incident_id = ?",
+            [$reg, $incidentId]
+        ) : [];
 
-        $unit_warn_zones = $this->getdata(
-            "SELECT id, name, type, center_lat, center_lng, radius_meters, region
-               FROM map_zones
-              WHERE type IN ('warning','danger') AND region = ? AND is_active = 1",
-            [$reg]
-        );
 
-        $unit_safe_zones = $this->getdata(
+        $unit_warn_zones = $incidentId ? $this->getdata(
             "SELECT id, name, type, center_lat, center_lng, radius_meters, region
-               FROM map_zones
-              WHERE type = 'safe' AND region = ? AND is_active = 1",
-            [$reg]
-        );
+       FROM map_zones
+      WHERE type IN ('warning','danger') AND region = ? AND is_active = 1 AND incident_id = ?",
+            [$reg, $incidentId]
+        ) : [];
+
+        $unit_safe_zones = $incidentId ? $this->getdata(
+            "SELECT id, name, type, center_lat, center_lng, radius_meters, region
+       FROM map_zones
+      WHERE type = 'safe' AND region = ? AND is_active = 1 AND incident_id = ?",
+            [$reg, $incidentId]
+        ) : [];
 
         $unit_roads = $incidentId ? $this->getdata(
             "SELECT id, name, status, reason, route_points
@@ -180,7 +202,7 @@ class Police extends DAL
         $evac_routes = $this->getdata(
             "SELECT id, from_name, to_name, route_status, notes, region, route_points
                FROM map_routes
-              WHERE organization_id = ? AND route_points IS NOT NULL
+              WHERE organization_id = ? AND route_points IS NOT NULL AND is_active = 1
               ORDER BY created_at DESC",
             [$org]
         );
@@ -224,7 +246,6 @@ class Police extends DAL
 
     public function addPoliceRoad($organization_id, $road_name, $road_type, $points, $reason, $region)
     {
-        // Auto-fetch incident_id from police_units
         $unit = $this->getRowSafe(
             "SELECT incident_id FROM police_units 
           WHERE organization_id = ? AND incident_id IS NOT NULL 
@@ -317,7 +338,6 @@ class Police extends DAL
     }
     public function addEvacRoute($organization_id, $from_name, $to_name, $route_status, $notes, $region, $points)
     {
-        // Auto-fetch incident_id from police_units
         $unit = $this->getRowSafe(
             "SELECT incident_id FROM police_units 
           WHERE organization_id = ? AND incident_id IS NOT NULL 
@@ -516,6 +536,18 @@ class Police extends DAL
          JOIN police_missions pm ON pu.current_mission_id = pm.mission_id
          LEFT JOIN incidents i ON pu.incident_id = i.id
          WHERE pu.organization_id = ? AND pm.status = 'sent'",
+            [(int)$organization_id]
+        );
+    }
+    public function getCanceledMissionNotifs($organization_id)
+    {
+        return $this->getdata(
+            "SELECT id, message, created_at
+         FROM notifications
+         WHERE type = 'mission_canceled'
+           AND target_org_id = ?
+           AND is_read = 0
+         ORDER BY created_at DESC",
             [(int)$organization_id]
         );
     }

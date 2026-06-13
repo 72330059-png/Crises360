@@ -102,19 +102,19 @@ class police extends DAL
         $email,
         $password,
         $callsign,
-        $unit_type
+        $unit_type,
+        $lat = null,
+        $lng = null
     ) {
-        // hash password
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
         $type = "police";
-        // $available_beds = $total_beds;
-        $sqlOrg = "INSERT INTO organizations (name, type, location, email, password) VALUES (?, ?, ?, ?, ?)";
+        $sqlOrg = "INSERT INTO organizations (name, type, location, email, password, lat, lng) VALUES (?, ?, ?, ?, ?,?,?)";
         $organization_id = $this->executeSafe($sqlOrg, [
             $name,
             $type,
             $location,
             $email,
-            $hashed_password
+            $hashed_password, $lat, $lng
         ]);
         if (!$organization_id || is_array($organization_id)) {
             return false;
@@ -189,7 +189,6 @@ class police extends DAL
             $status
         ]);
 
-        // update selected units
         if ($mission_id && !empty($units)) {
 
             foreach ($units as $unit_id) {
@@ -202,16 +201,15 @@ class police extends DAL
 
                 $this->executeSafe($sql2, [
                     $mission_id,
-                    (int)$incident_id,
+                    ($incident_id > 0) ? (int)$incident_id : null,
                     $unit_id
                 ]);
             }
         }
-
         return $mission_id;
     }
 
-   
+
     public function updateMission($mission_id, $title, $priority, $description, $status, $units = null, $incident_id = 0)
     {
         $this->executeSafe(
@@ -224,26 +222,35 @@ class police extends DAL
                 (int)$mission_id
             ]
         );
-
-        if ($units !== null && !empty($units)) {
-            // Clear old
+        if ($status === 'completed') {
             $this->executeSafe(
-                "UPDATE police_units SET current_mission_id=NULL, incident_id=NULL, status='available' 
-              WHERE current_mission_id=?",
+                "UPDATE police_units 
+             SET status = 'available', current_mission_id = NULL, incident_id = NULL
+             WHERE current_mission_id = ?",
                 [(int)$mission_id]
             );
-            // Assign new
+            return true;
+        }
+
+        $incidentVal = ($incident_id > 0) ? (int)$incident_id : null;
+
+        if ($units !== null && !empty($units)) {
+            $this->executeSafe(
+                "UPDATE police_units SET current_mission_id=NULL, incident_id=NULL, status='available' 
+             WHERE current_mission_id=?",
+                [(int)$mission_id]
+            );
             foreach ($units as $unit_id) {
                 $this->executeSafe(
                     "UPDATE police_units SET current_mission_id=?, status='pending', incident_id=? 
-                  WHERE unit_id=?",
-                    [(int)$mission_id, (int)$incident_id, (int)$unit_id]
+                 WHERE unit_id=?",
+                    [(int)$mission_id, $incidentVal, (int)$unit_id]
                 );
             }
-        } elseif ($incident_id > 0) {
+        } elseif ($incidentVal !== null) {
             $this->executeSafe(
                 "UPDATE police_units SET incident_id=? WHERE current_mission_id=?",
-                [(int)$incident_id, (int)$mission_id]
+                [$incidentVal, (int)$mission_id]
             );
         }
 
@@ -276,7 +283,6 @@ class police extends DAL
 
     public function getRecentPoliceUpdates()
     {
-        // Get last 5 from police_roads
         $roads = $this->getdata(
             "SELECT 
             pr.road_name AS title,
@@ -290,7 +296,6 @@ class police extends DAL
          ORDER BY pr.created_at DESC LIMIT 5"
         );
 
-        // Get last 5 from map_routes
         $routes = $this->getdata(
             "SELECT 
             CONCAT(mr.from_name, ' → ', mr.to_name) AS title,
@@ -303,12 +308,59 @@ class police extends DAL
          ORDER BY mr.created_at DESC LIMIT 5"
         );
 
-        // Merge and sort by date
         $all = array_merge($roads, $routes);
         usort($all, function ($a, $b) {
             return strtotime($b['created_at']) - strtotime($a['created_at']);
         });
 
         return array_slice($all, 0, 3);
+    }
+
+    public function cancelMission($mission_id)
+    {
+        $units = $this->getdata(
+            "SELECT pu.unit_id, pu.organization_id, pm.title
+         FROM police_units pu
+         JOIN police_missions pm ON pm.mission_id = pu.current_mission_id
+         WHERE pu.current_mission_id = ?",
+            [(int)$mission_id]
+        );
+
+        $freed = $this->executeSafe(
+            "UPDATE police_units
+         SET current_mission_id = NULL, incident_id = NULL, status = 'available'
+         WHERE current_mission_id = ?",
+            [(int)$mission_id]
+        );
+
+        if (isset($freed['status']) && $freed['status'] === 'error') {
+            return ['status' => 'error', 'message' => 'Failed to free units: ' . $freed['message']];
+        }
+
+        $missionTitle = !empty($units) ? $this->escape($units[0]['title']) : 'Mission';
+        $seen = [];
+
+        foreach ($units as $u) {
+            $orgId = (int)$u['organization_id'];
+            if (in_array($orgId, $seen)) continue;
+            $seen[] = $orgId;
+
+            $this->executeSafe(
+                "INSERT INTO notifications (message, type, is_read, created_at, target_org_id)
+             VALUES (?, 'mission_canceled', 0, NOW(), ?)",
+                ["Mission \"$missionTitle\" has been canceled.", $orgId]
+            );
+        }
+
+        $deleted = $this->executeSafe(
+            "DELETE FROM police_missions WHERE mission_id = ?",
+            [(int)$mission_id]
+        );
+
+        if (isset($deleted['status']) && $deleted['status'] === 'error') {
+            return ['status' => 'error', 'message' => 'Failed to delete mission: ' . $deleted['message']];
+        }
+
+        return ['status' => 'success', 'message' => 'Mission canceled successfully'];
     }
 }

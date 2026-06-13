@@ -24,13 +24,9 @@ $current_location = trim($_POST['current_location']);
 $members = json_decode($_POST['members'], true);
 
 $hospital = new hospital_dashboard();
-
-$members_count = count($members);
-
 $team_id = $hospital->addTeam(
     $hospital_id,
     $team_name,
-    $members_count,
     $status,
     $current_location
 );

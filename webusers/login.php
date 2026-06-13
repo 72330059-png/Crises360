@@ -3,11 +3,8 @@ session_start();
 require('class/DAL.class.php');
 $dal = new DAL();
 
-$baseURL = "http://localhost/senior/usersweb/";
+$baseURL = "http://localhost/senior/crises360/webusers/";
 
-/* =========================
-   ALREADY LOGGED IN
-========================= */
 if (isset($_SESSION['org_id']) && isset($_SESSION['type'])) {
 
     if ($_SESSION['type'] === 'hospital') {
@@ -26,17 +23,34 @@ if (isset($_SESSION['org_id']) && isset($_SESSION['type'])) {
     }
 }
 
-/* =========================
-   LOGIN PROCESS
-========================= */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
+    $recaptcha = $_POST['g-recaptcha-response'] ?? '';
+    $secret = RECAPTCHA_SECRET; 
+    
+    $verify = file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret={$secret}&response={$recaptcha}");
+    $captchaResult = json_decode($verify);
+
+    if (
+        !$captchaResult->success ||
+        $captchaResult->score < 0.5
+    ) {
+
+        $_SESSION['flash'] = [
+            'icon' => 'error',
+            'title' => 'Bot Detected',
+            'text'  => 'Please complete the CAPTCHA.',
+            'redirect' => $baseURL . "login.php",
+            'timer' => 2000,
+            'showConfirmButton' => true
+        ];
+        header("Location: {$baseURL}login.php");
+        exit;
+    }
     $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
-
-    // Basic protection (simple)
     $email = $dal->escape($email);
-    $sql = "SELECT id, name, password, type FROM organizations WHERE email = '$email'";
+    $sql = "SELECT id, name, password,location, type FROM organizations WHERE email = '$email'";
     $result = $dal->getdata($sql);
 
     if ($result && count($result) > 0) {
@@ -52,17 +66,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['email']    = $email;
             $_SESSION['type']     = $org['type'];
             $_SESSION['logged_in'] = true;
+            $_SESSION['org_location'] = $org['location'];
 
-            // ✅ ADD FLASH HERE
-            $_SESSION['flash'] = [
-                'icon' => 'success',
-                'title' => 'Welcome!',
-                'text'  => 'Login successful',
-                'redirect' => $baseURL . $org['type'] . "_dashboard.php",
-                'timer' => 1500,
-                'showConfirmButton' => false
-            ];
-            // Redirect based on type
             if ($org['type'] === 'hospital') {
                 header("Location: {$baseURL}hospital_dashboard.php");
                 exit;
@@ -79,7 +84,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        // Wrong password
         $_SESSION['flash'] = [
             'icon' => 'error',
             'title' => 'Invalid Password',
@@ -93,7 +97,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    // Email not found
     $_SESSION['flash'] = [
         'icon' => 'error',
         'title' => 'Email Not Found',
@@ -146,7 +149,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
         }
 
-        /* Left Side Image Panel */
         .left {
             width: 46%;
             position: relative;
@@ -171,13 +173,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         .right h2 {
             font-family: 'Playfair Display', serif;
-            /* Uses the classy font you like */
             font-size: 38px;
             font-weight: 500;
-            /* Medium weight is classier than thick Bold */
             color: #0f172a;
             letter-spacing: -0.5px;
-            /* Slight squeeze for a modern look */
             margin-bottom: 12px;
         }
 
@@ -196,7 +195,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             opacity: 0.95;
         }
 
-        /* Right Side Form Panel */
         .right {
             width: 54%;
             padding: 60px 80px;
@@ -216,13 +214,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             color: #64748b;
             font-size: 15px;
             font-weight: 400;
-            margin-bottom: 45px;
-            /* More breathing room before the inputs */
+            margin-bottom: 25px;
             letter-spacing: 0.2px;
         }
 
         .input-group {
-            margin-bottom: 20px;
+            margin-bottom: 14px;
             position: relative;
         }
 
@@ -266,9 +263,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         .forgot-link {
-            text-align: right;
-            margin-top: -10px;
-            margin-bottom: 30px;
+            text-align: right !important;
+            margin-top: 6px;
+
+            margin-bottom: 37px;
+        }
+
+        span i {
+            position: static !important;
+            left: auto !important;
+            transform: none !important;
         }
 
         .forgot-link a {
@@ -295,7 +299,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             background: #1e3d1a;
         }
 
-        /* Footer Script */
         .footer-script {
             text-align: center;
             margin-top: 20px;
@@ -347,7 +350,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
 
     <div class="container">
-        <!-- Left Side -->
         <div class="left">
             <div class="left-content">
                 <div class="script-title">South</div>
@@ -356,7 +358,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </div>
 
-        <!-- Right Side -->
         <div class="right">
             <div>
                 <div class="heading">
@@ -372,18 +373,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <input type="email" name="email" placeholder="Enter your email" required>
                         </div>
                     </div>
-
                     <div class="input-group">
                         <label>Password</label>
-                        <div class="input-wrapper">
-                            <i class="fa-solid fa-lock"></i>
-                            <input type="password" name="password" placeholder="Enter your password" required>
+                        <div style="position: relative;">
+                            <i class="fa-solid fa-lock" style="position:absolute; left:18px; top:50%; transform:translateY(-50%); color:#94a3b8; font-size:15px; z-index:1;"></i>
+                            <input type="password" name="password" id="passwordInput" placeholder="Enter your password" required style="width:100%; padding:16px 50px; border-radius:12px; background:#f8fafc; border:1px solid #e2e8f0; font-size:15px;">
+                            <span onclick="togglePassword()" style="position:absolute; right:18px; top:50%; transform:translateY(-50%); cursor:pointer; color:#94a3b8;">
+                                <i class="fa-regular fa-eye" id="eyeIconFA"></i>
+                            </span>
                         </div>
                     </div>
-
                     <div class="forgot-link">
-                        <a href="#">Forgot password?</a>
+                        <a href="forgot_password.php">Forgot password?</a>
                     </div>
+
 
                     <button type="submit">Login</button>
                 </form>
@@ -394,8 +397,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </div>
     </div>
-
-    <!-- SweetAlert & Session Logic kept exactly the same -->
+    <script src="https://www.google.com/recaptcha/api.js?render=6LfSeAstAAAAAFFr3_PXvUdD9RpvMaBUhC4DOwel"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <?php
     if (isset($_SESSION['flash'])) {
@@ -415,6 +417,54 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         unset($_SESSION['flash']);
     }
     ?>
+    <script>
+        function togglePassword() {
+            const input = document.getElementById('passwordInput');
+            const icon = document.getElementById('eyeIconFA');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        }
+    </script>
+    <script>
+        grecaptcha.ready(function() {
+            document.querySelector('form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                var form = this;
+
+                Swal.fire({
+                    icon: 'success',
+                    title: '🛡️ reCAPTCHA Passed!',
+                    text: 'Identity verified. Redirecting to your dashboard...',
+                    timer: 2500,
+                    showConfirmButton: false,
+                    timerProgressBar: true,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    didOpen: function() {
+                        grecaptcha.execute('6LfSeAstAAAAAFFr3_PXvUdD9RpvMaBUhC4DOwel', {
+                                action: 'login'
+                            })
+                            .then(function(token) {
+                                let input = document.createElement('input');
+                                input.type = 'hidden';
+                                input.name = 'g-recaptcha-response';
+                                input.value = token;
+                                form.appendChild(input);
+                            });
+                    }
+                }).then(function() {
+                    form.submit();
+                });
+            });
+        });
+    </script>
 </body>
 
 </html>

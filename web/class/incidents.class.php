@@ -5,14 +5,12 @@ require_once("DAL.class.php");
 class incident extends DAL
 {
 
-
     public function getAllIncidents()
     {
         $sql = "SELECT * FROM incidents ORDER BY reported_at DESC";
 
         return $this->getdata($sql);
     }
-
 
     public function getIncidentById($id)
     {
@@ -54,22 +52,55 @@ class incident extends DAL
 
     public function updateIncident($id, $name, $location, $severity, $status)
     {
-        $sql = "UPDATE incidents SET incident_name = ?, location = ?, severity = ?, status = ? WHERE id = ?";
-        $result = $this->executeSafe($sql, [$name, $location, $severity, $status, $id]);
-        // If resolved → deactivate all linked map data
+        $current = $this->getdata(
+            "SELECT status, resolved_at FROM incidents WHERE id=?",
+            [$id]
+        );
+
+        if ($status === 'Resolved' && empty($current['resolved_at'])) {
+
+            $sql = "UPDATE incidents
+            SET incident_name=?,
+                location=?,
+                severity=?,
+                status=?,
+                resolved_at=NOW()
+            WHERE id=?";
+        } else {
+
+            $sql = "UPDATE incidents
+            SET incident_name=?,
+                location=?,
+                severity=?,
+                status=?
+            WHERE id=?";
+        }
+
+        $result = $this->executeSafe(
+            $sql,
+            [$name, $location, $severity, $status, $id]
+        );
         if ($status === 'Resolved') {
             $this->executeSafe("UPDATE map_alerts SET is_active=0 WHERE incident_id=?", [(int)$id]);
             $this->executeSafe("UPDATE map_zones  SET is_active=0 WHERE incident_id=?", [(int)$id]);
             $this->executeSafe("UPDATE map_roads  SET is_active=0 WHERE incident_id=?", [(int)$id]);
-            // ADD THESE:
             $this->executeSafe("UPDATE police_roads SET is_active=0 WHERE incident_id=?", [(int)$id]);
             $this->executeSafe("UPDATE map_routes  SET is_active=0 WHERE incident_id=?", [(int)$id]);
-            // Free the police units
-            $this->executeSafe("UPDATE police_units SET incident_id=NULL, current_mission_id=NULL, status='available' WHERE incident_id=?",
+            $this->executeSafe(
+                "UPDATE police_units SET incident_id=NULL, current_mission_id=NULL, status='available' WHERE incident_id=?",
                 [(int)$id]
             );
         }
+        if ($status === 'Resolved') {
 
+            $this->executeSafe(
+                "UPDATE police_missions pm
+         JOIN police_units pu ON pu.current_mission_id = pm.mission_id
+         SET pm.status = 'completed'
+         WHERE pu.incident_id = ?",
+                [(int)$id]
+            );
+        }
         return $result;
     }
 

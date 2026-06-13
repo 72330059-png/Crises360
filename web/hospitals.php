@@ -2,7 +2,7 @@
 session_start();
 require_once("class/hospitals.class.php");
 
-if (!isset($_SESSION['logged_in']) || $_SESSION['role'] !== 'admin') {
+if (!isset($_SESSION['logged_in'])) {
     header("Location: login.php");
     exit;
 }
@@ -156,7 +156,6 @@ $allHospitals = $hospital->getAllHospitals();
             border-radius: 8px;
             margin-left: 5px;
             color: #4318FF;
-            /* Primary Blue for eye/pen */
         }
 
         .action-btn:hover {
@@ -170,7 +169,15 @@ $allHospitals = $hospital->getAllHospitals();
         .action-btn.delete-btn {
             color: #EE5D50;
         }
+.phone-link {
+    color: #1B2559; 
+    text-decoration: none;
+}
 
+.phone-link:hover {
+    color: #1B2559;
+    text-decoration: none;
+}
         .teams-badge {
             background: #F4F7FE;
             color: #1B2559;
@@ -201,13 +208,97 @@ $allHospitals = $hospital->getAllHospitals();
             padding: 5px 12px !important;
             font-size: 13px !important;
         }
+
+        @media (max-width: 991px) {
+            .main-content {
+                margin-left: 0;
+                padding: 20px 16px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 16px 12px;
+            }
+
+            .d-flex.justify-content-between.align-items-center.mb-4 {
+                flex-direction: column;
+                align-items: flex-start !important;
+                gap: 12px;
+            }
+
+            .d-flex.gap-2.align-items-center {
+                flex-wrap: wrap;
+                width: 100%;
+            }
+
+            .btn-add-hospital {
+                width: 100% !important;
+                justify-content: center;
+            }
+
+            .filter-select {
+                width: 100%;
+                min-width: unset;
+            }
+
+            .row.g-3.mb-4 {
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                padding-bottom: 8px;
+                scrollbar-width: none;
+            }
+
+            .row.g-3.mb-4::-webkit-scrollbar {
+                display: none;
+            }
+
+            .row.g-3.mb-4 .col {
+                min-width: 140px;
+                flex: 0 0 auto;
+            }
+
+            .table-responsive {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .table thead th,
+            .table tbody td {
+                white-space: nowrap;
+                font-size: 13px;
+            }
+
+            .modal-dialog {
+                margin: 10px;
+            }
+
+            .modal-dialog .row .col-md-6 {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h2.fw-bold {
+                font-size: 20px;
+            }
+
+            .stat-value {
+                font-size: 20px;
+            }
+
+            .modern-card {
+                padding: 16px;
+                border-radius: 14px;
+            }
+        }
     </style>
 </head>
 <div class="modal fade" id="addHospitalModal" tabindex="-1">
-    <!-- <div class="modal-dialog modal-lg" style="margin-top: 3rem; margin-bottom: 3rem;"> -->
     <div class="modal-dialog modal-dialog-centered modal-lg my-5">
         <div class="modal-content rounded-4 shadow">
-
             <div class="modal-header border-0 pb-0">
                 <h5 class="modal-title fw-bold">Add Hospital</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -329,7 +420,7 @@ $allHospitals = $hospital->getAllHospitals();
             </div>
             <div class="col">
                 <div class="stat-card">
-                    <div class="stat-label">Hospitals at Capacity</div>
+                    <div class="stat-label">Hospitals Available</div>
                     <div class="stat-value"><?= $hospitalsAvailable ?></div>
                 </div>
             </div>
@@ -343,7 +434,7 @@ $allHospitals = $hospital->getAllHospitals();
                         <tr>
                             <th>Hospital Name</th>
                             <th>Location</th>
-                            <!-- <th>Region</th> -->
+                            <th>Phone</th>
                             <th>Total Beds</th>
                             <th>Occupied</th>
                             <th>Available</th>
@@ -376,6 +467,11 @@ $allHospitals = $hospital->getAllHospitals();
                                 </td>
 
                                 <td><?= $h['location'] ?></td>
+                                <td>
+                                    <a href="tel:<?= $h['phone'] ?>" class="phone-link">
+                                        <?= $h['phone'] ?>
+                                    </a>
+                                </td>
 
                                 <td><?= $h['total_beds'] ?></td>
 
@@ -477,7 +573,6 @@ $allHospitals = $hospital->getAllHospitals();
                                 timer: 1500,
                                 showConfirmButton: false
                             }).then(() => {
-                                // Explicitly use window to bypass the name conflict
                                 window.location.reload();
                             });
                         } else {

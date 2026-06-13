@@ -71,12 +71,7 @@
                             <span class="title">Police</span>
                         </a>
                     </li>
-                    <!-- <li class="<?php echo (basename($_SERVER['PHP_SELF']) == 'teams.php') ? 'active' : ''; ?>">
-                        <a href="teams.php" title="teams">
-                            <i class="fa fa-users-cog"></i>
-                            <span class="title">Response Teams</span>
-                        </a>
-                    </li> -->
+                
                 </ul>
             </li>
 
@@ -124,13 +119,6 @@
                             </a>
                         </li>
                     <?php endif; ?>
-
-                    <li class="<?php echo (basename($_SERVER['PHP_SELF']) == 'settingss.php') ? 'active' : ''; ?>">
-                        <a href="settings.php" title="settings">
-                            <i class="fa fa-cog"></i>
-                            <span class="title">Settings</span>
-                        </a>
-                    </li>
                 </ul>
             </li>
 

@@ -69,50 +69,100 @@
 
 
 <script>
-$(document).ready(function() {
-    $('#teamsTable').DataTable({
-        "pageLength": 5,         
-        "searching": false,       
-        "lengthChange": false,      
-        "info": true,              
-        "paging": true,             
-        "dom": 'rt<"d-flex justify-content-between align-items-center mt-3"ip>', 
-    });
-});
-
-$(document).ready(function() {
-    $('#shelterTable').DataTable({
-        "pageLength": 5,          
-        "lengthChange": false,    
-        "searching": false,       
-        "info": false,            
-        "ordering": true,         
-        "autoWidth": false,      
-        "language": {
-            "paginate": {
-                "next": '<i class="fa-solid fa-chevron-right"></i>',
-                "previous": '<i class="fa-solid fa-chevron-left"></i>'
+    $(document).ready(function() {
+        $('#teamsTable').DataTable({
+            "pageLength": 3,
+            "lengthChange": false,
+            "searching": false,
+            "info": false, 
+            "paging": true,
+            "dom": 'rtp',
+              "ordering":false,
+            "language": {
+                "paginate": {
+                    "next": '<i class="fa-solid fa-chevron-right"></i>',
+                    "previous": '<i class="fa-solid fa-chevron-left"></i>'
+                }
             }
-        },
-        "dom": 'tp' 
-    });
-});
+        });
 
-$(document).ready(function() {
-    $('#needsTable').DataTable({
-        "pageLength": 5,         
-        "lengthChange": false,   
-        "searching": false,       
-        "info": false,         
-        "pagingType": "simple",   
-        "language": {
-            "paginate": {
-                "next": '<i class="fa-solid fa-chevron-right"></i>',
-                "previous": '<i class="fa-solid fa-chevron-left"></i>'
+        $('#transfersTable').DataTable({
+            "pageLength": 5,
+            "lengthChange": false,
+            "searching": false,
+            "info": false, 
+            "paging": true,
+            "dom": 'rtp',
+            "ordering":false,
+            "language": {
+                "paginate": {
+                    "next": '<i class="fa-solid fa-chevron-right"></i>',
+                    "previous": '<i class="fa-solid fa-chevron-left"></i>'
+                }
             }
-        },
-        "dom": 'tp'               
-    });
-});
+        });
 
+        $('#shelterTable').DataTable({
+            "pageLength": 5,
+            "lengthChange": false,
+            "searching": false,
+            "info": false,
+            "ordering": true,
+            "autoWidth": false,
+            "language": {
+                "paginate": {
+                    "next": '<i class="fa-solid fa-chevron-right"></i>',
+                    "previous": '<i class="fa-solid fa-chevron-left"></i>'
+                }
+            },
+            "dom": 'tp'
+        });
+
+        $('#needsTable').DataTable({
+            "pageLength": 3,
+            "lengthChange": false,
+            "searching": false,
+            "info": false,
+            "pagingType": "simple",
+            ordering: false,
+
+            "language": {
+                "paginate": {
+                    "next": '<i class="fa-solid fa-chevron-right"></i>',
+                    "previous": '<i class="fa-solid fa-chevron-left"></i>'
+                }
+            },
+            "dom": 'tp'
+        });
+
+        $('#resourceTable').DataTable({
+            "pageLength": 3,
+            "lengthChange": false,
+            "searching": false,
+            "info": false,
+            "ordering": false,
+            "dom": 'tp',
+            "language": {
+                "paginate": {
+                    "next": '<i class="fa-solid fa-chevron-right"></i>',
+                    "previous": '<i class="fa-solid fa-chevron-left"></i>'
+                }
+            }
+        });
+
+        $('#donationsTable').DataTable({
+            "pageLength": 3,
+            "lengthChange": false,
+            "searching": false,
+            "info": false,
+            "ordering": false,
+            "dom": 'tp',
+            "language": {
+                "paginate": {
+                    "next": '<i class="fa-solid fa-chevron-right"></i>',
+                    "previous": '<i class="fa-solid fa-chevron-left"></i>'
+                }
+            }
+        });
+    });
 </script>

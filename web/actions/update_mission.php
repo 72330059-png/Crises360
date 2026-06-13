@@ -3,7 +3,7 @@
 header("Content-Type: application/json");
 
 require_once("../class/police.class.php");
-
+$incident_id = intval($_POST['incident_id'] ?? 0);
 $mission_id = intval($_POST['mission_id'] ?? 0);
 $title = trim($_POST['title'] ?? '');
 $priority = trim($_POST['priority'] ?? '');
@@ -39,7 +39,9 @@ $result = $police->updateMission(
     $priority,
     $description,
     $status,
-    $units
+    $units,
+    $incident_id  
+
 );
 
 if ($result) {

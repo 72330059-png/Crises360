@@ -360,4 +360,35 @@ class maps extends DAL
             'roads'  => $this->countRoads(),
         ];
     }
+
+    public function getPoliceRoadsByIncident($incident_id)
+{
+    $rows = $this->getdata(
+        "SELECT road_id AS id, road_name AS name, road_type AS status, 
+                reason, route_points, region
+         FROM police_roads 
+         WHERE incident_id = ? AND is_active = 1
+         ORDER BY created_at DESC",
+        [(int)$incident_id]
+    );
+    foreach ($rows as &$r) {
+        $r['route_points'] = json_decode($r['route_points'], true);
+    }
+    return $rows;
+}
+
+public function getEvacRoutesByIncident($incident_id)
+{
+    $rows = $this->getdata(
+        "SELECT id, from_name, to_name, route_status, notes, region, route_points
+         FROM map_routes 
+         WHERE incident_id = ? AND route_points IS NOT NULL
+         ORDER BY created_at DESC",
+        [(int)$incident_id]
+    );
+    foreach ($rows as &$r) {
+        $r['route_points'] = json_decode($r['route_points'], true);
+    }
+    return $rows;
+}
 }

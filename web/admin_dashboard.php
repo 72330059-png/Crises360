@@ -6,17 +6,18 @@ require_once("class/alerts.class.php");
 require_once("class/hospitals.class.php");
 require_once("class/municipality.class.php");
 require_once("class/police.class.php");
+require('class/users.class.php');
 
-if (!isset($_SESSION['logged_in']) || $_SESSION['role'] !== 'admin') {
+if (!isset($_SESSION['logged_in'])) {
     header("Location: login.php");
     exit;
 }
-
+$usersObj = new users();
 $incident  = new incident();
 $alertsObj = new alert();
 $hospital  = new hospital();
 
-
+$teamUsers = $usersObj->getTeamActivity();
 $activeIncidents  = $incident->activeIncidents();
 $activeAlerts     = $alertsObj->totalAlerts();
 $responseTeams    = $hospital->totalTeamsAllHospitals();
@@ -565,6 +566,151 @@ $teamsChange = $teamsThisWeek - $teamsLastWeek;
         .fade-up:nth-child(4) {
             animation-delay: .26s;
         }
+
+        .live-pill {
+            font-size: 12px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        @media (max-width: 576px) {
+            .live-pill .live-date {
+                display: none;
+            }
+
+        }
+
+        .dash-welcome h4 {
+            font-size: 22px !important;
+        }
+
+        @media (max-width: 576px) {
+            .d-flex.justify-content-between.align-items-center.mb-4 {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .dash-welcome h4 {
+                font-size: 18px !important;
+            }
+
+            .live-pill {
+                font-size: 11px;
+                padding: 5px 10px;
+            }
+        }
+
+        @media (max-width: 767px) {
+            .col-md-3 {
+                width: 50%;
+            }
+
+            .stat-number {
+                font-size: 28px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .col-md-3 {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 767px) {
+
+            .col-lg-8,
+            .col-lg-4 {
+                width: 100% !important;
+                flex: 0 0 100% !important;
+                max-width: 100% !important;
+            }
+
+            .col-lg-6 {
+                width: 100% !important;
+                flex: 0 0 100% !important;
+                max-width: 100% !important;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .chart-totals {
+                grid-template-columns: 1fr;
+            }
+
+            .chart-total-item:not(:last-child) {
+                border-right: none;
+                border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            }
+
+            .ct-value {
+                font-size: 20px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .res-bar-label {
+                flex-direction: column;
+                gap: 1px;
+            }
+
+            .res-bar-label small {
+                align-self: flex-end;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .team-sub {
+                display: none;
+            }
+        }
+
+        .a-title {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 180px;
+        }
+
+        @media (max-width: 480px) {
+            .a-title {
+                max-width: 130px;
+            }
+
+            .a-sub {
+                font-size: 10px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .main-content main.p-4 {
+                padding: 14px !important;
+            }
+
+            .dash-card-head {
+                padding: 14px 16px;
+            }
+
+            .dash-card-head h6 {
+                font-size: 13px;
+            }
+
+            .p-4 {
+                padding: 16px !important;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .stat-card {
+                padding: 16px;
+            }
+
+            .stat-icon-wrap {
+                width: 38px;
+                height: 38px;
+                font-size: 17px;
+                margin-bottom: 10px;
+            }
+        }
     </style>
 </head>
 
@@ -589,9 +735,21 @@ $teamsChange = $teamsThisWeek - $teamsLastWeek;
                             <i class="bi bi-arrow-up-right" style="font-size:18px; color:#0d6efd;"></i>
                         </h4>
                     </div>
-                    <div class="live-pill">
+                    <!-- <div class="live-pill">
                         <span class="live-dot"></span>
                         Live &nbsp;·&nbsp; May 12 – 18, 2025
+                    </div> -->
+                    <div class="live-pill">
+                        <span class="live-dot"></span>
+                        Live &nbsp;·&nbsp; <?php
+                                            $today = new DateTime();
+                                            $dayOfWeek = (int)$today->format('N'); // 1=Mon, 7=Sun
+                                            $monday = clone $today;
+                                            $monday->modify('-' . ($dayOfWeek - 1) . ' days');
+                                            $sunday = clone $monday;
+                                            $sunday->modify('+6 days');
+                                            echo $monday->format('M j') . ' – ' . $sunday->format('j, Y');
+                                            ?>
                     </div>
                 </div>
 
@@ -880,45 +1038,53 @@ $teamsChange = $teamsThisWeek - $teamsLastWeek;
                         </div>
                     </div>
 
+                    <?php
+                    function time_ago($datetime)
+                    {
+                        $diff = time() - strtotime($datetime);
+                        if ($diff < 60)     return 'Just now';
+                        if ($diff < 3600)   return floor($diff / 60) . ' min ago';
+                        if ($diff < 86400)  return floor($diff / 3600) . ' hr ago';
+                        return floor($diff / 86400) . ' days ago';
+                    }
+                    ?>
+
                     <div class="col-lg-6">
                         <div class="dash-card">
                             <div class="dash-card-head">
                                 <h6>Team Activity</h6>
-                                <a href="#">View all</a>
+                                <a href="users.php">View all</a>
                             </div>
-                            <div class="team-row">
-                                <div class="avatars">
-                                    <div class="av av-a">RA</div>
-                                    <div class="av av-b">MB</div>
+
+                            <?php foreach ($teamUsers as $user):
+                                $words = explode(' ', trim($user['name']));
+                                $initials = strtoupper(substr($words[0], 0, 1));
+                                if (isset($words[1])) $initials .= strtoupper(substr($words[1], 0, 1));
+
+                                $isOnline = $user['ustatus'] === 'online';
+                                $pillClass = $isOnline ? 'sp-active' : 'sp-standby';
+                                $pillText  = $isOnline ? 'Active' : 'Offline';
+
+                                $avClass = $user['role'] === 'admin' ? 'av-a' : 'av-b';
+
+                                $lastActivity = $user['last_activity']
+                                    ? time_ago($user['last_activity'])
+                                    : 'Never logged in';
+                            ?>
+                                <div class="team-row">
+                                    <div class="avatars">
+                                        <div class="av <?= $avClass ?>"><?= $initials ?></div>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="team-name"><?= htmlspecialchars($user['name']) ?></div>
+                                        <div class="team-sub">
+                                            <?= htmlspecialchars($user['role']) ?> · <?= $lastActivity ?>
+                                        </div>
+                                    </div>
+                                    <span class="status-pill <?= $pillClass ?>"><?= $pillText ?></span>
                                 </div>
-                                <div class="flex-grow-1">
-                                    <div class="team-name">Response Team Alpha</div>
-                                    <div class="team-sub">Deployed to Sector 9 · 30 min ago</div>
-                                </div>
-                                <span class="status-pill sp-active">Active</span>
-                            </div>
-                            <div class="team-row">
-                                <div class="avatars">
-                                    <div class="av av-b">MT</div>
-                                    <div class="av av-c">SL</div>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <div class="team-name">Medical Team Bravo</div>
-                                    <div class="team-sub">Assisting in Downtown · 1 hr ago</div>
-                                </div>
-                                <span class="status-pill sp-active">Active</span>
-                            </div>
-                            <div class="team-row">
-                                <div class="avatars">
-                                    <div class="av av-c">RC</div>
-                                    <div class="av av-a">JP</div>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <div class="team-name">Rescue Team Charlie</div>
-                                    <div class="team-sub">On standby · 2 hrs ago</div>
-                                </div>
-                                <span class="status-pill sp-standby">Standby</span>
-                            </div>
+                            <?php endforeach; ?>
+
                         </div>
                     </div>
                 </div>

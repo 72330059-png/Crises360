@@ -13,6 +13,10 @@ require_once('class/users.class.php');
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
+if (!isset($_SESSION['logged_in']) || $_SESSION['role'] !== 'admin') {
+    header("Location: login.php");
+    exit;
+}
 
 $index = new users;
 $indexx = $index->getallusers();
@@ -84,7 +88,6 @@ $roles = $index->getEnumValues("users", "role");
 
             </div>
             <div class="modal-body">
-                <!-- //data:name=doua passthru+123 -->
                 <form id="addForm" action="actions/add_users.php" method="POST" enctype="multipart/form-data">
                     <div class="input-group mb-3">
                         <div class="input-group-prepend">
@@ -158,6 +161,7 @@ $roles = $index->getEnumValues("users", "role");
                         <thead class="table-light">
                             <tr>
                                 <th class="ps-4 py-3">NAME</th>
+                                <th class="py-3">status</th>
                                 <th class="py-3">EMAIL</th>
                                 <th class="py-3">ROLE</th>
                                 <th class="text-center pe-4 py-3">ACTIONS</th>
@@ -167,6 +171,7 @@ $roles = $index->getEnumValues("users", "role");
                             <?php foreach ($indexx as $ind): ?>
                                 <tr>
                                     <td class="ps-4 fw-bold"><?php echo htmlspecialchars($ind['name']) ?></td>
+                                    <td><?php echo htmlspecialchars($ind['ustatus']) ?></td>
                                     <td><?php echo htmlspecialchars($ind['email']) ?></td>
                                     <td><?php echo htmlspecialchars($ind['role']) ?></td>
                                     <td class="text-center pe-4">
@@ -179,6 +184,10 @@ $roles = $index->getEnumValues("users", "role");
                                         </a>
                                         <a data-id="<?php echo $ind['id'] ?>" class="delete" style="cursor: pointer;">
                                             <i class="fa fa-trash text-danger"></i>
+                                        </a>
+                                        <a href="https://mail.google.com/mail/?view=cm&to=<?= urlencode($ind['email']) ?>"
+                                            target="_blank">
+                                            <i class="fas fa-envelope text-primary"></i>
                                         </a>
                                     </td>
                                 </tr>
@@ -218,7 +227,6 @@ $roles = $index->getEnumValues("users", "role");
                 }
 
             }, 'json');
-            ////name:jad,pass:rana,ro
         });
     </script>
 

@@ -94,12 +94,10 @@ WHERE `name`='$name'
     public function updateuser($id, $name, $email, $password, $role)
     {
         if (empty($password)) {
-            // ✅ Keep old password
             $sql = "UPDATE users 
                 SET name='$name', email='$email', role='$role'
                 WHERE id='$id'";
         } else {
-            // ✅ Hash ONLY if user typed a new password
             $hashed = password_hash($password, PASSWORD_DEFAULT);
             $sql = "UPDATE users 
                 SET name='$name', email='$email', password='$hashed', role='$role'

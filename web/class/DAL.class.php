@@ -19,12 +19,6 @@ class DAL
         $this->port = $config['port'];
     }
 
-
-    // public function ConnectionDatabase()
-    // {
-    //     return new mysqli($this->servername, $this->username, $this->password, $this->dbname, $this->port);
-    // }
-
     public function ConnectionDatabase()
     {
         $conn = new mysqli(
@@ -34,16 +28,13 @@ class DAL
             $this->dbname,
             $this->port
         );
-
         $conn->query("SET time_zone = '+03:00'");
-
         return $conn;
     }
 
     public function getdata($sql, $params = [])
     {
         $conn = $this->ConnectionDatabase();
-
         $stmt = $conn->prepare($sql);
 
         if (!$stmt) {
@@ -402,5 +393,26 @@ class DAL
         $conn->close();
 
         return $row ?: null;
+    }
+    public function getUnreadNotifications()
+    {
+        $sql = "SELECT * FROM notifications 
+            WHERE is_read = 0  AND target_org_id IS NULL 
+            ORDER BY created_at DESC";
+        return $this->getdata($sql);
+    }
+
+    public function markAsRead($id)
+    {
+        $sql = "UPDATE notifications SET is_read = 1 WHERE id = ?";
+        return $this->executeSafe($sql, [$id]);
+    }
+
+    public function countUnread()
+    {
+        $sql = "SELECT COUNT(*) as total FROM notifications 
+            WHERE is_read = 0  AND target_org_id IS NULL ";
+        $result = $this->getdata($sql);
+        return $result[0]['total'] ?? 0;
     }
 }

@@ -8,7 +8,7 @@ if (isset($_SESSION['id'])) {
     $id = (int) $_SESSION['id'];
 }
 
-// then destroy session
+// destroy session
 $_SESSION = [];
 if (ini_get("session.use_cookies")) {
     setcookie(session_name(), '', time() - 42000, '/');

@@ -5,9 +5,17 @@ require_once("DAL.class.php");
 class alert extends DAL
 {
 
-    // =========================
-    // GET ALL ALERTS
-    // =========================
+  public function insertAlert($alert_message, $severity, $region, $status)
+    { $sql = "INSERT INTO alerts (alert_message, severity, region, status)  VALUES (?, ?, ?, ?)";
+
+        return $this->executeSafe($sql, [
+            $alert_message,
+            $severity,
+            $region,
+            $status
+        ]);
+    }
+
     public function getRegions()
     {
         $sql = "SELECT DISTINCT region
@@ -36,9 +44,7 @@ class alert extends DAL
 
         return $data[0]['total'];
     }
-    // =========================
-    // GET ALERT BY ID
-    // =========================
+ 
     public function getAlertById($id)
     {
         $sql = "SELECT * 
@@ -51,27 +57,6 @@ class alert extends DAL
     }
 
 
-    // =========================
-    // INSERT ALERT
-    // =========================
-    public function insertAlert($alert_message, $severity, $region, $status)
-    {
-        $sql = "INSERT INTO alerts
-                (alert_message, severity, region, status)
-                VALUES (?, ?, ?, ?)";
-
-        return $this->executeSafe($sql, [
-            $alert_message,
-            $severity,
-            $region,
-            $status
-        ]);
-    }
-
-
-    // =========================
-    // UPDATE ALERT
-    // =========================
     public function updateAlert($id, $alert_message, $severity, $region, $status)
     {
         $sql = "UPDATE alerts
@@ -90,10 +75,6 @@ class alert extends DAL
         ]);
     }
 
-
-    // =========================
-    // DELETE ALERT
-    // =========================
     public function deleteAlert($id)
     {
         $sql = "DELETE FROM alerts
@@ -102,10 +83,6 @@ class alert extends DAL
         return $this->executeSafe($sql, [$id]);
     }
 
-
-    // =========================
-    // TOTAL ALERTS
-    // =========================
     public function totalAlerts()
     {
         $sql = "SELECT COUNT(*) total
@@ -116,10 +93,6 @@ class alert extends DAL
         return $data[0]['total'];
     }
 
-
-    // =========================
-    // SENT ALERTS
-    // =========================
     public function sentAlerts()
     {
         $sql = "SELECT COUNT(*) total
@@ -131,10 +104,6 @@ class alert extends DAL
         return $data[0]['total'];
     }
 
-
-    // =========================
-    // PENDING ALERTS
-    // =========================
     public function pendingAlerts()
     {
         $sql = "SELECT COUNT(*) total
@@ -146,10 +115,6 @@ class alert extends DAL
         return $data[0]['total'];
     }
 
-
-    // =========================
-    // CRITICAL ALERTS
-    // =========================
     public function criticalAlerts()
     {
         $sql = "SELECT COUNT(*) total
@@ -161,10 +126,6 @@ class alert extends DAL
         return $data[0]['total'];
     }
 
-
-    // =========================
-    // TOTAL RECIPIENTS
-    // =========================
     public function totalRecipients()
     {
         $sql = "SELECT SUM(recepients_count) total
@@ -175,10 +136,6 @@ class alert extends DAL
         return $data[0]['total'] ?? 0;
     }
 
-
-    // =========================
-    // TODAY ALERTS
-    // =========================
     public function todayAlerts()
     {
         $sql = "SELECT COUNT(*) total
@@ -190,10 +147,6 @@ class alert extends DAL
         return $data[0]['total'];
     }
 
-
-    // =========================
-    // SEARCH ALERTS
-    // =========================
     public function searchAlerts($keyword)
     {
         $keyword = "%" . $keyword . "%";
@@ -214,10 +167,6 @@ class alert extends DAL
         ]);
     }
 
-
-    // =========================
-    // FILTER BY STATUS
-    // =========================
     public function filterByStatus($status)
     {
         $sql = "SELECT *
@@ -228,10 +177,6 @@ class alert extends DAL
         return $this->getdata($sql, [$status]);
     }
 
-
-    // =========================
-    // FILTER BY REGION
-    // =========================
     public function filterByRegion($region)
     {
         $sql = "SELECT *
@@ -242,10 +187,6 @@ class alert extends DAL
         return $this->getdata($sql, [$region]);
     }
 
-
-    // =========================
-    // FILTER BY DATE
-    // =========================
     public function filterByDate($date)
     {
         $sql = "SELECT *
@@ -256,9 +197,6 @@ class alert extends DAL
         return $this->getdata($sql, [$date]);
     }
 
-    // =========================
-// TOTAL ALERTS LAST WEEK
-// =========================
 public function totalAlertsLastWeek()
 {
     $sql = "SELECT COUNT(*) total
@@ -271,10 +209,6 @@ public function totalAlertsLastWeek()
     return $data[0]['total'] ?? 0;
 }
 
-
-// =========================
-// GET RECENT ALERTS
-// =========================
 public function getRecentAlerts($limit = 4)
 {
     $sql = "SELECT *

@@ -1,7 +1,7 @@
 <?php
 session_start();
 require_once("class/municipality.class.php");
-if (!isset($_SESSION['logged_in']) || $_SESSION['role'] !== 'admin') {
+if (!isset($_SESSION['logged_in'])) {
     header("Location: login.php");
     exit;
 }
@@ -20,7 +20,6 @@ $totalMunicipalities = $mun->totalMunicipalitiesWithNeeds();
 <head>
     <title>Needs & Requests</title>
     <?php include('includes/header.php'); ?>
-
     <style>
         body {
             background: #F4F7FE;
@@ -189,6 +188,61 @@ $totalMunicipalities = $mun->totalMunicipalitiesWithNeeds();
             background: #FFF1F0;
             color: #EE5D50;
         }
+
+        @media (max-width: 768px) {
+
+            /* Main content */
+            .main-content {
+                margin-left: 70px !important;
+                width: calc(100% - 70px) !important;
+                padding: 15px !important;
+            }
+
+            /* Filters wrap */
+            .d-flex.gap-2.mb-4 {
+                flex-wrap: wrap;
+            }
+
+            .filter-control {
+                width: 100%;
+                min-width: 100%;
+            }
+
+            /* Stats cards scroll */
+            .row.g-3.mb-4 {
+                flex-wrap: nowrap !important;
+                overflow-x: auto;
+                overflow-y: hidden;
+                padding-bottom: 8px;
+                scrollbar-width: thin;
+            }
+
+            .row.g-3.mb-4>.col {
+                flex: 0 0 220px !important;
+                min-width: 220px !important;
+            }
+
+            .row.g-3.mb-4::-webkit-scrollbar {
+                height: 5px;
+            }
+
+            .row.g-3.mb-4::-webkit-scrollbar-thumb {
+                background: #d1d5db;
+                border-radius: 20px;
+            }
+
+            .stat-card {
+                height: 100%;
+            }
+
+            .stat-value {
+                font-size: 18px;
+            }
+
+            .modern-card {
+                padding: 15px;
+            }
+        }
     </style>
 </head>
 
@@ -236,7 +290,7 @@ $totalMunicipalities = $mun->totalMunicipalitiesWithNeeds();
                 foreach ($categories as $category):
                 ?>
 
-                    <option value="<?= $category ?>">
+                    <option value="<?= ucfirst($category) ?>">
                         <?= ucfirst($category) ?>
                     </option>
 
@@ -264,7 +318,7 @@ $totalMunicipalities = $mun->totalMunicipalitiesWithNeeds();
                 foreach ($priorities as $priority):
                 ?>
 
-                    <option value="<?= $priority ?>">
+                    <option value="<?= ucfirst($priority) ?>">
                         <?= ucfirst($priority) ?>
                     </option>
 
@@ -320,93 +374,95 @@ $totalMunicipalities = $mun->totalMunicipalitiesWithNeeds();
         <div class="modern-card">
             <h5 class="fw-bold mb-4">All Needs</h5>
 
-            <table id="needsTable" class="table align-middle">
-                <thead>
-                    <tr>
-                        <th>Need</th>
-                        <th>Category</th>
-                        <th>Priority</th>
-                        <th>Municipality</th>
-                        <th>Quantity</th>
-                        <th>Status</th>
-                        <th>Date</th>
-                        <th class="text-end">Actions</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-
-                    <?php foreach ($needs as $row): ?>
-
-                        <?php
-
-                        if ($row['priority'] == 'high') {
-                            $priorityClass = "priority-high";
-                        } elseif ($row['priority'] == 'medium') {
-                            $priorityClass = "priority-medium";
-                        } else {
-                            $priorityClass = "priority-low";
-                        }
-
-                        if ($row['status'] == 'fulfilled') {
-                            $statusClass = "status-open";
-                        } elseif ($row['status'] == 'in_progress') {
-                            $statusClass = "status-progress";
-                        } else {
-                            $statusClass = "status-closed";
-                        }
-                        ?>
+            <div class="table-responsive">
+                <table id="needsTable" class="table align-middle">
+                    <thead>
                         <tr>
-                            <td class="fw-bold">
-                                <?= $row['need_name'] ?>
-                            </td>
-
-                            <td>
-                                <?= ucfirst($row['category']) ?>
-                            </td>
-
-                            <td>
-                                <span class="<?= $priorityClass ?>">
-                                    <?= ucfirst($row['priority']) ?>
-                                </span>
-                            </td>
-
-                            <td>
-                                <?= $row['municipality_name'] ?>
-                            </td>
-
-                            <td>
-                                <?= $row['quantity'] ?>
-                            </td>
-
-                            <td>
-                                <span class="<?= $statusClass ?>">
-                                    <?= ucfirst(str_replace('_', ' ', $row['status'])) ?>
-                                </span>
-                            </td>
-
-                            <td>
-                                <?= date('Y-m-d', strtotime($row['created_at'])) ?>
-                            </td>
-                            <td class="text-end">
-                                <button class="action-icon action-approve fulfillBtn"
-                                    data-id="<?= $row['id'] ?>"
-                                    data-tooltip="Fulfill Request">
-
-                                    <i class="fa-solid fa-check"></i>
-                                </button>
-                                <button class="action-icon action-reject rejectBtn"
-                                    data-id="<?= $row['id'] ?>"
-                                    data-tooltip="Reject Request">
-
-                                    <i class="fa-solid fa-xmark"></i>
-                                </button>
-                            </td>
+                            <th>Need</th>
+                            <th>Category</th>
+                            <th>Priority</th>
+                            <th>Municipality</th>
+                            <th>Quantity</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th class="text-end">Actions</th>
                         </tr>
-                    <?php endforeach; ?>
+                    </thead>
 
-                </tbody>
-            </table>
+                    <tbody>
+
+                        <?php foreach ($needs as $row): ?>
+
+                            <?php
+
+                            if ($row['priority'] == 'high') {
+                                $priorityClass = "priority-high";
+                            } elseif ($row['priority'] == 'medium') {
+                                $priorityClass = "priority-medium";
+                            } else {
+                                $priorityClass = "priority-low";
+                            }
+
+                            if ($row['status'] == 'fulfilled') {
+                                $statusClass = "status-open";
+                            } elseif ($row['status'] == 'in_progress') {
+                                $statusClass = "status-progress";
+                            } else {
+                                $statusClass = "status-closed";
+                            }
+                            ?>
+                            <tr>
+                                <td class="fw-bold">
+                                    <?= $row['need_name'] ?>
+                                </td>
+
+                                <td>
+                                    <?= ucfirst($row['category']) ?>
+                                </td>
+
+                                <td>
+                                    <span class="<?= $priorityClass ?>">
+                                        <?= ucfirst($row['priority']) ?>
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <?= $row['municipality_name'] ?>
+                                </td>
+
+                                <td>
+                                    <?= $row['quantity'] ?>
+                                </td>
+
+                                <td>
+                                    <span class="<?= $statusClass ?>">
+                                        <?= ucfirst(str_replace('_', ' ', $row['status'])) ?>
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <?= date('Y-m-d', strtotime($row['created_at'])) ?>
+                                </td>
+                                <td class="text-end">
+                                    <button class="action-icon action-approve fulfillBtn"
+                                        data-id="<?= $row['id'] ?>"
+                                        data-tooltip="Fulfill Request">
+
+                                        <i class="fa-solid fa-check"></i>
+                                    </button>
+                                    <button class="action-icon action-reject rejectBtn"
+                                        data-id="<?= $row['id'] ?>"
+                                        data-tooltip="Reject Request">
+
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+
+                    </tbody>
+                </table>
+            </div>
         </div>
 
     </div>
@@ -420,7 +476,10 @@ $totalMunicipalities = $mun->totalMunicipalitiesWithNeeds();
 
                 dom: 'rt<"d-flex justify-content-between"ip>',
 
-                ordering: true,
+                order: [
+                    [6, 'desc']
+                ],
+
 
                 language: {
 
@@ -442,28 +501,20 @@ $totalMunicipalities = $mun->totalMunicipalitiesWithNeeds();
 
             // CATEGORY FILTER
             $('#categoryFilter').on('change', function() {
-
-                table.column(1).search(this.value).draw();
-
+                table.column(1).search(this.value, false, false).draw();
             });
 
             // PRIORITY FILTER
             $('#priorityFilter').on('change', function() {
-
-                table.column(2).search(this.value).draw();
-
+                table.column(2).search(this.value, false, false).draw();
             });
 
             // DATE FILTER
             $('#dateFilter').on('change', function() {
-
-                table.column(6).search(this.value).draw();
-
+                table.column(6).search(this.value, false, false).draw();
             });
 
         });
-
-        // FULFILL NEED
 
         $(document).on('click', '.fulfillBtn', function() {
 
@@ -520,9 +571,6 @@ $totalMunicipalities = $mun->totalMunicipalitiesWithNeeds();
                 }
             });
         });
-
-
-        // REJECT NEED
 
         $(document).on('click', '.rejectBtn', function() {
 

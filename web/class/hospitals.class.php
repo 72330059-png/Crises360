@@ -30,46 +30,15 @@ class hospital extends DAL
         return $this->getdata($sql);
     }
 
-
-    // public function insertHospital(
-    //     $name,
-    //     $location,
-    //     $email,
-    //     $password,
-    //     $total_beds,
-    //     $hospital_status
-    // ) {
-    //     // hash password
-    //     $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-    //     $type = "hospital";
-    //     $available_beds = $total_beds;
-    //     $sqlOrg = "INSERT INTO organizations (name, type, location, email, password) VALUES (?, ?, ?, ?, ?)";
-    //     $organization_id = $this->executeSafe($sqlOrg, [
-    //         $name,
-    //         $type,
-    //         $location,
-    //         $email,
-    //         $hashed_password
-    //     ]);
-    //     if (!$organization_id || is_array($organization_id)) {
-    //         return $organization_id;
-    //     }
-    //     $sqlHospital = "INSERT INTO hospitals
-    //            (organization_id,total_beds,available_beds, hospital_status) VALUES (?, ?, ?, ?)";
-    //     return $this->executeSafe($sqlHospital, [
-    //         $organization_id,
-    //         $total_beds,
-    //         $available_beds,
-    //         $hospital_status
-    //     ]);
-    // }
     public function insertHospital(
         $name,
         $location,
         $email,
         $password,
         $total_beds,
-        $hospital_status
+        $hospital_status,
+        $lat = null,
+        $lng = null
     ) {
 
         // HASH PASSWORD
@@ -82,18 +51,19 @@ class hospital extends DAL
 
         // INSERT INTO ORGANIZATIONS
         $sqlOrg = "INSERT INTO organizations
-    (name, type, location, email, password)
-    VALUES (?, ?, ?, ?, ?)";
+    (name, type, location, email, password , lat, lng)
+    VALUES (?, ?, ?, ?, ?,?,?)";
 
         $organization_id = $this->executeSafe($sqlOrg, [
             $name,
             $type,
             $location,
             $email,
-            $hashed_password
+            $hashed_password,
+            $lat,
+            $lng
         ]);
 
-        // IF FIRST INSERT FAILED
         if (!$organization_id || is_array($organization_id)) {
             return $organization_id;
         }
@@ -115,10 +85,8 @@ class hospital extends DAL
             $hospital_status
         ]);
 
-        // IF SECOND INSERT FAILED
         if (!$hospital || is_array($hospital)) {
 
-            // DELETE ORGANIZATION TO AVOID BROKEN DATA
             $sqlDelete = "DELETE FROM organizations WHERE id = ?";
 
             $this->executeSafe($sqlDelete, [$organization_id]);
@@ -201,26 +169,25 @@ class hospital extends DAL
     {
         $sql = "SELECT COUNT(*) total
             FROM hospitals
-            WHERE hospital_status = 'Stable'";
+            WHERE hospital_status = 'Safe'";
 
         $data = $this->getdata($sql);
 
         return $data[0]['total'];
     }
 
-    // teams
-
     public function getHospitalTeams($hospital_id)
     {
-        $sql = "SELECT *
-                FROM hospital_teams
-                WHERE hospital_id = ?
-                ORDER BY created_at DESC";
+        $sql = "SELECT ht.*,
+                (SELECT COUNT(*) 
+                 FROM hospital_team_members htm 
+                 WHERE htm.team_id = ht.id) AS members_count
+            FROM hospital_teams ht
+            WHERE ht.hospital_id = ?
+            ORDER BY ht.created_at DESC";
 
         return $this->getdata($sql, [$hospital_id]);
     }
-
-
     public function getTeamById($id)
     {
         $sql = "SELECT *
@@ -308,9 +275,6 @@ class hospital extends DAL
         return $this->executeSafe($sql, [$id]);
     }
 
-
-    //   teams
-
     public function totalTeams($hospital_id)
     {
         $sql = "SELECT COUNT(*) total
@@ -376,12 +340,18 @@ class hospital extends DAL
         $data = $this->getdata($sql);
         return $data[0]['total'] ?? 0;
     }
+
+
     public function teamsNeedingSupport($hospital_id)
     {
         $sql = "SELECT COUNT(*) total
-                FROM hospital_teams
-                WHERE hospital_id = ?
-                AND members_count <= 3";
+            FROM hospital_teams ht
+            WHERE ht.hospital_id = ?
+            AND (
+                SELECT COUNT(*) 
+                FROM hospital_team_members htm
+                WHERE htm.team_id = ht.id
+            ) <= 3";
 
         $data = $this->getdata($sql, [$hospital_id]);
 

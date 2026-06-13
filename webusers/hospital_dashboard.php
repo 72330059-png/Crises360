@@ -1,45 +1,25 @@
 <?php
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
-// error_reporting(E_ALL);
 session_start();
-// echo "PAGE STARTED";
-// exit;
-// echo "1<br>";
+
 require_once("class/hospital.class.php");
-// echo "2<br>";
 if (!isset($_SESSION['logged_in'])) {
     header("Location: login.php");
     exit;
 }
-// echo "3<br>";
-
 $hospitalObj = new hospital_dashboard();
-// echo "4<br>";
 $organization_id = $_SESSION['org_id'];
-// echo "ORG ID = " . $organization_id . "<br>";
 $hospitalData = $hospitalObj->getHospitalByOrganization($organization_id);
-// echo "<pre>";
-// print_r($hospitalData);
-// echo "5<br>";
-// exit;
+
 $hospital_id = $hospitalData['id'];
-// echo "6<br>";
 $hospital = $hospitalObj->getHospitalData($hospital_id);
-// echo "7<br>";
 $stats = $hospitalObj->getTodayStats($hospital_id);
-// echo "8<br>";
 $teams = $hospitalObj->getTeams($hospital_id);
-// echo "9<br>";
 $transfers = $hospitalObj->getTransfers($hospital_id);
 $demographics = $hospitalObj->getDemographics($hospital_id);
-// echo "10<br>";
-// exit
+
 $allHospitals = $hospitalObj->getAllHospitals();
-// $memcount=$hospitalObj->memcount();
-
-// $members = $hospitalObj->getTeamMembers($team['id']);
-
 ?>
 <!DOCTYPE html>
 <html>
@@ -85,6 +65,24 @@ $allHospitals = $hospitalObj->getAllHospitals();
             border: none !important;
         }
 
+        #teamsTable tbody tr,
+        #transfersTable tbody tr {
+            border-bottom: 1px solid #e9ecef !important;
+        }
+
+        #teamsTable td,
+        #teamsTable th,
+        #transfersTable td,
+        #transfersTable th {
+            border: none !important;
+            border-bottom: 1px solid #e9ecef !important;
+        }
+
+        #teamsTable thead tr,
+        #transfersTable thead tr {
+            border-bottom: 2px solid #e9ecef !important;
+        }
+
         .view-team-btn {
             border: none;
             background: transparent;
@@ -124,7 +122,61 @@ $allHospitals = $hospitalObj->getAllHospitals();
             color: #111827;
         }
     </style>
+    <style>
+        .card-edit-btn {
+            position: absolute;
+            bottom: 12px;
+            right: 12px;
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            font-size: 11px;
+            transition: all 0.15s;
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+        }
 
+        .card-edit-btn:hover {
+            background: #e2e8f0;
+            color: #334155;
+        }
+
+        .small-edit-input {
+            width: 65px !important;
+            text-align: center;
+        }
+
+        .split-edit-input {
+            width: 50px !important;
+            text-align: center;
+        }
+
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        .val-edit-wrapper input.form-control:focus {
+            border-color: #6b46c1;
+            box-shadow: none;
+            outline: 0;
+        }
+
+        .val-edit-wrapper input#input_available_beds:focus,
+        .val-edit-wrapper input#input_total_beds:focus {
+            border-color: #4a6fa5;
+        }
+    </style>
 </head>
 <div class="modal fade" id="addTeamModal" tabindex="-1">
 
@@ -359,100 +411,141 @@ $allHospitals = $hospitalObj->getAllHospitals();
 
     <div class="main-content">
         <div class="container-fluid">
-
             <div class="row g-3 mb-4 mt-0">
                 <div class="col-md-2">
-                    <div class="card border-0 shadow-sm p-3 rounded-4" style="background-color: #ffff;">
+                    <div class="card border-0 shadow-sm p-3 rounded-4" style="background:#fff; position:relative; min-height:110px;">
                         <div class="d-flex align-items-center mb-2">
-                            <div class="icon-shape rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 42px; height: 42px; background-color: #2d5a27; color: white;">
+                            <div class="icon-shape rounded-circle d-flex align-items-center justify-content-center me-3" style="width:42px;height:42px;background-color:#2d5a27;color:white;">
                                 <i class="fa fa-users fs-6"></i>
                             </div>
-                            <div>
-                                <h6 class="mb-0 fw-bold" style="font-size: 0.8rem; color: #2d5a27;">Total Patients</h6>
-                            </div>
+                            <h6 class="mb-0 fw-bold" style="font-size:0.8rem;color:#2d5a27;">Total Patients</h6>
                         </div>
-                        <div class="d-flex justify-content-between align-items-end">
-                            <h3 class="fw-bold mb-0" style="color: #1a3317; font-size: 1.5rem;"><?= $stats['total_patients'] ?? 0 ?></h3>
+
+                        <div class="val-display-wrapper d-flex align-items-center">
+                            <h3 class="fw-bold mb-0" style="color:#1a3317;font-size:1.5rem;"><?= $stats['total_patients'] ?? 0 ?></h3>
+                            <button class="card-edit-btn" onclick="editCard('total_patients', this)"><i class="fa-solid fa-pen"></i></button>
+                        </div>
+
+                        <div class="val-edit-wrapper d-none d-flex align-items-center gap-1">
+                            <input type="number" class="form-control form-control-sm small-edit-input" data-field="total_patients" value="<?= $stats['total_patients'] ?? 0 ?>" min="0">
+                            <button onclick="saveCard('total_patients', this)" class="btn btn-success btn-sm p-0 d-flex align-items-center justify-content-center" style="width:26px; height:26px; border-radius:6px;"><i class="fa-solid fa-check"></i></button>
+                            <button onclick="cancelCard(this)" class="btn btn-light btn-sm p-0 d-flex align-items-center justify-content-center border" style="width:26px; height:26px; border-radius:6px; color:#64748b;"><i class="fa-solid fa-xmark"></i></button>
                         </div>
                     </div>
                 </div>
 
                 <div class="col-md-2">
-                    <div class="card border-0 shadow-sm p-3 rounded-4" style="background-color: #ffff;">
+                    <div class="card border-0 shadow-sm p-3 rounded-4" style="background:#fff; position:relative; min-height:110px;">
                         <div class="d-flex align-items-center mb-2">
-                            <div class="icon-shape rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 42px; height: 42px; background-color: #a52a2a; color: white;">
+                            <div class="icon-shape rounded-circle d-flex align-items-center justify-content-center me-3" style="width:42px;height:42px;background-color:#a52a2a;color:white;">
                                 <i class="fa fa-heartbeat fs-6"></i>
                             </div>
-                            <div>
-                                <h6 class="mb-0 fw-bold" style="font-size: 0.8rem; color: #a52a2a;">Critical Cases</h6>
-                            </div>
+                            <h6 class="mb-0 fw-bold" style="font-size:0.8rem;color:#a52a2a;">Critical Cases</h6>
                         </div>
-                        <div class="d-flex justify-content-between align-items-end">
-                            <h3 class="fw-bold mb-0" style="color: #5c1818; font-size: 1.5rem;"><?= $stats['critical_cases'] ?? 0 ?></h3>
+
+                        <div class="val-display-wrapper d-flex align-items-center">
+                            <h3 class="fw-bold mb-0" style="color:#5c1818;font-size:1.5rem;"><?= $stats['critical_cases'] ?? 0 ?></h3>
+                            <button class="card-edit-btn" onclick="editCard('critical_cases', this)"><i class="fa-solid fa-pen"></i></button>
+                        </div>
+
+                        <div class="val-edit-wrapper d-none d-flex align-items-center gap-1">
+                            <input type="number" class="form-control form-control-sm small-edit-input" data-field="critical_cases" value="<?= $stats['critical_cases'] ?? 0 ?>" min="0">
+                            <button onclick="saveCard('critical_cases', this)" class="btn btn-success btn-sm p-0 d-flex align-items-center justify-content-center" style="width:26px; height:26px; border-radius:6px;"><i class="fa-solid fa-check"></i></button>
+                            <button onclick="cancelCard(this)" class="btn btn-light btn-sm p-0 d-flex align-items-center justify-content-center border" style="width:26px; height:26px; border-radius:6px; color:#64748b;"><i class="fa-solid fa-xmark"></i></button>
                         </div>
                     </div>
                 </div>
 
                 <div class="col-md-2">
-                    <div class="card border-0 shadow-sm p-3 rounded-4" style="background-color: #ffff;">
+                    <div class="card border-0 shadow-sm p-3 rounded-4" style="background:#fff; position:relative; min-height:110px;">
                         <div class="d-flex align-items-center mb-2">
-                            <div class="icon-shape rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 42px; height: 42px; background-color: #4a6fa5; color: white;">
+                            <div class="icon-shape rounded-circle d-flex align-items-center justify-content-center me-3" style="width:42px;height:42px;background-color:#4a6fa5;color:white;">
                                 <i class="fa fa-bed fs-6"></i>
                             </div>
-                            <div>
-                                <h6 class="mb-0 fw-bold" style="font-size: 0.8rem; color: #4a6fa5;">Available Beds</h6>
-                            </div>
+                            <h6 class="mb-0 fw-bold" style="font-size:0.8rem;color:#4a6fa5;">Available Beds</h6>
                         </div>
-                        <div class="d-flex justify-content-between align-items-end">
-                            <h3 class="fw-bold mb-0" style="color: #2c3e50; font-size: 1.3rem;"><?= $hospital['available_beds'] ?? 0 ?><small class="text-muted" style="font-size: 0.8rem;">/ <?= $hospital['total_beds'] ?? 0 ?></small></h3>
+
+                        <div class="val-display-wrapper d-flex align-items-center">
+                            <h3 class="fw-bold mb-0 d-inline" style="color:#2c3e50;font-size:1.3rem;"><?= $hospital['available_beds'] ?? 0 ?></h3>
+                            <small class="text-muted ms-1" style="font-size:0.8rem;">/ <?= $hospital['total_beds'] ?? 0 ?></small>
+                            <button class="card-edit-btn" onclick="editCard('beds', this)"><i class="fa-solid fa-pen"></i></button>
+                        </div>
+
+                        <div class="val-edit-wrapper d-none d-flex align-items-center gap-1">
+                            <input type="number" class="form-control form-control-sm split-edit-input" id="input_available_beds" value="<?= $hospital['available_beds'] ?? 0 ?>" min="0">
+                            <span class="text-muted" style="font-size: 11px;">/</span>
+                            <input type="number" class="form-control form-control-sm split-edit-input" id="input_total_beds" value="<?= $hospital['total_beds'] ?? 0 ?>" min="0">
+                            <button onclick="saveCard('beds', this)" class="btn btn-success btn-sm p-0 d-flex align-items-center justify-content-center ms-1" style="width:24px; height:24px; border-radius:6px; flex-shrink:0;"><i class="fa-solid fa-check"></i></button>
+                            <button onclick="cancelCard(this)" class="btn btn-light btn-sm p-0 d-flex align-items-center justify-content-center border" style="width:24px; height:24px; border-radius:6px; color:#64748b; flex-shrink:0;"><i class="fa-solid fa-xmark"></i></button>
                         </div>
                     </div>
                 </div>
 
                 <div class="col-md-2">
-                    <div class="card border-0 shadow-sm p-3 rounded-4" style="background-color: #ffff;">
+                    <div class="card border-0 shadow-sm p-3 rounded-4" style="background:#fff; position:relative; min-height:110px;">
                         <div class="d-flex align-items-center mb-2">
-                            <div class="icon-shape rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 42px; height: 42px; background-color: #6b46c1; color: white;">
+                            <div class="icon-shape rounded-circle d-flex align-items-center justify-content-center me-3" style="width:42px;height:42px;background-color:#6b46c1;color:white;">
                                 <i class="fa fa-user-md fs-6"></i>
                             </div>
-                            <div>
-                                <h6 class="mb-0 fw-bold" style="font-size: 0.8rem; color: #6b46c1;">ICU Beds</h6>
-                            </div>
+                            <h6 class="mb-0 fw-bold" style="font-size:0.8rem;color:#6b46c1;">ICU Beds</h6>
                         </div>
-                        <div class="d-flex justify-content-between align-items-end">
-                            <h3 class="fw-bold mb-0" style="color: #322659; font-size: 1.3rem;"><?= $hospital['available_icu_beds'] ?? 0 ?> <small class="text-muted" style="font-size: 0.8rem;">/ <?= $hospital['icu_beds'] ?? 0 ?></small></h3>
+
+                        <div class="val-display-wrapper d-flex align-items-center">
+                            <h3 class="fw-bold mb-0 d-inline" style="color:#322659;font-size:1.3rem;"><?= $hospital['available_icu_beds'] ?? 0 ?></h3>
+                            <small class="text-muted ms-1" style="font-size:0.8rem;">/ <?= $hospital['icu_beds'] ?? 0 ?></small>
+                            <button class="card-edit-btn" onclick="editCard('icu', this)"><i class="fa-solid fa-pen"></i></button>
+                        </div>
+
+                        <div class="val-edit-wrapper d-none d-flex align-items-center gap-1">
+                            <input type="number" class="form-control form-control-sm split-edit-input" id="input_available_icu" value="<?= $hospital['available_icu_beds'] ?? 0 ?>" min="0">
+                            <span class="text-muted" style="font-size: 11px;">/</span>
+                            <input type="number" class="form-control form-control-sm split-edit-input" id="input_icu_beds" value="<?= $hospital['icu_beds'] ?? 0 ?>" min="0">
+                            <button onclick="saveCard('icu', this)" class="btn btn-success btn-sm p-0 d-flex align-items-center justify-content-center ms-1" style="width:24px; height:24px; border-radius:6px; flex-shrink:0;"><i class="fa-solid fa-check"></i></button>
+                            <button onclick="cancelCard(this)" class="btn btn-light btn-sm p-0 d-flex align-items-center justify-content-center border" style="width:24px; height:24px; border-radius:6px; color:#64748b; flex-shrink:0;"><i class="fa-solid fa-xmark"></i></button>
                         </div>
                     </div>
                 </div>
 
                 <div class="col-md-2">
-                    <div class="card border-0 shadow-sm p-3 rounded-4" style="background-color: #ffff;">
+                    <div class="card border-0 shadow-sm p-3 rounded-4" style="background:#fff; position:relative; min-height:110px;">
                         <div class="d-flex align-items-center mb-2">
-                            <div class="icon-shape rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 42px; height: 42px; background-color: #c05621; color: white;">
+                            <div class="icon-shape rounded-circle d-flex align-items-center justify-content-center me-3" style="width:42px;height:42px;background-color:#c05621;color:white;">
                                 <i class="fa fa-user-nurse fs-6"></i>
                             </div>
-                            <div>
-                                <h6 class="mb-0 fw-bold" style="font-size: 0.8rem; color: #c05621;">Staff On Duty</h6>
-                            </div>
+                            <h6 class="mb-0 fw-bold" style="font-size:0.8rem;color:#c05621;">Staff On Duty</h6>
                         </div>
-                        <div class="d-flex justify-content-between align-items-end">
-                            <h3 class="fw-bold mb-0" style="color: #7b341e; font-size: 1.5rem;"><?= $hospital['staff_on_duty'] ?? 0 ?></h3>
+
+                        <div class="val-display-wrapper d-flex align-items-center">
+                            <h3 class="fw-bold mb-0" style="color:#7b341e;font-size:1.5rem;"><?= $hospital['staff_on_duty'] ?? 0 ?></h3>
+                            <button class="card-edit-btn" onclick="editCard('staff_on_duty', this)"><i class="fa-solid fa-pen"></i></button>
+                        </div>
+
+                        <div class="val-edit-wrapper d-none d-flex align-items-center gap-1">
+                            <input type="number" class="form-control form-control-sm small-edit-input" data-field="staff_on_duty" value="<?= $hospital['staff_on_duty'] ?? 0 ?>" min="0">
+                            <button onclick="saveCard('staff_on_duty', this)" class="btn btn-success btn-sm p-0 d-flex align-items-center justify-content-center" style="width:26px; height:26px; border-radius:6px;"><i class="fa-solid fa-check"></i></button>
+                            <button onclick="cancelCard(this)" class="btn btn-light btn-sm p-0 d-flex align-items-center justify-content-center border" style="width:26px; height:26px; border-radius:6px; color:#64748b;"><i class="fa-solid fa-xmark"></i></button>
                         </div>
                     </div>
                 </div>
 
                 <div class="col-md-2">
-                    <div class="card border-0 shadow-sm p-3 rounded-4" style="background-color: #ffff;">
+                    <div class="card border-0 shadow-sm p-3 rounded-4" style="background:#fff; position:relative; min-height:110px;">
                         <div class="d-flex align-items-center mb-2">
-                            <div class="icon-shape rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 42px; height: 42px; background-color: #38a169; color: white;">
+                            <div class="icon-shape rounded-circle d-flex align-items-center justify-content-center me-3" style="width:42px;height:42px;background-color:#38a169;color:white;">
                                 <i class="fa fa-ambulance fs-6"></i>
                             </div>
-                            <div>
-                                <h6 class="mb-0 fw-bold" style="font-size: 0.8rem; color: #276749;">Ambulances</h6>
-                            </div>
+                            <h6 class="mb-0 fw-bold" style="font-size:0.8rem;color:#276749;">Ambulances</h6>
                         </div>
-                        <div class="d-flex justify-content-between align-items-end">
-                            <h3 class="fw-bold mb-0" style="color: #1c4532; font-size: 1.5rem;"><?= $hospital['ambulances'] ?? 0 ?></h3>
+
+                        <div class="val-display-wrapper d-flex align-items-center">
+                            <h3 class="fw-bold mb-0" style="color:#1c4532;font-size:1.5rem;"><?= $hospital['ambulances'] ?? 0 ?></h3>
+                            <button class="card-edit-btn" onclick="editCard('ambulances', this)"><i class="fa-solid fa-pen"></i></button>
+                        </div>
+
+                        <div class="val-edit-wrapper d-none d-flex align-items-center gap-1">
+                            <input type="number" class="form-control form-control-sm small-edit-input" data-field="ambulances" value="<?= $hospital['ambulances'] ?? 0 ?>" min="0">
+                            <button onclick="saveCard('ambulances', this)" class="btn btn-success btn-sm p-0 d-flex align-items-center justify-content-center" style="width:26px; height:26px; border-radius:6px;"><i class="fa-solid fa-check"></i></button>
+                            <button onclick="cancelCard(this)" class="btn btn-light btn-sm p-0 d-flex align-items-center justify-content-center border" style="width:26px; height:26px; border-radius:6px; color:#64748b;"><i class="fa-solid fa-xmark"></i></button>
                         </div>
                     </div>
                 </div>
@@ -873,7 +966,7 @@ $allHospitals = $hospitalObj->getAllHospitals();
                                 </thead>
                                 <tbody>
                                     <?php foreach ($transfers as $transfer): ?>
-                                        <tr>
+                                        <tr data-id="<?= $transfer['id'] ?>">
                                             <td>
                                                 <span class="view-mode">
                                                     <?= $transfer['destination_name'] ?>
@@ -1259,6 +1352,12 @@ $allHospitals = $hospitalObj->getAllHospitals();
             updateStatusColor("water_status", water_status);
 
         });
+
+        updateStatusColor("hospital_status", hospital_status);
+        updateStatusColor("infrastructure_status", infrastructure_status);
+        updateStatusColor("power_status", power_status);
+        updateStatusColor("water_status", water_status);
+
         $("#saveHospitalStatusBtn").click(function() {
 
             let hospital_id = $(this).data("hospital-id");
@@ -1286,6 +1385,10 @@ $allHospitals = $hospitalObj->getAllHospitals();
                             title: "Updated Successfully",
                             timer: 1500,
                             showConfirmButton: false
+                        }).then(() => {
+
+                            location.reload();
+
                         });
 
                     } else {
@@ -2280,6 +2383,113 @@ $allHospitals = $hospitalObj->getAllHospitals();
 
         }
     </script>
+
+    <script>
+        var HOSPITAL_ID = <?= (int)$hospital['id'] ?>;
+
+        function editCard(field, btn) {
+            var card = btn.closest('.card');
+
+            card.querySelector('.val-display-wrapper').classList.add('d-none');
+
+            var editWrapper = card.querySelector('.val-edit-wrapper');
+            if (editWrapper) {
+                editWrapper.classList.remove('d-none');
+                var firstInp = editWrapper.querySelector('input');
+                if (firstInp) firstInp.focus();
+            }
+            btn.classList.add('d-none');
+        }
+
+        function cancelCard(btn) {
+            var card = btn.closest('.card');
+
+            card.querySelector('.val-edit-wrapper').classList.add('d-none');
+            card.querySelector('.val-display-wrapper').classList.remove('d-none');
+
+            var editBtn = card.querySelector('.card-edit-btn');
+            if (editBtn) editBtn.classList.remove('d-none');
+        }
+
+        function getV(id, fallback) {
+            var el = document.getElementById(id);
+            return el ? (parseInt(el.value) || 0) : fallback;
+        }
+
+        function getField(card, field) {
+            var el = card.querySelector('input[data-field="' + field + '"]');
+            return el ? (parseInt(el.value) || 0) : 0;
+        }
+
+        function saveCard(field, btn) {
+            var card = btn.closest('.card');
+            var data = {
+                hospital_id: HOSPITAL_ID,
+                total_patients: getFieldGlobal('total_patients') || <?= (int)($stats['total_patients'] ?? 0) ?>,
+                critical_cases: getFieldGlobal('critical_cases') || <?= (int)($stats['critical_cases'] ?? 0) ?>,
+                available_beds: getV('input_available_beds', <?= (int)($hospital['available_beds'] ?? 0) ?>),
+                total_beds: getV('input_total_beds', <?= (int)($hospital['total_beds'] ?? 0) ?>),
+                available_icu: getV('input_available_icu', <?= (int)($hospital['available_icu_beds'] ?? 0) ?>),
+                icu_beds: getV('input_icu_beds', <?= (int)($hospital['icu_beds'] ?? 0) ?>),
+                staff_on_duty: getFieldGlobal('staff_on_duty') || <?= (int)($hospital['staff_on_duty'] ?? 0) ?>,
+                ambulances: getFieldGlobal('ambulances') || <?= (int)($hospital['ambulances'] ?? 0) ?>
+            };
+            function getFieldGlobal(field) {
+                var el = document.querySelector('input[data-field="' + field + '"]');
+                return el ? (parseInt(el.value) || 0) : 0;
+            }
+            $.ajax({
+                url: 'actions/update_stats_cards.php',
+                type: 'POST',
+                dataType: 'json',
+                data: data,
+                success: function(res) {
+                    if (res.status === 'success') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Updated!',
+                            timer: 1200,
+                            showConfirmButton: false
+                        }).then(function() {
+                            location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: res.message || 'Update failed.'
+                        });
+                    }
+                },
+                error: function() {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Server Error'
+                    });
+                }
+            });
+        }
+    </script>
+<script>
+function pollTransfers() {
+    if ($('.team-actions-edit:not(.d-none)').length > 0) return;
+
+    $.getJSON('actions/poll_transfers.php', function(data) {
+        if (!data.transfers) return;
+        $.each(data.transfers, function(_, t) {
+            let row = $('#transfersTable tr[data-id="' + t.id + '"]');
+            if (!row.length) return;
+            let cell = row.find('.view-mode').last();
+            if (cell.text().trim() !== t.status) {
+                cell.text(t.status);
+                row.css('background', '#fffbe6');
+                setTimeout(() => row.css('background', ''), 1500);
+            }
+        });
+    });
+}
+setInterval(pollTransfers, 10000);
+</script>
 </body>
 
 </html>
