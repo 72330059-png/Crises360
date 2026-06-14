@@ -21,7 +21,11 @@ function nominatimGeocode($location) {
 }
 
 function groqGeocode($location) {
-    $prompt = "Give me the latitude and longitude of \"$location\" in Lebanon. Reply ONLY with valid JSON like: {\"lat\": 33.8938, \"lng\": 35.5018, \"zoom\": 13}. No explanation, no markdown.";
+     $prompt = "Give me the latitude and longitude of \"$location\" in Lebanon. 
+Reply ONLY with valid JSON like: {\"lat\": 33.2704, \"lng\": 35.2038, \"zoom\": 14}.
+Use zoom 14 for cities, zoom 13 for regions, zoom 12 for governorates.
+No explanation, no markdown, nothing else.";   
+   
     $body = json_encode([
         'model' => 'llama-3.1-8b-instant',
         'messages' => [

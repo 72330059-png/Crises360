@@ -707,7 +707,6 @@ $canceledNotifs = $police->getCanceledMissionNotifs($org_id);
     }
   </style>
 </head>
-
 <body>
   <?php include('includes/sidebar.php'); ?>
   <?php include('includes/nav.php'); ?>
@@ -969,6 +968,15 @@ $canceledNotifs = $police->getCanceledMissionNotifs($org_id);
       'saida': [33.5571, 35.3729, 14],
       'sidon': [33.5571, 35.3729, 14],
       'nabatieh': [33.3772, 35.4844, 13],
+      'nabateye':  [33.3772, 35.4844, 13],
+'nabatiye':  [33.3772, 35.4844, 13],
+'nabatyeh':  [33.3772, 35.4844, 13],
+'nabatihe':  [33.3772, 35.4844, 13],
+'نبطية':     [33.3772, 35.4844, 13],
+'صيدا':      [33.5571, 35.3729, 14],
+'بيروت':     [33.8938, 35.5018, 13],
+'طرابلس':    [34.4369, 35.8497, 13],
+'بعلبك':     [34.0044, 36.2156, 13],
       'bint jbeil': [33.1172, 35.4336, 13],
       'bint jbail': [33.1172, 35.4336, 13],
       'marjayoun': [33.3597, 35.5922, 13],
