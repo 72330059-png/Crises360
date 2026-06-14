@@ -124,6 +124,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+    
+        <link rel="icon" type="image/png" sizes="32x32" href="/uploads/logonew.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/uploads/logonew.png">
     <style>
         * {
             margin: 0;

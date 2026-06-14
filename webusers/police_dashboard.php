@@ -1003,9 +1003,54 @@ $canceledNotifs = $police->getCanceledMissionNotifs($org_id);
       }
       return [33.8547, 35.8623, 9];
     }
+//testtest
+    // var _uc = getUnitCoords(POLICE_LOCATION);
+    // map.setView([_uc[0], _uc[1]], _uc[2]);
+    function initMapView() {
+  var k = (POLICE_LOCATION || '').toLowerCase().trim();
 
-    var _uc = getUnitCoords(POLICE_LOCATION);
-    map.setView([_uc[0], _uc[1]], _uc[2]);
+  // Step 1: hardcoded table (instant)
+  if (LEBANON_CITIES[k]) {
+    var c = LEBANON_CITIES[k];
+    map.setView([c[0], c[1]], c[2]);
+    return;
+  }
+  // partial match
+  for (var city in LEBANON_CITIES) {
+    if (k.indexOf(city) !== -1 || city.indexOf(k) !== -1) {
+      var c = LEBANON_CITIES[city];
+      map.setView([c[0], c[1]], c[2]);
+      return;
+    }
+  }
+
+  // Step 2: ask Nominatim (handles typos & unknown names)
+  if (k && k !== 'nobody' && k.length > 1) {
+    fetch('https://nominatim.openstreetmap.org/search?format=json&q='
+      + encodeURIComponent(POLICE_LOCATION + ', Lebanon') + '&limit=1')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data && data.length > 0) {
+          var lat = parseFloat(data[0].lat);
+          var lon = parseFloat(data[0].lon);
+          map.setView([lat, lon], 13);
+          toast('📍 Zoomed to: ' + POLICE_LOCATION);
+        } else {
+          // Step 3: full Lebanon fallback
+          map.setView([33.8547, 35.8623], 9);
+          toast('⚠️ Location "' + POLICE_LOCATION + '" not recognized — showing all Lebanon');
+        }
+      })
+      .catch(function() {
+        map.setView([33.8547, 35.8623], 9);
+      });
+  } else {
+    // Step 3: "nobody" or empty → Lebanon fallback
+    map.setView([33.8547, 35.8623], 9);
+    toast('⚠️ No valid location set for this unit');
+  }
+}
+    initMapView();
 
     var lgEvac = L.layerGroup().addTo(map);
     var lgMyRoads = L.layerGroup().addTo(map);
