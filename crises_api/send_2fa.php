@@ -67,7 +67,7 @@ curl_setopt($ch, CURLOPT_POSTFIELDS,     json_encode([
 curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 curl_setopt($ch, CURLOPT_HTTPHEADER,     [
     "Content-Type: application/json",
-    "Authorization: Bearer " . getenv("RESEND_API_KEY")
+    "Authorization: Bearer re_Ayk1rYpc_7164RiN8Cp4J8hSSvGffwAnw"
 ]);
 curl_setopt($ch, CURLOPT_TIMEOUT, 30);
 
