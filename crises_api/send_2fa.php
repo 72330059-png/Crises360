@@ -2,8 +2,6 @@
 date_default_timezone_set('Asia/Beirut');
 header('Content-Type: application/json');
 include 'db.php';
-require_once 'gmail_helper.php'; 
-
 
 $email = trim($_POST['email'] ?? '');
 
@@ -37,10 +35,8 @@ $update = $conn->prepare("
 $update->bind_param("sss", $code, $expiry, $email);
 $update->execute();
 
-// ── Send email ────────────────────────────────────────────────
-$name    = $row['full_name'];
-$subject = "Your Crises App Login Code";
-
+// ── Email body ────────────────────────────────────────────────
+$name = $row['full_name'];
 $body = "
 <div style='font-family:sans-serif;max-width:460px;margin:auto;padding:32px;
             border:1px solid #eee;border-radius:16px;text-align:center'>
@@ -58,18 +54,68 @@ $body = "
 </div>
 ";
 
-/
-$sent = sendEmail($email, $subject, $body);
+// ── Get Gmail Access Token ────────────────────────────────────
+function getGmailAccessToken() {
+    $ch = curl_init('https://oauth2.googleapis.com/token');
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query([
+        'client_id'     => getenv('GMAIL_CLIENT_ID'),
+        'client_secret' => getenv('GMAIL_CLIENT_SECRET'),
+        'refresh_token' => getenv('GMAIL_REFRESH_TOKEN'),
+        'grant_type'    => 'refresh_token'
+    ]));
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    $res = json_decode(curl_exec($ch), true);
+    curl_close($ch);
+    return $res['access_token'] ?? null;
+}
+
+// ── Send Email via Gmail API ──────────────────────────────────
+$access_token = getGmailAccessToken();
+
+if (!$access_token) {
+    echo json_encode(["status" => "error", "message" => "Could not get access token"]);
+    exit;
+}
+
+$sender  = getenv('GMAIL_SENDER');
+$subject = "Your Crises App Login Code";
+
+$raw  = "From: Crises App <{$sender}>\r\n";
+$raw .= "To: {$email}\r\n";
+$raw .= "Subject: {$subject}\r\n";
+$raw .= "MIME-Version: 1.0\r\n";
+$raw .= "Content-Type: text/html; charset=UTF-8\r\n\r\n";
+$raw .= $body;
+
+$encoded = rtrim(strtr(base64_encode($raw), '+/', '-_'), '=');
+
+$ch = curl_init('https://gmail.googleapis.com/gmail/v1/users/me/messages/send');
+curl_setopt($ch, CURLOPT_POST, true);
+curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(['raw' => $encoded]));
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+    'Authorization: Bearer ' . $access_token,
+    'Content-Type: application/json'
+]);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+
+$result   = curl_exec($ch);
+$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+curl_close($ch);
+
+$resultData = json_decode($result, true);
+$sent = ($httpCode == 200);
 
 if ($sent) {
-    echo json_encode([
-        "status" => "success",
-        "message" => "Code sent to your email"
-    ]);
+    echo json_encode(["status" => "success", "message" => "Code sent to your email"]);
 } else {
     echo json_encode([
-        "status" => "error",
-        "message" => "Failed to send email"
+        "status"  => "error",
+        "message" => "Could not send email",
+        "debug"   => $resultData
     ]);
 }
 
