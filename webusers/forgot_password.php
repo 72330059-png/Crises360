@@ -38,7 +38,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $user['id']
         ]);
 
-        $resetLink = "http://localhost/senior/crises360/webusers/reset_password.php?token=$token";
+        // $resetLink = "http://localhost/senior/crises360/webusers/reset_password.php?token=$token";
+        $resetLink = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https://" : "http://") . $_SERVER['HTTP_HOST'] . "/reset_password.php?token=$token";
 
         $mail = new PHPMailer(true);
 
@@ -52,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             $mail->Username = 'mourtadadouaa@gmail.com';
 
-            $mail->Password = 'GMAIL_APP_PASSWORD';
+            $mail->Password = GMAIL_APP_PASSWORD;
 
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
 

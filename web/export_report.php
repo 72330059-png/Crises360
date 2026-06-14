@@ -360,7 +360,7 @@ $tmpOut = tempnam(sys_get_temp_dir(), 'rp_out_') . '.xlsx';
 file_put_contents($tmpIn, $payload);
 
 $pyScript  = __DIR__ . '/ai/generate_report_excel.py';
-$pythonExe = 'C:\\Users\\CCS\\AppData\\Local\\Programs\\Python\\Python311\\python.exe';
+$pythonExe = 'python3';
 $cmd = '"' . $pythonExe . '" "' . $pyScript . '" '
      . escapeshellarg($tmpIn) . ' '
      . escapeshellarg($tmpOut);

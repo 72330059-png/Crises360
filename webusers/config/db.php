@@ -11,9 +11,9 @@ if (file_exists($envPath)) {
     }
 }
 
-define('RECAPTCHA_SECRET', getenv('RECAPTCHA_SECRET'));
-define('GMAIL_APP_PASSWORD', getenv('GMAIL_APP_PASSWORD'));
-define('GROQ_API_KEY', getenv('GROQ_API_KEY'));
+if (!defined('RECAPTCHA_SECRET'))   define('RECAPTCHA_SECRET',   getenv('RECAPTCHA_SECRET'));
+if (!defined('GMAIL_APP_PASSWORD')) define('GMAIL_APP_PASSWORD', getenv('GMAIL_APP_PASSWORD'));
+if (!defined('GROQ_API_KEY'))       define('GROQ_API_KEY',       getenv('GROQ_API_KEY'));
 
 return [
     'servername' => getenv('DB_HOST'),

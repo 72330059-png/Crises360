@@ -3,7 +3,8 @@ session_start();
 require('class/DAL.class.php');
 $dal = new DAL();
 
-$baseURL = "http://localhost/senior/crises360/webusers/";
+// $baseURL = "http://localhost/senior/crises360/webusers/";
+$baseURL = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https://" : "http://") . $_SERVER['HTTP_HOST'] . "/";
 
 if (isset($_SESSION['org_id']) && isset($_SESSION['type'])) {
 
@@ -25,28 +26,28 @@ if (isset($_SESSION['org_id']) && isset($_SESSION['type'])) {
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    $recaptcha = $_POST['g-recaptcha-response'] ?? '';
-    $secret = RECAPTCHA_SECRET; 
+    // $recaptcha = $_POST['g-recaptcha-response'] ?? '';
+    // $secret = RECAPTCHA_SECRET; 
     
-    $verify = file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret={$secret}&response={$recaptcha}");
-    $captchaResult = json_decode($verify);
+    // $verify = file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret={$secret}&response={$recaptcha}");
+    // $captchaResult = json_decode($verify);
 
-    if (
-        !$captchaResult->success ||
-        $captchaResult->score < 0.5
-    ) {
+    // if (
+    //     !$captchaResult->success ||
+    //     $captchaResult->score < 0.1
+    // ) {
 
-        $_SESSION['flash'] = [
-            'icon' => 'error',
-            'title' => 'Bot Detected',
-            'text'  => 'Please complete the CAPTCHA.',
-            'redirect' => $baseURL . "login.php",
-            'timer' => 2000,
-            'showConfirmButton' => true
-        ];
-        header("Location: {$baseURL}login.php");
-        exit;
-    }
+    //     $_SESSION['flash'] = [
+    //         'icon' => 'error',
+    //         'title' => 'Bot Detected',
+    //         'text'  => 'Please complete the CAPTCHA.',
+    //         'redirect' => $baseURL . "login.php",
+    //         'timer' => 2000,
+    //         'showConfirmButton' => true
+    //     ];
+    //     header("Location: {$baseURL}login.php");
+    //     exit;
+    // }
     $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
     $email = $dal->escape($email);

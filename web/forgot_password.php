@@ -40,7 +40,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $user['id']
         ]);
 
-        $resetLink = "http://localhost/senior/crises360/web/reset_password.php?token=$token";
+        // $resetLink = "http://localhost/senior/crises360/web/reset_password.php?token=$token";
+        $resetLink = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https://" : "http://") . $_SERVER['HTTP_HOST'] . "/reset_password.php?token=$token";
 
         $mail = new PHPMailer(true);
 

@@ -1,7 +1,9 @@
 <?php
 session_start();
 require_once("../class/DAL.class.php");
-
+if (!defined('GROQ_API_KEY')) {
+    define('GROQ_API_KEY', getenv('GROQ_API_KEY'));
+}
 // define('GROQ_API_KEY', 'GROQ_API_KEY_Secret');
 // define('GROQ_API_KEY', getenv('GROQ_API_KEY'));
 header('Content-Type: application/json');

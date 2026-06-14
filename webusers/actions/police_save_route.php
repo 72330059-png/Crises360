@@ -1,5 +1,7 @@
 <?php
 session_start();
+// DEBUG - remove later
+error_log("SESSION: " . json_encode($_SESSION));
 require_once("../class/police.class.php");
 
 if (!isset($_SESSION['logged_in']) || $_SESSION['type'] !== 'police') {

@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $password,
         $user['id']
     ]);
-    $updated = true; 
+    $updated = true;
 }
 ?>
 
@@ -159,6 +159,33 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </form>
 
     </div>
+    <?php if (isset($updated)): ?>
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Password Updated',
+                text: 'You can now login.',
+                confirmButtonColor: '#2d5a27'
+            }).then(() => {
+                window.location = 'login.php';
+            });
+        </script>
+    <?php endif; ?>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function togglePassword() {
+            const input = document.getElementById('passwordInput');
+            const icon = document.getElementById('eyeIcon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.textContent = '👁️';
+            } else {
+                input.type = 'password';
+                icon.textContent = '👁';
+            }
+        }
+    </script>
     <?php if (isset($updated)): ?>
         <script>
             Swal.fire({

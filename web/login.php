@@ -3,7 +3,8 @@ session_start();
 require('class/DAL.class.php');
 $dal = new DAL();
 
-$baseURL = "http://localhost/senior/crises360/web/";
+// $baseURL = "http://localhost/senior/crises360/web/";
+$baseURL = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https://" : "http://") . $_SERVER['HTTP_HOST'] . "/";
 
 /* ALREADY LOGGED IN*/
 if (isset($_SESSION['id']) && isset($_SESSION['role'])) {
