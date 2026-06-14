@@ -2,7 +2,7 @@
 date_default_timezone_set('Asia/Beirut');
 header('Content-Type: application/json');
 include 'db.php';
-require_once 'gmail_helper.php'; // ✅ IMPORTANT
+require_once 'gmail_helper.php'; 
 
 $email    = trim($_POST['email']    ?? '');
 $password = trim($_POST['password'] ?? '');
