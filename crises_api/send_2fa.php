@@ -61,7 +61,12 @@ $sent = sendMail($email, $subject, $body);
 if ($sent) {
     echo json_encode(["status" => "success", "message" => "Code sent to your email"]);
 } else {
-    echo json_encode(["status" => "error", "message" => "Could not send email. Check mail config."]);
+    echo json_encode([
+        "status"  => "error", 
+        "message" => "Could not send email",
+        "mail_user" => getenv("MAIL_USERNAME"),
+        "mail_pass_set" => !empty(getenv("MAIL_PASSWORD"))
+    ]);
 }
 
 $conn->close();
