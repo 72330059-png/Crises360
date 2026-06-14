@@ -35,6 +35,9 @@ $obj->execute("
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
 <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
 <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.4/main.min.css' rel='stylesheet' />
+<!-- iocn-->
+<link rel="icon" type="image/png" sizes="32x32" href="/uploads/logo3.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/uploads/logo3.png">
 
 <style>
     footer {
