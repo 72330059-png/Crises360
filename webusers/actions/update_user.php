@@ -1,4 +1,5 @@
 <?php 
+session_start();
 require_once("../class/index.class.php");
 $indexx = new index();
 
