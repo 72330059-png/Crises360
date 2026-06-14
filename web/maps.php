@@ -1,7 +1,7 @@
 <?php
 session_start();
 require_once("class/map.class.php");
-if (!isset($_SESSION['logged_in']) || $_SESSION['role'] !== 'admin') {
+if (!isset($_SESSION['logged_in'])) {
     header("Location: login.php"); exit;
 }
 $map = new maps();
@@ -77,7 +77,33 @@ $roads = array_map(function($r){
     ];
 }, $mapData['roads']);
 
+$policeRoadsData = [];
+$evacRoutesData  = [];
+if ($activeIncidentId && !$isResolvedSession) {
+    $rawPR = $map->getPoliceRoadsByIncident($activeIncidentId);
+    $policeRoadsData = array_map(function($r){
+        return [
+            'id'     => (int)$r['id'],
+            'name'   => $r['name'],
+            'status' => $r['status'],   // blocked / warning / safe
+            'reason' => $r['reason'],
+            'points' => $r['route_points'],
+            'region' => $r['region'],
+        ];
+    }, $rawPR);
 
+    $rawER = $map->getEvacRoutesByIncident($activeIncidentId);
+    $evacRoutesData = array_map(function($r){
+        return [
+            'id'     => (int)$r['id'],
+            'name'   => $r['from_name'].' → '.$r['to_name'],
+            'status' => $r['route_status'],  // open / warning / closed
+            'notes'  => $r['notes'],
+            'points' => $r['route_points'],
+            'region' => $r['region'],
+        ];
+    }, $rawER);
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -101,17 +127,6 @@ $roads = array_map(function($r){
 .crisis-topbar{background:var(--surface);border-radius:16px;border:1px solid var(--border);padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
 .crisis-title{font-size:18px;font-weight:700;color:var(--text);margin-right:4px;white-space:nowrap;}
 .tb-sep{width:1px;height:26px;background:var(--border);flex-shrink:0;}
-.stat-pill{display:flex;align-items:center;gap:6px;padding:5px 11px;border-radius:9px;font-size:12px;font-weight:600;white-space:nowrap;cursor:pointer;border:1.5px solid transparent;user-select:none;}
-.stat-pill input[type=checkbox]{width:13px;height:13px;accent-color:currentColor;margin:0;cursor:pointer;}
-.sp-num{min-width:18px;height:18px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;padding:0 4px;}
-.sp-alert{color:var(--red);background:var(--red-bg);border-color:rgba(229,57,53,.25);}
-.sp-warn{color:#b45309;background:var(--yellow-bg);border-color:rgba(245,158,11,.25);}
-.sp-safe{color:var(--green);background:var(--green-bg);border-color:rgba(46,125,50,.25);}
-.sp-road{color:var(--blue);background:var(--blue-bg);border-color:rgba(29,110,245,.25);}
-.sp-alert .sp-num{background:var(--red-bg);color:var(--red);}
-.sp-warn  .sp-num{background:var(--yellow-bg);color:#b45309;}
-.sp-safe  .sp-num{background:var(--green-bg);color:var(--green);}
-.sp-road  .sp-num{background:var(--blue-bg);color:var(--blue);}
 .tb-search{position:relative;min-width:160px;flex:1;max-width:230px;}
 .tb-search input{width:100%;padding:7px 10px 7px 30px;border:1.5px solid var(--border);border-radius:9px;font-size:13px;font-family:inherit;outline:none;background:var(--surface);color:var(--text);transition:border .15s;}
 .tb-search input:focus{border-color:var(--blue);}
@@ -173,14 +188,6 @@ $roads = array_map(function($r){
 .rf-btn:hover{background:#1558d6;}
 .rf-result{margin-top:10px;padding:10px;background:rgba(255,255,255,.1);border-radius:9px;font-size:12px;color:rgba(255,255,255,.9);display:none;line-height:1.7;}
 .rf-result.show{display:block;}
-.road-item{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;border-radius:9px;margin-bottom:6px;background:var(--gray-bg);font-size:12px;}
-.road-item:last-child{margin-bottom:0;}
-.road-name{font-weight:600;color:var(--text);font-size:12px;}
-.road-detail{font-size:11px;color:var(--text3);margin-top:1px;}
-.road-badge{padding:2px 7px;border-radius:5px;font-size:10px;font-weight:700;white-space:nowrap;}
-.rb-open{background:var(--green-bg);color:var(--green);}
-.rb-closed{background:var(--red-bg);color:var(--red);}
-.rb-warn{background:var(--yellow-bg);color:#b45309;}
 .leg-row{display:flex;align-items:center;gap:9px;padding:5px 0;}
 .leg-box{width:26px;height:16px;border-radius:4px;}
 .lb-danger{background:rgba(229,57,53,.15);border:2px dashed var(--red);}
@@ -239,6 +246,48 @@ $roads = array_map(function($r){
 .pb-p{background:var(--purple-bg);color:var(--purple);}
 input[type=range]{width:100%;accent-color:var(--blue);}
 .range-val{font-weight:700;color:var(--blue);font-family:monospace;}
+/* ---- AI Assistant Panel ---- */
+.ai-panel{background:linear-gradient(135deg,#0a1628 0%,#1e3a5f 100%);border-radius:14px;padding:15px;margin-bottom:11px;color:#fff;}
+.ai-panel-title{font-size:13px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:7px;}
+.ai-badge{font-size:10px;font-weight:700;background:#7c3aed;padding:2px 7px;border-radius:5px;letter-spacing:.5px;}
+.ai-subtitle{font-size:11px;color:rgba(255,255,255,.5);margin-bottom:11px;}
+.ai-textarea{width:100%;padding:9px 11px;border:1.5px solid rgba(255,255,255,.2);border-radius:9px;font-size:13px;font-family:inherit;background:rgba(255,255,255,.08);color:#fff;outline:none;resize:none;height:72px;line-height:1.5;}
+.ai-textarea::placeholder{color:rgba(255,255,255,.35);}
+.ai-textarea:focus{border-color:rgba(255,255,255,.45);}
+.ai-examples{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0;}
+.ai-ex{font-size:10px;padding:3px 8px;border-radius:6px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.7);cursor:pointer;border:none;font-family:inherit;transition:background .15s;}
+.ai-ex:hover{background:rgba(255,255,255,.2);}
+.ai-btn{width:100%;padding:9px;border:none;border-radius:9px;background:#7c3aed;color:#fff;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;transition:background .15s;display:flex;align-items:center;justify-content:center;gap:7px;}
+.ai-btn:hover{background:#6d28d9;}
+.ai-btn:disabled{background:#334155;cursor:not-allowed;}
+.ai-thinking{display:none;align-items:center;gap:8px;margin-top:10px;font-size:12px;color:rgba(255,255,255,.6);}
+.ai-thinking.show{display:flex;}
+.ai-dots span{animation:aidot 1.2s infinite;display:inline-block;}
+.ai-dots span:nth-child(2){animation-delay:.2s;}
+.ai-dots span:nth-child(3){animation-delay:.4s;}
+@keyframes aidot{0%,80%,100%{opacity:.2}40%{opacity:1}}
+/* ---- Confirmation card (shown after AI responds) ---- */
+.ai-confirm{display:none;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.15);border-radius:11px;padding:12px;margin-top:10px;}
+.ai-confirm.show{display:block;}
+.ai-confirm-title{font-size:12px;font-weight:700;color:#fbbf24;margin-bottom:8px;}
+.ai-loc-list{margin-bottom:9px;}
+.ai-loc-item{display:flex;align-items:center;gap:7px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.08);font-size:12px;}
+.ai-loc-item:last-child{border-bottom:none;}
+.ai-loc-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.ai-loc-dot.found{background:#22c55e;}
+.ai-loc-dot.notfound{background:#ef4444;}
+.ai-loc-name{font-weight:600;flex:1;}
+.ai-loc-coords{font-family:monospace;font-size:10px;color:rgba(255,255,255,.5);}
+.ai-action-info{font-size:11px;color:rgba(255,255,255,.6);margin-bottom:10px;line-height:1.6;}
+.ai-confirm-btns{display:flex;gap:7px;}
+.ai-confirm-yes{flex:1;padding:8px;border:none;border-radius:8px;background:#22c55e;color:#fff;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;}
+.ai-confirm-yes:hover{background:#16a34a;}
+.ai-confirm-no{padding:8px 12px;border:1.5px solid rgba(255,255,255,.2);border-radius:8px;background:transparent;color:rgba(255,255,255,.7);font-size:12px;font-family:inherit;cursor:pointer;}
+.ai-confirm-no:hover{background:rgba(255,255,255,.1);}
+.ai-result-msg{display:none;margin-top:10px;padding:9px 11px;border-radius:9px;font-size:12px;line-height:1.6;}
+.ai-result-msg.show{display:block;}
+.ai-result-msg.success{background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);color:#86efac;}
+.ai-result-msg.error{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#fca5a5;}
 </style>
 </head>
 <body>
@@ -248,13 +297,6 @@ input[type=range]{width:100%;accent-color:var(--blue);}
 <div class="container-fluid py-4">
 
 <div class="crisis-topbar">
-  <span class="crisis-title">🗺️ Lebanon Crisis Map</span>
-  <div class="tb-sep"></div>
-  <label class="stat-pill sp-alert"><input type="checkbox" id="fc-alerts" checked> ⚠️ Alerts <span class="sp-num" id="fc-alerts-n"><?php echo $counts['alerts']; ?></span></label>
-  <label class="stat-pill sp-warn"> <input type="checkbox" id="fc-warn"   checked> ⚡ Warnings <span class="sp-num" id="fc-warn-n"><?php echo $counts['warn']; ?></span></label>
-  <label class="stat-pill sp-safe"> <input type="checkbox" id="fc-safe"   checked>🛡️ Safe <span class="sp-num" id="fc-safe-n"><?php echo $counts['safe']; ?></span></label>
-  <label class="stat-pill sp-road"> <input type="checkbox" id="fc-roads"  checked> 🛣️ Roads <span class="sp-num" id="fc-roads-n"><?php echo $counts['roads']; ?></span></label>
-  <div class="tb-sep"></div>
   <div class="tb-search"><span class="tb-search-ic">🔍</span><input type="text" id="locSearch" placeholder="Search city or location..."></div>
   <select class="tb-select" id="regionFilter">
     <option value="all">All Regions</option>
@@ -291,7 +333,7 @@ input[type=range]{width:100%;accent-color:var(--blue);}
 <div class="row g-3">
 
   <div class="col-lg-9">
-    <div class="map-card">
+    <div class="map-card" style="position:relative;">
       <div class="map-toolbar">
         <span class="map-toolbar-lbl">Add:</span>
           <?php if(!$viewAll && !$archiveMode): ?>
@@ -300,7 +342,13 @@ input[type=range]{width:100%;accent-color:var(--blue);}
 <div class="tool-sep"></div>
 <button class="tool-btn tb-road" onclick="openPopup('popRoad')">🛣️ Road Status</button>
 <?php endif; ?>
-        <!-- <button class="tool-btn tb-route"  onclick="openPopup('popRouteFinder')">🧭 Find Route</button> -->
+ <div class="tool-sep"></div>
+ <?php if($activeIncidentId && !$archiveMode): ?>
+<button class="tb-btn" id="btnViewRoutes" onclick="toggleRoutesLayer()"
+  style="border-color:var(--purple);color:var(--purple);">
+  🚦 View Routes
+</button>
+<?php endif; ?>
         <div class="tool-sep"></div>
         <!-- <button class="tool-btn tb-clr"    onclick="clearAll()">🗑️ Clear</button> -->
          <?php if(!$viewAll): ?>
@@ -311,6 +359,7 @@ input[type=range]{width:100%;accent-color:var(--blue);}
   style="border-color:var(--green);color:var(--green);">✕ Exit View All</button>
 <?php endif; ?>
       </div>
+
       <div id="map"></div>
       <div class="map-statusbar">
         <div class="live-dot"></div>
@@ -319,18 +368,64 @@ input[type=range]{width:100%;accent-color:var(--blue);}
         &nbsp;·&nbsp;
         <span id="modeInd" style="color:var(--blue);font-weight:600"></span>
       </div>
+      <!-- Floating Legend Button on map -->
+<div id="legendFloat" style="position:absolute;bottom:48px;left:10px;z-index:1000;">
+  <button onclick="toggleLegend()" 
+    style="background:#fff;border:1.5px solid var(--border);border-radius:10px;padding:7px 12px;font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.12);display:flex;align-items:center;gap:5px;">
+    🗺️ Legend
+  </button>
+  <div id="legendBox" style="display:none;background:#fff;border:1.5px solid var(--border);border-radius:12px;padding:12px 14px;margin-top:6px;box-shadow:0 4px 16px rgba(0,0,0,.12);min-width:180px;">
+    <div class="leg-row"><div class="leg-box lb-danger"></div><span class="leg-lbl">Danger / Alert Zone</span></div>
+    <div class="leg-row"><div class="leg-box lb-warn"></div><span class="leg-lbl">Warning Zone</span></div>
+    <div class="leg-row"><div class="leg-box lb-safe"></div><span class="leg-lbl">Safe Zone</span></div>
+    <div class="leg-row"><div class="leg-road-c"></div><span class="leg-lbl">Road — Closed</span></div>
+    <div class="leg-row"><div class="leg-road-w"></div><span class="leg-lbl">Road — Warning</span></div>
+    <div class="leg-row"><div class="leg-road-o"></div><span class="leg-lbl">Road — Open</span></div>
+    <!-- <div class="leg-row"><div style="width:26px;height:4px;border-radius:2px;background:#f97316;"></div><span class="leg-lbl">Police Road</span></div> -->
+    <div class="leg-row"><div style="width:26px;height:4px;border-radius:2px;background:#7c3aed;border-top:2px dashed #7c3aed;"></div><span class="leg-lbl">Evac Route</span></div>
+  </div>
+</div>
     </div>
   </div>
 
   <div class="col-lg-3">
 
-    <div class="route-finder">
-      <div class="rf-title">🧭 Find Safest Route</div>
-      <input class="rf-input" id="rfFrom" placeholder="📍 From (e.g. Tyre)">
-      <input class="rf-input" id="rfTo"   placeholder="🏁 To (e.g. Saida)">
-      <button class="rf-btn" onclick="findRoute()">Find Route</button>
-      <div class="rf-result" id="rfResult"></div>
+   
+ 
+<div class="ai-panel">
+  <div class="ai-panel-title">
+    🤖 AI Map Assistant
+    <span class="ai-badge">Groq</span>
+  </div>
+  <div class="ai-subtitle">Type any situation — AI understands and places it on the map</div>
+  <textarea class="ai-textarea" id="aiInput" 
+    placeholder="e.g. Bint Jbeil and Khiam heavy shelling high danger&#10;or: close Tyre coastal road military checkpoint&#10;or: safe zone at Rafik Hariri hospital"></textarea>
+  <div class="ai-examples">
+    <button class="ai-ex" onclick="aiExample('Bint Jbeil high danger heavy shelling')">⚠️ Shelling alert</button>
+    <button class="ai-ex" onclick="aiExample('Close coastal road Tyre military checkpoint')">🛣️ Road closed</button>
+    <button class="ai-ex" onclick="aiExample('Safe zone Rafik Hariri hospital Beirut')">🛡️ Safe zone</button>
+    <button class="ai-ex" onclick="aiExample('Warning zone Saida port area')">⚡ Warning zone</button>
+  </div>
+  <button class="ai-btn" id="aiSendBtn" onclick="sendToAI()">
+    <span>✨</span> Analyze &amp; Place on Map
+  </button>
+  <div class="ai-thinking" id="aiThinking">
+    <span>🧠 Gemini is reading...</span>
+    <span class="ai-dots"><span>●</span><span>●</span><span>●</span></span>
+  </div>
+  <div class="ai-confirm" id="aiConfirm">
+    <div class="ai-confirm-title" id="aiConfirmTitle">📍 I found these locations:</div>
+    <div class="ai-loc-list" id="aiLocList"></div>
+    <div class="ai-action-info" id="aiActionInfo"></div>
+    <div class="ai-confirm-btns">
+      <button class="ai-confirm-yes" onclick="confirmAIAction()">✅ Yes, Add to Map</button>
+      <button class="ai-confirm-no" onclick="cancelAIAction()">✕ Cancel</button>
     </div>
+  </div>
+  <!-- Result message after saving -->
+  <div class="ai-result-msg" id="aiResultMsg"></div>
+</div>
+ 
 
     <div class="side-card">
       <div class="side-title">Map Layers</div>
@@ -338,29 +433,22 @@ input[type=range]{width:100%;accent-color:var(--blue);}
       <div class="layer-row"><div class="layer-left"><button class="ltoggle on" onclick="toggleLayer('warn',this)"></button><span>⚡</span><span class="lname">Warning Zones</span></div><span class="lcnt lc-y" id="lc-warn"><?php echo $counts['warn']; ?></span></div>
       <div class="layer-row"><div class="layer-left"><button class="ltoggle on" onclick="toggleLayer('safe',this)"></button><span>🛡️</span><span class="lname">Safe Zones</span></div><span class="lcnt lc-g" id="lc-safe"><?php echo $counts['safe']; ?></span></div>
       <div class="layer-row"><div class="layer-left"><button class="ltoggle on" onclick="toggleLayer('roads',this)"></button><span>🛣️</span><span class="lname">Road Status</span></div><span class="lcnt lc-b" id="lc-roads"><?php echo $counts['roads']; ?></span></div>
-      <div class="layer-row"><div class="layer-left"><button class="ltoggle on" id="lt-borders" onclick="toggleLayer('borders',this)"></button><span>🗺️</span><span class="lname">Borders</span></div></div>
+<div class="layer-row">
+  <div class="layer-left">
+    <button class="ltoggle" id="lt-policeroads" onclick="toggleLayer('policeroads',this)"></button>
+    <span>🚔</span><span class="lname">Police Roads</span>
+  </div>
+  <span class="lcnt" style="background:var(--purple-bg);color:var(--purple)" id="lc-policeroads">0</span>
+</div>
+<div class="layer-row">
+  <div class="layer-left">
+    <button class="ltoggle" id="lt-evacroutes" onclick="toggleLayer('evacroutes',this)"></button>
+    <span>🟣</span><span class="lname">Evac Routes</span>
+  </div>
+  <span class="lcnt" style="background:var(--purple-bg);color:var(--purple)" id="lc-evacroutes">0</span>
+</div>
       <div class="layer-row"><div class="layer-left"><button class="ltoggle" id="lt-sat" onclick="switchBase(this)"></button><span>📡</span><span class="lname">Satellite</span></div></div>
     </div>
-
-    Road Status List
-    <div class="side-card">
-      <div class="side-title">🛣️ Road Status</div>
-      <div id="roadList"><p style="font-size:12px;color:var(--text3)">No road statuses yet.</p></div>
-    </div>
-
-    <div class="side-card">
-      <div class="side-title">Legend</div>
-      <div class="leg-row"><div class="leg-box lb-danger"></div><span class="leg-lbl">Danger / Alert Zone</span></div>
-      <div class="leg-row"><div class="leg-box lb-warn"></div><span class="leg-lbl">Warning Zone</span></div>
-      <div class="leg-row"><div class="leg-box lb-safe"></div><span class="leg-lbl">Safe Zone</span></div>
-      <div class="leg-row"><div class="leg-road-c"></div><span class="leg-lbl">Road — Closed</span></div>
-      <div class="leg-row"><div class="leg-road-w"></div><span class="leg-lbl">Road — Warning</span></div>
-      <div class="leg-row"><div class="leg-road-o"></div><span class="leg-lbl">Road — Open</span></div>
-      <div style="margin-top:10px;background:var(--blue-bg);border-radius:9px;padding:9px 11px;font-size:12px;color:#1e40af;">
-        ℹ️ Click any marker, zone or road on the map to view details
-      </div>
-    </div>
-
   </div>
 </div>
 </div>
@@ -564,7 +652,7 @@ function renderRoads(d) {
     L.circleMarker(mid,{radius:5,fillColor:col,color:'#fff',weight:2,fillOpacity:1}).addTo(lgR);
   });
   upd('roads', d.length);
-  renderRoadList(d);
+  // renderRoadList(d);
 }
 
 function deleteAlert(id) {
@@ -641,7 +729,6 @@ function renderRoadList(d){
 }
 function upd(n,v){
   var a=document.getElementById('lc-'+n);if(a)a.textContent=v;
-  var b=document.getElementById('fc-'+n+'-n');if(b)b.textContent=v;
 }
 
 renderAlerts(alertsData);renderWarn(warnZones);renderSafe(safeZones);renderRoads(roadsData);
@@ -655,7 +742,7 @@ fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/coun
 var lgMap={alerts:lgA,warn:lgW,safe:lgS,roads:lgR,borders:lgB};
 function toggleLayer(n,btn){var lg=lgMap[n];if(!lg)return;var on=btn.classList.toggle('on');if(on)map.addLayer(lg);else map.removeLayer(lg);var fc=document.getElementById('fc-'+n);if(fc)fc.checked=on;}
 function switchBase(btn){var on=btn.classList.toggle('on');if(on)map.addLayer(tileSat);else map.removeLayer(tileSat);}
-['alerts','warn','safe','roads'].forEach(function(n){document.getElementById('fc-'+n).addEventListener('change',function(e){var lg=lgMap[n];if(lg){if(e.target.checked)map.addLayer(lg);else map.removeLayer(lg);}});});
+// ['alerts','warn','safe','roads'].forEach(function(n){document.getElementById('fc-'+n).addEventListener('change',function(e){var lg=lgMap[n];if(lg){if(e.target.checked)map.addLayer(lg);else map.removeLayer(lg);}});});
 
 var rv={beirut:[33.894,35.502,12],south:[33.27,35.20,11],bekaa:[33.85,36.10,10],mount:[33.83,35.66,11],north:[34.42,35.85,11]};
 document.getElementById('regionFilter').addEventListener('change',function(){var v=this.value;if(v==='all'){map.fitBounds(lb);}else{var r=rv[v];if(r)map.setView([r[0],r[1]],r[2]);}});
@@ -964,6 +1051,290 @@ Swal.fire({
 });
 <?php endif; ?>
 
+var policeRoadsData = <?php echo json_encode($policeRoadsData, JSON_UNESCAPED_UNICODE); ?>;
+var evacRoutesData  = <?php echo json_encode($evacRoutesData,  JSON_UNESCAPED_UNICODE); ?>;
+
+var lgPR = L.layerGroup();
+var lgER = L.layerGroup(); 
+
+// Add to lgMap so toggleLayer() works
+lgMap['policeroads'] = lgPR;
+lgMap['evacroutes']  = lgER;
+
+// Police road colors: blocked=orange, warning=yellow, safe=green
+var prColors = {blocked:'#cb0202', warning:'#f59e0b', safe:'#2e7d32'};
+
+function renderPoliceRoads(d) {
+    lgPR.clearLayers();
+    d.forEach(function(r) {
+        if (!r.points || r.points.length < 2) return;
+        var col = prColors[r.status] || '#f97316';
+        var opts = {color: col, weight: 5, opacity: 0.85, dashArray: '6,4'};
+        var popup = '<div style="min-width:190px;font-family:inherit">' +
+            '<div style="font-weight:700;font-size:14px;margin-bottom:8px;color:#0f172a">🚔 ' + r.name + '</div>' +
+            '<div style="font-size:12px;color:#475569;margin-bottom:4px"><span>Status</span> <span style="font-weight:600">' + r.status.toUpperCase() + '</span></div>' +
+            '<div style="font-size:12px;color:#475569;margin-bottom:4px"><span>Reason</span> <span style="font-weight:600">' + r.reason + '</span></div>' +
+            '<span style="display:inline-block;padding:2px 8px;border-radius:5px;font-size:11px;font-weight:700;background:var(--purple-bg);color:var(--purple)">Police Road</span>' +
+            '</div>';
+        L.polyline(r.points, opts).addTo(lgPR).bindPopup(popup);
+        var mid = r.points[Math.floor(r.points.length / 2)];
+        L.circleMarker(mid, {radius:5, fillColor:col, color:'#fff', weight:2, fillOpacity:1}).addTo(lgPR);
+    });
+    document.getElementById('lc-policeroads').textContent = d.length;
+}
+
+function renderEvacRoutes(d) {
+    lgER.clearLayers();
+    d.forEach(function(r) {
+        if (!r.points || r.points.length < 2) return;
+        var col = r.status === 'closed' ? '#e53935' : r.status === 'warning' ? '#f59e0b' : '#7c3aed';
+        var popup = '<div style="min-width:190px;font-family:inherit">' +
+            '<div style="font-weight:700;font-size:14px;margin-bottom:8px;color:#0f172a">🟣 ' + r.name + '</div>' +
+            '<div style="font-size:12px;color:#475569;margin-bottom:4px"><span>Status</span> <span style="font-weight:600">' + r.status.toUpperCase() + '</span></div>' +
+            '<div style="font-size:12px;color:#475569;margin-bottom:4px"><span>Notes</span> <span style="font-weight:600">' + (r.notes || '—') + '</span></div>' +
+            '<span style="display:inline-block;padding:2px 8px;border-radius:5px;font-size:11px;font-weight:700;background:var(--purple-bg);color:var(--purple)">Evacuation Route</span>' +
+            '</div>';
+        L.polyline(r.points, {color: col, weight: 6, opacity: 0.9, dashArray: '14,5'}).addTo(lgER).bindPopup(popup);
+        // Start marker
+        L.circleMarker(r.points[0], {radius:7, fillColor:'#7c3aed', color:'#fff', weight:2, fillOpacity:1})
+            .addTo(lgER).bindPopup('<b>Start: ' + r.name.split(' → ')[0] + '</b>');
+        // End marker
+        var last = r.points[r.points.length - 1];
+        L.circleMarker(last, {radius:7, fillColor:'#2e7d32', color:'#fff', weight:2, fillOpacity:1})
+            .addTo(lgER).bindPopup('<b>End: ' + r.name.split(' → ')[1] + '</b>');
+    });
+    document.getElementById('lc-evacroutes').textContent = d.length;
+}
+
+// Render them
+renderPoliceRoads(policeRoadsData);
+renderEvacRoutes(evacRoutesData);
+
+var routesVisible = false;
+function toggleRoutesLayer() {
+    routesVisible = !routesVisible;
+    var btn = document.getElementById('btnViewRoutes');
+    if (routesVisible) {
+        map.addLayer(lgPR);
+        map.addLayer(lgER);
+        document.getElementById('lt-policeroads').classList.add('on');
+        document.getElementById('lt-evacroutes').classList.add('on');
+        btn.style.borderColor = 'var(--green)';
+        btn.style.color       = 'var(--green)';
+        btn.textContent       = '✓ Routes ON';
+        showToast('🚦 Police roads & evac routes shown');
+    } else {
+        map.removeLayer(lgPR);
+        map.removeLayer(lgER);
+        document.getElementById('lt-policeroads').classList.remove('on');
+        document.getElementById('lt-evacroutes').classList.remove('on');
+        btn.style.borderColor = 'var(--purple)';
+        btn.style.color       = 'var(--purple)';
+        btn.textContent       = '🚦 View Routes';
+        showToast('Routes hidden');
+    }
+}
+function toggleLegend() {
+  var box = document.getElementById('legendBox');
+  box.style.display = box.style.display === 'none' ? 'block' : 'none';
+}
+</script>
+
+<script>
+var aiPendingData = null;
+ 
+// Fill textarea with example text
+function aiExample(text) {
+    document.getElementById('aiInput').value = text;
+    document.getElementById('aiInput').focus();
+}
+ 
+// Send text to ai_map.php
+function sendToAI() {
+    var text = document.getElementById('aiInput').value.trim();
+    if (!text) { showToast('Type something first'); return; }
+ 
+    // Reset UI
+    document.getElementById('aiConfirm').classList.remove('show');
+    document.getElementById('aiResultMsg').classList.remove('show');
+    document.getElementById('aiThinking').classList.add('show');
+    document.getElementById('aiSendBtn').disabled = true;
+    aiPendingData = null;
+ 
+    // Get current incident ID from session 
+    var incidentId = <?php echo $activeIncidentId ?? 0; ?>;
+ 
+    $.ajax({
+        url: 'actions/ai_map.php',
+        type: 'POST',
+        data: { text: text, incident_id: incidentId },
+        dataType: 'json',
+        timeout: 30000,  // 30 seconds max (Gemini + Nominatim can be slow)
+        success: function(r) {
+            document.getElementById('aiThinking').classList.remove('show');
+            document.getElementById('aiSendBtn').disabled = false;
+ 
+            if (r.status !== 'success') {
+                showAIResult('error', '❌ ' + r.message);
+                return;
+            }
+ 
+            // Store the response for when user confirms
+            aiPendingData = r;
+ 
+            // Build the location list HTML
+            var locHtml = '';
+            var foundCount = 0;
+            r.locations.forEach(function(loc) {
+                if (loc.found) foundCount++;
+                locHtml += '<div class="ai-loc-item">' +
+                    '<div class="ai-loc-dot ' + (loc.found ? 'found' : 'notfound') + '"></div>' +
+                    '<span class="ai-loc-name">' + loc.name + '</span>' +
+                    (loc.found
+                        ? '<span class="ai-loc-coords">' + loc.lat.toFixed(4) + ', ' + loc.lng.toFixed(4) + '</span>'
+                        : '<span class="ai-loc-coords" style="color:#f87171">not found</span>'
+                    ) +
+                    '</div>';
+            });
+ 
+            // Build the action description
+            var actionIcon = r.action === 'alert' ? '⚠️' : r.action === 'zone' ? '🎯' : '🛣️';
+            var actionLabel = r.action === 'alert'
+                ? 'Alert pin — severity: ' + r.severity.toUpperCase()
+                : r.action === 'zone'
+                ? 'Zone — type: ' + r.zone_type.toUpperCase()
+                : 'Road — status: ' + r.road_status.toUpperCase();
+ 
+            var actionInfo = actionIcon + ' Action: ' + actionLabel + '\n' +
+                '📝 Description: ' + r.description + '\n' +
+                '📍 Region: ' + r.region + '\n' +
+                (foundCount < r.locations.length
+                    ? '⚠️ ' + (r.locations.length - foundCount) + ' location(s) not found on map'
+                    : '✅ All ' + foundCount + ' location(s) found');
+ 
+            document.getElementById('aiConfirmTitle').textContent = 
+                '📍 I found ' + foundCount + ' of ' + r.locations.length + ' location(s):';
+            document.getElementById('aiLocList').innerHTML = locHtml;
+            document.getElementById('aiActionInfo').innerText = actionInfo;
+            document.getElementById('aiConfirm').classList.add('show');
+        },
+        error: function(xhr, status) {
+            document.getElementById('aiThinking').classList.remove('show');
+            document.getElementById('aiSendBtn').disabled = false;
+            var msg = status === 'timeout'
+                ? '⏱️ Request timed out — check your internet connection'
+                : '❌ Server error — check that ai_map.php is in the actions/ folder';
+            showAIResult('error', msg);
+        }
+    });
+}
+ 
+// User clicked "Yes, Add to Map"
+function confirmAIAction() {
+    if (!aiPendingData) return;
+ 
+    var r = aiPendingData;
+    var locations = r.locations.filter(function(l) { return l.found; });
+ 
+    if (!locations.length) {
+        showAIResult('error', '❌ No valid locations to add');
+        return;
+    }
+ 
+    document.getElementById('aiConfirm').classList.remove('show');
+ 
+    var done = 0;
+    var total = locations.length;
+    var errors = 0;
+ 
+    // Save each location one by one
+    locations.forEach(function(loc) {
+        var ajaxData = {};
+ 
+        if (r.action === 'alert') {
+            // Add alert pin
+            ajaxData = {
+                action:      'add_alert',
+                title:       loc.name + ' — ' + r.description,
+                severity:    r.severity,
+                description: r.description,
+                lat:         loc.lat,
+                lng:         loc.lng,
+                region:      r.region
+            };
+        } else if (r.action === 'zone') {
+            // Add zone circle
+            ajaxData = {
+                action:         'add_zone',
+                name:           loc.name + ' — ' + r.zone_type + ' zone',
+                type:           r.zone_type,
+                center_lat:     loc.lat,
+                center_lng:     loc.lng,
+                radius_meters:  500, 
+                region:         r.region
+            };
+        } else if (r.action === 'road') {
+            var pts = [
+                [loc.lat - 0.002, loc.lng],
+                [loc.lat + 0.002, loc.lng]
+            ];
+            ajaxData = {
+                action:       'add_road',
+                name:         loc.name,
+                status:       r.road_status,
+                reason:       r.description,
+                route_points: JSON.stringify(pts)
+            };
+        }
+ 
+        $.ajax({
+            url:      'actions/map_ajax.php',
+            type:     'POST',
+            data:     ajaxData,
+            dataType: 'json',
+            success: function(res) {
+                if (res.status !== 'success') errors++;
+                done++;
+                if (done === total) finishAI(total, errors);
+            },
+            error: function() {
+                errors++;
+                done++;
+                if (done === total) finishAI(total, errors);
+            }
+        });
+    });
+}
+ 
+// Called after all saves are done
+function finishAI(total, errors) {
+    aiPendingData = null;
+    document.getElementById('aiInput').value = '';
+    if (errors === 0) {
+        showAIResult('success', '✅ ' + total + ' location(s) added to the map successfully!');
+        setTimeout(function() { window.location.reload(); }, 1500);
+    } else {
+        showAIResult('error', '⚠️ ' + (total - errors) + ' saved, ' + errors + ' failed. Refreshing...');
+        setTimeout(function() { window.location.reload(); }, 2000);
+    }
+}
+ 
+// User clicked Cancel
+function cancelAIAction() {
+    aiPendingData = null;
+    document.getElementById('aiConfirm').classList.remove('show');
+    showAIResult('error', '↩️ Cancelled — nothing was added');
+    setTimeout(function() {
+        document.getElementById('aiResultMsg').classList.remove('show');
+    }, 2000);
+}
+ 
+// Show result message (success or error)
+function showAIResult(type, msg) {
+    var el = document.getElementById('aiResultMsg');
+    el.textContent = msg;
+    el.className = 'ai-result-msg show ' + type;
+}
 </script>
 </body>
 </html>

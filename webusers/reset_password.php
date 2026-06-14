@@ -34,25 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $password,
         $user['id']
     ]);
-
-    echo "
-    <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
-
-    <script>
-
-    Swal.fire({
-        icon:'success',
-        title:'Password Updated',
-        text:'You can now login.',
-        confirmButtonColor:'#2d5a27'
-    }).then(()=>{
-        window.location='login.php';
-    });
-
-    </script>
-    ";
-
-    exit;
+    $updated = true;
 }
 ?>
 
@@ -117,6 +99,32 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             cursor: pointer;
             font-size: 15px;
         }
+
+        .password-wrapper {
+            position: relative;
+        }
+
+        .password-wrapper input {
+            width: 100%;
+            padding-right: 45px;
+            height: 55px;
+        }
+
+        #eyeIcon {
+            position: absolute;
+            right: 15px;
+            top: 40%;
+            transform: translateY(-50%);
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            height: 100%;
+            cursor: pointer;
+            color: #9aa7b8;
+            font-size: 18px;
+        }
     </style>
 
 </head>
@@ -133,11 +141,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         <form method="POST">
 
-            <input type="password"
-                name="password"
-                placeholder="Enter new password"
-                required>
+            <div class="input-group">
+                <div class="password-wrapper">
+                    <input type="password"
+                        name="password"
+                        id="passwordInput"
+                        placeholder="Enter your password"
+                        required>
 
+                    <span onclick="togglePassword()" id="eyeIcon">👁</span>
+                </div>
+            </div>
             <button type="submit">
                 Update Password
             </button>
@@ -145,7 +159,45 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </form>
 
     </div>
+    <?php if (isset($updated)): ?>
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Password Updated',
+                text: 'You can now login.',
+                confirmButtonColor: '#2d5a27'
+            }).then(() => {
+                window.location = 'login.php';
+            });
+        </script>
+    <?php endif; ?>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function togglePassword() {
+            const input = document.getElementById('passwordInput');
+            const icon = document.getElementById('eyeIcon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.textContent = '👁️';
+            } else {
+                input.type = 'password';
+                icon.textContent = '👁';
+            }
+        }
+    </script>
+    <?php if (isset($updated)): ?>
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Password Updated',
+                text: 'You can now login.',
+                confirmButtonColor: '#2d5a27'
+            }).then(() => {
+                window.location = 'login.php';
+            });
+        </script>
+    <?php endif; ?>
 </body>
 
 </html>

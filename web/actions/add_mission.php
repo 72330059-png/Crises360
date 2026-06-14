@@ -1,7 +1,6 @@
 <?php
-
+session_start();
 require_once("../class/police.class.php");
-
 header('Content-Type: application/json');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -19,6 +18,7 @@ $priority = trim($_POST['priority'] ?? '');
 $description = trim($_POST['description'] ?? '');
 // $unit_id = intval($_POST['unit_id'] ?? 0);
 $units = $_POST['units'] ?? [];
+$incident_id = intval($_POST['incident_id'] ?? 0);
 
 if (
     empty($title) ||
@@ -40,8 +40,9 @@ $result = $police->addMission(
     $title,
     strtolower($priority),
     $description,
-    'active',
-    $units
+    'sent',
+    $units,
+    $incident_id    
 );
 if ($result) {
 

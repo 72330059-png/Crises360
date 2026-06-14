@@ -18,7 +18,6 @@ $id        = (int)($data['id']        ?? 0);
 $road_name = trim($data['road_name']  ?? '');
 $road_type = trim($data['road_type']  ?? 'blocked');
 $reason    = trim($data['reason']     ?? '');
-// $notes     = trim($data['notes']      ?? '');
 
 if (!$id) {
     echo json_encode(['status'=>'error','message'=>'Road ID required']); exit;

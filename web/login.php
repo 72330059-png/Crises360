@@ -3,11 +3,10 @@ session_start();
 require('class/DAL.class.php');
 $dal = new DAL();
 
-$baseURL = "http://localhost/senior/crises360/";
+// $baseURL = "http://localhost/senior/crises360/web/";
+$baseURL = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https://" : "http://") . $_SERVER['HTTP_HOST'] . "/";
 
-/* =========================
-   ALREADY LOGGED IN
-========================= */
+/* ALREADY LOGGED IN*/
 if (isset($_SESSION['id']) && isset($_SESSION['role'])) {
 
     if ($_SESSION['role'] === 'admin') {
@@ -20,15 +19,32 @@ if (isset($_SESSION['id']) && isset($_SESSION['role'])) {
         exit;
     }
 
-    header("Location: {$baseURL}sales_dashboard.php");
+    header("Location: {$baseURL}manager_dashboard.php");
     exit;
 }
 
-/* =========================
-   LOGIN PROCESS
-========================= */
+/*LOGIN PROCES */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
+    // captcha befor all
+    $recaptcha = $_POST['g-recaptcha-response'] ?? '';
+    // $secret = 'secret';
+    $secret = RECAPTCHA_SECRET;
+    $verify = file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret={$secret}&response={$recaptcha}");
+    $result = json_decode($verify);
+
+    if (!$result->success) {
+        $_SESSION['flash'] = [
+            'icon' => 'error',
+            'title' => 'Bot Detected',
+            'text'  => 'Please complete the CAPTCHA.',
+            'redirect' => $baseURL . "login.php",
+            'timer' => 2000,
+            'showConfirmButton' => true
+        ];
+        header("Location: {$baseURL}login.php");
+        exit;
+    }
     $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
 
@@ -108,6 +124,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Playfair+Display:wght@500;600;700&display=swap"
         rel="stylesheet">
 
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+
     <style>
         * {
             margin: 0;
@@ -122,6 +140,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             justify-content: center;
             align-items: center;
             background: linear-gradient(180deg, #eef2f7, #e3eaf3);
+        }
+
+        .g-recaptcha {
+            transform: scale(0.77);
+            transform-origin: left;
+            margin-bottom: -10px;
         }
 
         .container {
@@ -178,7 +202,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             display: flex;
             flex-direction: column;
             justify-content: center;
-            /* background: linear-gradient(180deg, #f8fafc, #eef2f7); */
             background: #ffffff;
         }
 
@@ -194,7 +217,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .subtitle {
             font-family: 'Poppins', sans-serif;
             font-size: 13.5px;
-            color: #9aa7b8;  
+            color: #9aa7b8;
             line-height: 1.5;
             margin-bottom: 26px;
             max-width: 360px;
@@ -269,6 +292,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .forgot a:hover {
             color: #1e3a5f;
         }
+
         @media(max-width:1000px) {
             .container {
                 flex-direction: column;
@@ -297,28 +321,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="left-content">
             </div>
         </div>
-        
+
         <div class="right">
             <div class="heading">
                 <h2>Welcome back to Crisis360</h2>
                 <p class="subtitle">Access and continue monitoring in real-time</p>
             </div>
             <form method="POST" action="login.php">
-            <div class="input-group">
-                <label>Email</label>
-                <input type="email" name="email" placeholder="Enter your email" required>
-            </div>
+                <div class="input-group">
+                    <label>Email</label>
+                    <input type="email" name="email" placeholder="Enter your email" required>
+                </div>
 
-            <div class="input-group">
-                <label>Password</label>
-                <input type="password" name="password" placeholder="Enter your password" required>
-            </div>
-
-            <button>Login</button>
+                <div class="input-group">
+                    <label>Password</label>
+                    <div style="position: relative;">
+                        <input type="password" name="password" id="passwordInput" placeholder="Enter your password" required>
+                        <span onclick="togglePassword()" id="eyeIcon"
+                            style="position:absolute; right:18px; top:50%; transform:translateY(-50%); cursor:pointer; color:#9aa7b8; font-size:18px;">
+                            👁
+                        </span>
+                    </div>
+                </div>
+                <div class="g-recaptcha" data-sitekey="6Le4yf0sAAAAAPlNlJwtppooy9g6LfyVhAeryz7z" style="margin-top:10px;"></div>
+                <button>Login</button>
             </form>
 
             <div class="forgot">
-                <a href="#">Forgot password?</a>
+                <a href="forgot_password.php">Forgot password?</a>
             </div>
 
         </div>
@@ -326,6 +356,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+
+    <?php include('includes/script.php'); ?>
     <?php
     if (isset($_SESSION['flash'])) {
         $flash = $_SESSION['flash'];

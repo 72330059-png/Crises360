@@ -1,9 +1,6 @@
 <?php
-
 session_start();
-
 header('Content-Type: application/json');
-
 require_once("../class/municipality.class.php");
 
 $municipality = new Municipality();
@@ -35,16 +32,12 @@ $data = [
 ];
 
 $result = $municipality->addNeed($data);
-
 if ($result === true || is_numeric($result)) {
-
-    echo json_encode([
-        'status' => 'success'
-    ]);
+    $municipality->insertNotification(
+        'New need added: ' . $_POST['need_name'] . ' — Priority: ' . $_POST['priority'],
+        'need'
+    );
+    echo json_encode(['status' => 'success']);
 } else {
-
-    echo json_encode([
-        'status' => 'error',
-        'message' => 'Failed to add need'
-    ]);
+    echo json_encode(['status' => 'error', 'message' => 'Failed to add need']);
 }

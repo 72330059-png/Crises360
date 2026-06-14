@@ -1,9 +1,6 @@
 <?php
-
 session_start();
-
 header('Content-Type: application/json');
-
 require_once("../class/municipality.class.php");
 
 if (!isset($_SESSION['logged_in'])) {
@@ -122,8 +119,7 @@ if (is_array($result) && isset($result['status'])) {
     exit;
 }
 
-
 echo json_encode([
-    'status' => 'success',
+    'status'  => 'success',
     'message' => 'Shelter updated successfully'
 ]);

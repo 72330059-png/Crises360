@@ -22,13 +22,13 @@ $incident_id     = $counts['incident_id']     ?? null;
 $incident_name   = $counts['incident_name']   ?? null;
 $incident_status = $counts['incident_status'] ?? null;
 $is_resolved     = $counts['is_resolved']     ?? false;
-$has_mission     = !empty($incident_id);
+$has_mission     = !empty($incident_id)  || !empty($counts['mission_title']);
 
 $sentMissions = $_SESSION['type'] === 'police'
   ? $police->getSentMissions($org_id)
   : [];
 $bounds = [[33.05, 35.10], [34.70, 36.65]];
-
+$canceledNotifs = $police->getCanceledMissionNotifs($org_id);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -59,7 +59,6 @@ $bounds = [[33.05, 35.10], [34.70, 36.65]];
       --surface: #fff;
     }
 
-    /* STAT CARDS */
     .stat-grid {
       display: grid;
       grid-template-columns: repeat(6, 1fr);
@@ -106,7 +105,6 @@ $bounds = [[33.05, 35.10], [34.70, 36.65]];
       line-height: 1;
     }
 
-    /* LAYOUT */
     .police-layout {
       display: grid;
       grid-template-columns: 1fr 260px;
@@ -157,6 +155,7 @@ $bounds = [[33.05, 35.10], [34.70, 36.65]];
       border: 1.5px solid transparent;
       transition: all .15s;
     }
+
     .tb-road {
       background: #0f1f38;
       color: #fff;
@@ -358,10 +357,12 @@ $bounds = [[33.05, 35.10], [34.70, 36.65]];
       padding: 2px 6px;
       border-radius: 5px;
     }
+
     .lc-g {
       background: var(--green-bg);
       color: var(--green);
     }
+
     .lc-sky {
       background: #fef3c7;
       color: #92400e;
@@ -706,7 +707,6 @@ $bounds = [[33.05, 35.10], [34.70, 36.65]];
     }
   </style>
 </head>
-
 <body>
   <?php include('includes/sidebar.php'); ?>
   <?php include('includes/nav.php'); ?>
@@ -968,6 +968,15 @@ $bounds = [[33.05, 35.10], [34.70, 36.65]];
       'saida': [33.5571, 35.3729, 14],
       'sidon': [33.5571, 35.3729, 14],
       'nabatieh': [33.3772, 35.4844, 13],
+      'nabateye':  [33.3772, 35.4844, 13],
+'nabatiye':  [33.3772, 35.4844, 13],
+'nabatyeh':  [33.3772, 35.4844, 13],
+'nabatihe':  [33.3772, 35.4844, 13],
+'نبطية':     [33.3772, 35.4844, 13],
+'صيدا':      [33.5571, 35.3729, 14],
+'بيروت':     [33.8938, 35.5018, 13],
+'طرابلس':    [34.4369, 35.8497, 13],
+'بعلبك':     [34.0044, 36.2156, 13],
       'bint jbeil': [33.1172, 35.4336, 13],
       'bint jbail': [33.1172, 35.4336, 13],
       'marjayoun': [33.3597, 35.5922, 13],
@@ -1002,9 +1011,44 @@ $bounds = [[33.05, 35.10], [34.70, 36.65]];
       }
       return [33.8547, 35.8623, 9];
     }
+//testtest
+    // var _uc = getUnitCoords(POLICE_LOCATION);
+    // map.setView([_uc[0], _uc[1]], _uc[2]);
+function initMapView() {
+  var k = (POLICE_LOCATION || '').toLowerCase().trim();
 
-    var _uc = getUnitCoords(POLICE_LOCATION);
-    map.setView([_uc[0], _uc[1]], _uc[2]);
+  // Step 1: hardcoded table (instant, no API call)
+  if (LEBANON_CITIES[k]) {
+    var c = LEBANON_CITIES[k];
+    map.setView([c[0], c[1]], c[2]);
+    return;
+  }
+  for (var city in LEBANON_CITIES) {
+    if (k.indexOf(city) !== -1 || city.indexOf(k) !== -1) {
+      var c = LEBANON_CITIES[city];
+      map.setView([c[0], c[1]], c[2]);
+      return;
+    }
+  }
+
+  // Step 2: PHP proxy → Nominatim → Groq
+  var fd = new FormData();
+  fd.append('location', POLICE_LOCATION);
+  fetch('actions/resolve_location.php', { method: 'POST', body: fd })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      map.setView([data.lat, data.lng], data.zoom);
+      if (data.fallback) {
+        toast('⚠️ Location "' + POLICE_LOCATION + '" not recognized — showing all Lebanon');
+      } else {
+        toast('📍 Zoomed to: ' + POLICE_LOCATION);
+      }
+    })
+    .catch(function() {
+      map.setView([33.8547, 35.8623], 9);
+    });
+}
+    initMapView();
 
     var lgEvac = L.layerGroup().addTo(map);
     var lgMyRoads = L.layerGroup().addTo(map);
@@ -1049,7 +1093,7 @@ $bounds = [[33.05, 35.10], [34.70, 36.65]];
     var routePolyline = null;
     var roadPoints = [];
     var roadPolyline = null;
-    var pendRoadPts = null; 
+    var pendRoadPts = null;
     var tempMarkers = [];
     var evacRoutes = [];
     var policeRoads = [];
@@ -1224,7 +1268,7 @@ $bounds = [[33.05, 35.10], [34.70, 36.65]];
             });
             document.getElementById('btnSaveRoute').style.display = 'none';
             document.getElementById('lc-evac').textContent = evacRoutes.length;
-            renderRouteSearchList(); 
+            renderRouteSearchList();
             Swal.fire({
                 icon: 'success',
                 title: 'Route Saved!',
@@ -1574,7 +1618,6 @@ $bounds = [[33.05, 35.10], [34.70, 36.65]];
             policeRoads.push(r);
             renderRoadOnMap(r);
 
-            // cleanup
             if (roadPolyline) {
               map.removeLayer(roadPolyline);
               roadPolyline = null;
@@ -1650,6 +1693,7 @@ $bounds = [[33.05, 35.10], [34.70, 36.65]];
       document.getElementById('editRoadStatus').value = r.status;
       document.getElementById('editRoadReason').value = r.reason;
       map.closePopup();
+      2
       openPopup('popEditRoad');
     }
 
@@ -1925,10 +1969,10 @@ $bounds = [[33.05, 35.10], [34.70, 36.65]];
       renderRouteSearchList();
     }
 
-    function resetToUnit() {
-      map.setView([_uc[0], _uc[1]], _uc[2]);
-      toast('📍 Returned to ' + POLICE_LOCATION);
-    }
+   function resetToUnit() {
+  initMapView();
+  toast('📍 Returned to ' + POLICE_LOCATION);
+}
     loadDBData();
     if (!HAS_MISSION) {
       document.querySelectorAll('.tool-btn').forEach(function(btn) {
@@ -1941,7 +1985,6 @@ $bounds = [[33.05, 35.10], [34.70, 36.65]];
           };
         }
       });
-      // Show overlay on map
       var overlay = document.createElement('div');
       overlay.style.cssText =
         'position:absolute;inset:0;background:rgba(10,22,40,0.6);' +
@@ -1978,7 +2021,7 @@ $bounds = [[33.05, 35.10], [34.70, 36.65]];
             }
           })
           .catch(function() {});
-      }, 30000); 
+      }, 30000);
     <?php endif; ?>
 
     function setRouteFilter(status, btn) {
@@ -2000,7 +2043,7 @@ $bounds = [[33.05, 35.10], [34.70, 36.65]];
       if (!el) return;
       var q = routeSearchQuery;
       var filtered = evacRoutes.filter(function(r) {
-        if (!q) return true; 
+        if (!q) return true;
         return r.from.toLowerCase().includes(q) ||
           r.to.toLowerCase().includes(q) ||
           (r.notes || '').toLowerCase().includes(q);
@@ -2116,7 +2159,7 @@ $bounds = [[33.05, 35.10], [34.70, 36.65]];
   <?php if ($_SESSION['type'] === 'police'): ?>
     <?php
     $sentMissions = $sentMissions ?? [];
-    $sentCount = count($sentMissions);
+    $sentCount = count($sentMissions) + count($canceledNotifs);
     ?>
 
     <div id="missionNotifOverlay" style="
@@ -2143,7 +2186,7 @@ $bounds = [[33.05, 35.10], [34.70, 36.65]];
                     background:#f1f5f9;cursor:pointer;font-size:14px;color:#475569;">✕</button>
         </div>
 
-        <?php if ($sentCount === 0): ?>
+        <?php if ($sentCount === 0 && count($canceledNotifs) === 0):  ?>
           <div style="text-align:center;padding:30px 0;color:#94a3b8;">
             <div style="font-size:32px;margin-bottom:10px;">✅</div>
             <div style="font-size:13px;">No pending missions</div>
@@ -2199,6 +2242,25 @@ $bounds = [[33.05, 35.10], [34.70, 36.65]];
               </div>
             </div>
           <?php endforeach; ?>
+          <?php foreach ($canceledNotifs as $notif): ?>
+            <div style="border:1.5px solid #fde8e8;border-radius:14px;padding:16px;margin-bottom:12px;background:#fff5f5;">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                <span style="font-size:22px;">❌</span>
+                <div>
+                  <div style="font-size:13px;font-weight:700;color:#e53935;">Mission Canceled</div>
+                  <div style="font-size:11px;color:#94a3b8;"><?php echo date('H:i · d M Y', strtotime($notif['created_at'])); ?></div>
+                </div>
+              </div>
+              <div style="font-size:12px;color:#475569;background:#fef2f2;border-radius:8px;padding:9px 11px;">
+                <?php echo htmlspecialchars($notif['message']); ?>
+              </div>
+              <button onclick="respondMission(<?php echo (int)$notif['id']; ?>, 'read')"
+                style="margin-top:10px;width:100%;padding:8px;border-radius:9px;
+                   border:1.5px solid #fecaca;background:#fff;color:#e53935;font-size:12px;font-weight:600;cursor:pointer;">
+                ✓ Dismiss
+              </button>
+            </div>
+          <?php endforeach; ?>
         <?php endif; ?>
       </div>
     </div>
@@ -2217,7 +2279,15 @@ $bounds = [[33.05, 35.10], [34.70, 36.65]];
       });
 
       function respondMission(missionId, action) {
-        closeMissionNotif(); 
+        closeMissionNotif();
+        if (action === 'read') {
+          $.post('actions/mark_notifs_read.php', {
+            id: missionId
+          }, function() {
+            location.reload();
+          }, 'json');
+          return;
+        }
         Swal.fire({
           title: action === 'accept' ? 'Accepting...' : 'Rejecting...',
           allowOutsideClick: false,
@@ -2265,6 +2335,60 @@ $bounds = [[33.05, 35.10], [34.70, 36.65]];
             });
           });
       }
+    </script>
+  <?php endif; ?>
+  <?php
+  $mRow = $police->getRowSafe(
+    "SELECT current_mission_id FROM police_units WHERE organization_id = ? LIMIT 1",
+    [$org_id]
+  );
+  $missionIdForPoll = (int)($mRow['current_mission_id'] ?? 0);
+  ?>
+
+  <?php if ($missionIdForPoll > 0 && !$is_resolved): ?>
+    <script>
+      var _lastMissionStatus = 'active';
+      var _missionId = <?= $missionIdForPoll ?>;
+
+      setInterval(function() {
+        fetch('actions/poll_mission_status.php?mission_id=' + _missionId)
+          .then(function(r) {
+            return r.json();
+          })
+          .then(function(data) {
+            if (!data.mission_status) return;
+            if (data.mission_status === _lastMissionStatus) return;
+
+            if (data.mission_status === 'completed') {
+              _lastMissionStatus = 'completed';
+              Swal.fire({
+                title: '🎖️ Mission Complete',
+                html: '<b>' + (data.title || 'Your mission') + '</b> has been completed.<br><br>The map is now locked.',
+                icon: 'success',
+                confirmButtonText: 'Acknowledged',
+                confirmButtonColor: '#2e7d32',
+                allowOutsideClick: false
+              }).then(function() {
+                window.location.reload();
+              });
+            }
+
+            if (data.mission_status === 'none') {
+              _lastMissionStatus = 'none';
+              Swal.fire({
+                title: '❌ Mission Canceled',
+                html: 'Your mission has been <b>canceled</b>.<br>The map is now locked.',
+                icon: 'warning',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#e53935',
+                allowOutsideClick: false
+              }).then(function() {
+                window.location.reload();
+              });
+            }
+          })
+          .catch(function() {});
+      }, 10000);
     </script>
   <?php endif; ?>
 </body>

@@ -2,7 +2,7 @@
 session_start();
 require_once("class/hospitals.class.php");
 
-if (!isset($_SESSION['logged_in']) || $_SESSION['role'] !== 'admin') {
+if (!isset($_SESSION['logged_in'])) {
     header("Location: login.php");
     exit;
 }
@@ -174,6 +174,32 @@ $teams = $hospital->getHospitalTeams($hospital_id);
             color: #4318FF;
             margin-left: 5px;
         }
+@media (max-width: 575px) {
+    .stat-card {
+        flex-direction: row !important;
+        align-items: center !important;
+        text-align: left !important;
+        height: auto !important;
+        padding: 14px 16px !important;
+    }
+
+    .stat-icon {
+        width: 42px !important;
+        height: 42px !important;
+        min-width: 42px;
+        font-size: 16px !important;
+        margin-right: 14px !important;
+        margin-bottom: 0 !important;
+    }
+
+    .stat-label {
+        font-size: 12px !important;
+    }
+
+    .stat-value {
+        font-size: 18px !important;
+    }
+}
     </style>
 </head>
 
@@ -191,7 +217,7 @@ $teams = $hospital->getHospitalTeams($hospital_id);
 
         </div>
 
-        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3 mb-4">
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-3 mb-4">
 
             <div class="col">
                 <div class="stat-card">

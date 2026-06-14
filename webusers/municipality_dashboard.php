@@ -23,10 +23,10 @@ $categories = $municipality->getResourceCategories();
 $activeNeeds = $municipality->activeNeeds($org_id);
 $openResources = $municipality->openResources($org_id);
 
-$categories = $municipality->getEnumValues('needs', 'category');
+$needcategories = $municipality->getEnumValues('needs', 'category');
 $priorities = $municipality->getEnumValues('needs', 'priority');
 $statuses = $municipality->getEnumValues('needs', 'status');
-$categories = $municipality->getEnumValues("resources", "category");
+$rescategories = $municipality->getEnumValues("resources", "category");
 $donationTypes = $municipality->getDonationTypes();
 ?>
 <!DOCTYPE html>
@@ -582,7 +582,7 @@ $donationTypes = $municipality->getDonationTypes();
                                 <option value="">
                                     Select Category
                                 </option>
-                                <?php foreach ($categories as $category): ?>
+                                <?php foreach ($needcategories as $category): ?>
 
                                     <option value="<?= $category ?>">
 
@@ -681,7 +681,7 @@ $donationTypes = $municipality->getDonationTypes();
                             </label>
 
                             <select name="category" id="editCategory" class="form-select rounded-3">
-                                <?php foreach ($categories as $category): ?>
+                                <?php foreach ($needcategories as $category): ?>
 
                                     <option value="<?= $category ?>">
 
@@ -795,7 +795,7 @@ $donationTypes = $municipality->getDonationTypes();
 
                             <select name="category" class="form-select" required>
 
-                                <?php foreach ($categories as $category): ?>
+                                <?php foreach ($rescategories as $category): ?>
 
                                     <option value="<?= $category ?>">
 
@@ -921,7 +921,7 @@ $donationTypes = $municipality->getDonationTypes();
 
                             <select name="category" class="form-select" id="edit_category" required>
 
-                                <?php foreach ($categories as $category): ?>
+                                <?php foreach ($rescategories as $category): ?>
 
                                     <option value="<?= $category ?>">
 
@@ -1137,6 +1137,7 @@ $donationTypes = $municipality->getDonationTypes();
     <?php include('includes/nav.php'); ?>
 
     <div class="main-content">
+
         <div class="container-fluid">
             <div class="row g-3 mb-4">
                 <div class="col">
@@ -1372,7 +1373,12 @@ $donationTypes = $municipality->getDonationTypes();
                                         <tr class="border-bottom">
                                             <td>
                                                 <div class="d-flex align-items-center gap-2">
-                                                    <?php if ($need['priority'] == 'high'): ?>
+                                                    <?php if ($need['priority'] == 'urgent'): ?>
+                                                        <span data-bs-toggle="tooltip" title="Urgent Priority">
+                                                            <i class="fa-solid fa-triangle-exclamation me-1" style="font-size:0.75rem; color:#7c0000;"></i>
+                                                        </span>
+
+                                                    <?php elseif ($need['priority'] == 'high'): ?>
                                                         <span data-bs-toggle="tooltip" title="High Priority">
                                                             <i class="fa-solid fa-circle-exclamation me-1" style="font-size:0.75rem; color:#dc3545;"></i>
                                                         </span>
@@ -1383,11 +1389,9 @@ $donationTypes = $municipality->getDonationTypes();
                                                         </span>
 
                                                     <?php else: ?>
-
                                                         <span data-bs-toggle="tooltip" title="Low Priority">
                                                             <i class="fa-solid fa-check me-1" style="font-size:0.75rem; color:#2b8a3e;"></i>
                                                         </span>
-
                                                     <?php endif; ?>
 
                                                     <div class="text-dark">
@@ -1490,7 +1494,7 @@ $donationTypes = $municipality->getDonationTypes();
                         </div>
 
                         <div class="table-responsive">
-                            <table class="table table-hover align-middle" id="resourceTable">
+                            <table class="table align-middle" id="resourceTable">
                                 <thead class="bg-light">
                                     <tr class="text-muted small ">
                                         <th class="fw-semibold">Resource</th>
@@ -1503,7 +1507,7 @@ $donationTypes = $municipality->getDonationTypes();
 
                                     <?php foreach ($resources as $resource): ?>
 
-                                        <tr>
+                                        <tr class="border-bottom">
                                             <td class="ps-3">
                                                 <div class="text-dark">
                                                     <?= $municipality->e($resource['resource_name']) ?>
@@ -1590,7 +1594,7 @@ $donationTypes = $municipality->getDonationTypes();
                         </div>
 
                         <div class="table-responsive">
-                            <table id="donationsTable" class="table table-borderless align-middle" style="width:100%; font-size: 0.85rem;">
+                            <table id="donationsTable" class="table align-middle" style="width:100%; font-size: 0.85rem;">
                                 <thead class="text-muted small ">
                                     <tr>
                                         <th class=" fw-semibold ">Category Name</th>
@@ -2151,7 +2155,7 @@ $donationTypes = $municipality->getDonationTypes();
             });
 
         });
- 
+
         $("#saveNeedBtn").click(function() {
 
             $.ajax({
@@ -2301,7 +2305,7 @@ $donationTypes = $municipality->getDonationTypes();
             });
 
         });
-      
+
 
         $(document).on("click", ".editResourceBtn", function() {
 
@@ -2328,7 +2332,7 @@ $donationTypes = $municipality->getDonationTypes();
             let opening_hours =
 
                 $("#open_time").val() + " - " + $("#close_time").val();
-                 let formData = $("#addResourceForm").serialize() + "&opening_hours=" + encodeURIComponent(opening_hours);
+            let formData = $("#addResourceForm").serialize() + "&opening_hours=" + encodeURIComponent(opening_hours);
 
             $.ajax({
 

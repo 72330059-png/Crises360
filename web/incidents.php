@@ -3,7 +3,7 @@ session_start();
 // require_once("class/DAL.class.php");
 require_once("class/incidents.class.php");
 
-if (!isset($_SESSION['logged_in']) || $_SESSION['role'] !== 'admin') {
+if (!isset($_SESSION['logged_in'])) {
     header("Location: login.php");
     exit;
 }
@@ -28,10 +28,35 @@ $critical = $incident->criticalIncidents();
 <html>
 
 <head>
-    <title>Admin Dashboard</title>
+    <title>Incidents</title>
     <?php include('includes/header.php'); ?>
+    <style>
+      
+        @media (max-width: 992px) {
+            .filter-row-container { flex-wrap: wrap; }
+            .search-container     { flex: 0 0 100% !important; min-width: 100% !important; }
+            .filter-group-item    { flex: 0 0 calc(50% - 5px) !important; min-width: calc(50% - 5px) !important; }
+            .btn-add-navy         { width: 100%; justify-content: center; }
+        }
+ 
+        /* Mobile */
+        @media (max-width: 768px) {
+            .top-nav      { left: 70px !important; padding: 0 16px; }
+            .main-content { margin-left: 70px !important; padding: 14px !important; }
+            .stat-col     { flex: 0 0 calc(50% - 8px); }
+            .card-subtext { display: none; }
+            .dashboard-card { padding: 12px; min-height: auto; }
+        }
+ 
+        /* Small phones */
+        @media (max-width: 480px) {
+            .stat-col          { flex: 0 0 100%; }
+            .filter-group-item { flex: 0 0 100% !important; min-width: 100% !important; }
+            .main-content      { padding: 10px !important; }
+        }
+    </style>
 </head>
-
+<body>
 <div class="modal fade" id="viewIncidentModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content rounded-4">
@@ -225,8 +250,6 @@ $critical = $incident->criticalIncidents();
 
 </div>
 
-<body>
-
     <!-- SIDEBAR -->
     <?php include('includes/sidebar.php'); ?>
     <?php include('includes/nav.php'); ?>
@@ -239,7 +262,7 @@ $critical = $incident->criticalIncidents();
 
         <div class="row g-3 mb-4">
 
-            <div class="col">
+            <div class="col-6 col-md-4 col-lg">
                 <div class="dashboard-card">
                     <div class="card-icon" style="background: #f4f7fe; color: #4318ff;">
                         <i class="fa-solid fa-layer-group"></i>
@@ -252,7 +275,7 @@ $critical = $incident->criticalIncidents();
                 </div>
             </div>
 
-            <div class="col">
+            <div class="col-6 col-md-4 col-lg">
                 <div class="dashboard-card">
                     <div class="card-icon" style="background: #fff5f5; color: #ee5d50;">
                         <i class="fa-solid fa-circle-exclamation"></i>
@@ -265,7 +288,7 @@ $critical = $incident->criticalIncidents();
                 </div>
             </div>
 
-            <div class="col">
+            <div class="col-6 col-md-4 col-lg">
                 <div class="dashboard-card">
                     <div class="card-icon" style="background: #fff9f2; color: #ffb547;">
                         <i class="fa-solid fa-clock-rotate-left"></i>
@@ -278,7 +301,7 @@ $critical = $incident->criticalIncidents();
                 </div>
             </div>
 
-            <div class="col">
+            <div class="col-6 col-md-4 col-lg">
                 <div class="dashboard-card">
                     <div class="card-icon" style="background: #f2faf8; color: #05cd99;">
                         <i class="fa-solid fa-square-check"></i>
@@ -291,7 +314,7 @@ $critical = $incident->criticalIncidents();
                 </div>
             </div>
 
-            <div class="col">
+            <div class="col-6 col-md-4 col-lg">
                 <div class="dashboard-card">
                     <div class="card-icon" style="background: #fff5f5; color: #ee5d50;">
                         <i class="fa-solid fa-triangle-exclamation"></i>
@@ -343,10 +366,6 @@ $critical = $incident->criticalIncidents();
                     <select class="form-select filter-control" id="statusFilter">
 
                         <option value="">All Statuses</option>
-
-                        <option value="Investigating">
-                            Investigating
-                        </option>
 
                         <option value="In Progress">
                             In Progress
@@ -407,8 +426,6 @@ $critical = $incident->criticalIncidents();
 
                             if ($row['status'] == 'In Progress') {
                                 $statusClass = 'text-in-progress';
-                            } elseif ($row['status'] == 'Investigating') {
-                                $statusClass = 'text-investigating';
                             } elseif ($row['status'] == 'Resolved') {
                                 $statusClass = 'text-resolved';
                             }
@@ -433,7 +450,7 @@ $critical = $incident->criticalIncidents();
                                     <?php echo $row['status']; ?>
                                 </td>
 
-                                <td class="incident-date" data-date="<?php echo date('Y-m-d', strtotime($row['reported_at'])); ?>">>
+                                <td class="incident-date" data-date="<?php echo date('Y-m-d', strtotime($row['reported_at'])); ?>">
                                     <?php echo date("M d, Y h:i A", strtotime($row['reported_at'])); ?>
 
                                 </td>

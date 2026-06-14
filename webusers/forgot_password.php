@@ -1,8 +1,6 @@
 <?php
 date_default_timezone_set('Asia/Beirut');
-// session_start();
 session_start();
-
 require('class/DAL.class.php');
 require 'vendor/autoload.php';
 
@@ -40,7 +38,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $user['id']
         ]);
 
-        $resetLink = "http://localhost/senior/crises360/webusers/reset_password.php?token=$token";
+        // $resetLink = "http://localhost/senior/crises360/webusers/reset_password.php?token=$token";
+        $resetLink = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https://" : "http://") . $_SERVER['HTTP_HOST'] . "/reset_password.php?token=$token";
 
         $mail = new PHPMailer(true);
 
@@ -54,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             $mail->Username = 'mourtadadouaa@gmail.com';
 
-            $mail->Password = 'qlmx yszj qhqs izpz';
+            $mail->Password = GMAIL_APP_PASSWORD;
 
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
 
@@ -206,6 +205,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 title: 'Email Sent',
                 text: 'Reset link sent successfully.',
                 confirmButtonColor: '#2d5a27'
+            }).then(() => {
+                window.location.href = 'login.php';
             });
         </script>
 

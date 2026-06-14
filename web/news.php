@@ -2,7 +2,7 @@
 session_start();
 require_once("class/news.class.php");
 
-if (!isset($_SESSION['logged_in']) || $_SESSION['role'] !== 'admin') {
+if (!isset($_SESSION['logged_in'])) {
     header("Location: login.php");
     exit;
 }
@@ -37,7 +37,7 @@ $catStyles = [
 <html>
 
 <head>
-    <title>Admin Dashboard</title>
+    <title>News</title>
     <?php include('includes/header.php'); ?>
     <style>
         .active-filter {
@@ -74,6 +74,122 @@ $catStyles = [
         body.modal-open {
             overflow: hidden;
             padding-right: 0 !important;
+        }
+
+
+
+        .action-btns {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: nowrap;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 768px) {
+
+
+            .main-content {
+                margin-left: 70px !important;
+                width: calc(100% - 70px) !important;
+                padding: 15px !important;
+                box-sizing: border-box;
+            }
+
+            /* HEADER */
+            .page-header h2 {
+                font-size: 1.5rem;
+            }
+
+            /* STATS CARDS */
+            .row.g-3.mb-4>.col {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+
+
+            /* FILTER AREA */
+            .filter-row-container {
+                flex-direction: column;
+                align-items: stretch !important;
+                gap: 10px;
+            }
+
+            .search-container,
+            .filter-group-item,
+            .filter-row-container .btn {
+                width: 100%;
+                margin-left: 0 !important;
+            }
+
+            .filter-row-container .btn {
+                justify-content: center;
+            }
+
+            /* TABLE CARD */
+            .table-container {
+                padding: 15px !important;
+            }
+
+            /* FEATURED ARTICLE CARD */
+            .featured-news-card img {
+                height: 160px !important;
+            }
+
+            /* CATEGORY BOXES */
+            .category-item {
+                width: 100%;
+            }
+
+            /* MODALS */
+            .modal-dialog {
+                margin: 10px;
+            }
+
+            .modal-body {
+                padding: 15px;
+            }
+        }
+
+        /* EXTRA SMALL PHONES */
+        @media (max-width: 576px) {
+
+            .dashboard-card {
+                padding: 15px;
+            }
+
+            .card-title {
+                font-size: 0.8rem;
+            }
+
+            .card-value {
+                font-size: 1.3rem;
+            }
+
+            .table-main-title {
+                font-size: 1rem;
+            }
+
+            .featured-news-card img {
+                height: 140px !important;
+            }
+
+            .category-item {
+                padding: 12px !important;
+            }
+
+            #newsTable tbody tr {
+                border-bottom: 1px solid #f1f1f1;
+            }
+
+            #newsTable td,
+            #newsTable th {
+                border: none !important;
+            }
+
+            #newsTable tbody tr:last-child {
+                border-bottom: none;
+            }
         }
     </style>
 </head>
@@ -164,7 +280,7 @@ $catStyles = [
             <p class="text-muted small">Publish and organize the latest news and announcements</p>
         </div>
         <div class="row g-3 mb-4">
-            <div class="col">
+            <div class="col-12 col-md">
                 <div class="dashboard-card">
                     <div class="card-icon" style="background: #f4f7fe; color: #4318ff;">
                         <i class="fa-solid fa-newspaper"></i>
@@ -177,7 +293,7 @@ $catStyles = [
                 </div>
             </div>
 
-            <div class="col">
+            <div class="col-12 col-md">
                 <div class="dashboard-card">
                     <div class="card-icon" style="background: #f2faf8; color: #05cd99;">
                         <i class="fa-solid fa-circle-check"></i>
@@ -190,7 +306,7 @@ $catStyles = [
                 </div>
             </div>
 
-            <div class="col">
+            <div class="col-12 col-md">
                 <div class="dashboard-card">
                     <div class="card-icon" style="background: #f4f7fe; color: #a3adc2;">
                         <i class="fa-solid fa-file-pen"></i>
@@ -203,7 +319,7 @@ $catStyles = [
                 </div>
             </div>
 
-            <div class="col">
+            <div class="col-12 col-md">
                 <div class="dashboard-card">
                     <div class="card-icon" style="background: #fff9f2; color: #ffb547;">
                         <i class="fa-solid fa-star"></i>
@@ -215,19 +331,6 @@ $catStyles = [
                     </div>
                 </div>
             </div>
-
-            <!-- <div class="col">
-                <div class="dashboard-card">
-                    <div class="card-icon" style="background: #fff5f5; color: #ee5d50;">
-                        <i class="fa-solid fa-eye"></i>
-                    </div>
-                    <div class="card-content">
-                        <span class="card-title">Total Views</span>
-                        <span class="card-value">1.2k</span>
-                        <span class="card-subtext">This week</span>
-                    </div>
-                </div>
-            </div> -->
         </div>
 
         <div class="filter-row-container mb-4 d-flex align-items-center">
@@ -332,33 +435,33 @@ $catStyles = [
                                         </td>
 
                                         <!-- ACTIONS -->
-                                        <td class="text-center col-shrink">
+                                        <td>
+                                            <div class="action-btns">
+                                                <!-- VIEW -->
+                                                <i class="fa fa-eye text-primary me-3 viewBtn"
+                                                    style="cursor:pointer;"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#viewNewsModal<?= $row['id'] ?>">
+                                                </i>
 
-                                            <!-- VIEW -->
-                                            <i class="fa fa-eye text-primary me-3 viewBtn"
-                                                style="cursor:pointer;"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#viewNewsModal<?= $row['id'] ?>">
-                                            </i>
+                                                <i class="fa fa-edit text-muted me-3 editNewsBtn"
+                                                    style="cursor:pointer;"
+                                                    data-id="<?= $row['id'] ?>"
+                                                    data-title="<?= htmlspecialchars($row['title']) ?>"
+                                                    data-content="<?= htmlspecialchars($row['content']) ?>"
+                                                    data-category="<?= $row['category'] ?>"
+                                                    data-type="<?= $row['type'] ?>"
+                                                    data-status="<?= $row['status'] ?>"
+                                                    data-featured="<?= $row['featured'] ?>"
+                                                    data-date="<?= !empty($row['publish_date']) ? date('Y-m-d', strtotime($row['publish_date'])) : '' ?>">
+                                                </i>
 
-                                            <i class="fa fa-edit text-muted me-3 editNewsBtn"
-                                                style="cursor:pointer;"
-                                                data-id="<?= $row['id'] ?>"
-                                                data-title="<?= htmlspecialchars($row['title']) ?>"
-                                                data-content="<?= htmlspecialchars($row['content']) ?>"
-                                                data-category="<?= $row['category'] ?>"
-                                                data-type="<?= $row['type'] ?>"
-                                                data-status="<?= $row['status'] ?>"
-                                                data-featured="<?= $row['featured'] ?>"
-                                                data-date="<?= !empty($row['publish_date']) ? date('Y-m-d', strtotime($row['publish_date'])) : '' ?>">
-                                            </i>
-
-                                            <!-- DELETE -->
-                                            <i class="fa fa-trash text-danger deleteNewsBtn"
-                                                style="cursor:pointer;"
-                                                data-id="<?= $row['id'] ?>">
-                                            </i>
-
+                                                <!-- DELETE -->
+                                                <i class="fa fa-trash text-danger deleteNewsBtn"
+                                                    style="cursor:pointer;"
+                                                    data-id="<?= $row['id'] ?>">
+                                                </i>
+                                            </div>
                                         </td>
 
                                     </tr>
@@ -452,25 +555,15 @@ $catStyles = [
     <div class="modal fade" id="addNewsModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered ">
             <div class="modal-content">
-
                 <div class="modal-header">
                     <h5 class="modal-title">Publish News</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-
-
                 <div class="modal-body">
-
-
                     <input type="text" id="newsTitle" class="form-control mb-2" placeholder="News Title">
-
-
                     <textarea id="newsContent" class="form-control mb-2" placeholder="News Content" rows="4"></textarea>
-
-
                     <select id="newsCategory" class="form-control mb-2" required>
                         <option value="">Select Category</option>
-
                         <option value="Weather">Weather</option>
                         <option value="Traffic">Traffic</option>
                         <option value="Safety">Safety</option>
@@ -504,7 +597,7 @@ $catStyles = [
 
                     <input type="file" id="newsImage" class="form-control mb-3">
 
-                    <button type="button" id="saveNewsBtn" class="btn btn-success w-100">
+                    <button type="button" id="saveNewsBtn" class="btn btn-primary w-100">
                         Save News
                     </button>
 
@@ -516,21 +609,15 @@ $catStyles = [
     <div class="modal fade" id="updateNewsModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered ">
             <div class="modal-content">
-
                 <div class="modal-header">
                     <h5 class="modal-title">Update News</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
 
                 <div class="modal-body">
-
-                    <!-- hidden ID -->
                     <input type="hidden" id="updateNewsId">
-
                     <input type="text" id="updateNewsTitle" class="form-control mb-2" placeholder="News Title">
-
                     <textarea id="updateNewsContent" class="form-control mb-2" rows="4"></textarea>
-
                     <select id="updateNewsCategory" class="form-control mb-2">
                         <option>Weather</option>
                         <option>Traffic</option>
@@ -573,11 +660,8 @@ $catStyles = [
     </div>
     <script>
         $(document).ready(function() {
-
             $('#saveNewsBtn').click(function() {
-
                 let formData = new FormData();
-
                 formData.append('title', $('#newsTitle').val());
                 formData.append('content', $('#newsContent').val());
                 formData.append('category', $('#newsCategory').val());
@@ -595,8 +679,8 @@ $catStyles = [
                     url: 'actions/add_news.php',
                     type: 'POST',
                     data: formData,
-                    processData: false, 
-                    contentType: false, 
+                    processData: false,
+                    contentType: false,
                     dataType: 'json',
 
                     success: function(response) {
@@ -807,14 +891,14 @@ $catStyles = [
             });
         }
 
-      
+
         document.getElementById('statusFilternews')
             .addEventListener('change', applyNewsFilters);
 
         document.getElementById('newsDateFilter')
             .addEventListener('change', applyNewsFilters);
 
-   
+
         document.getElementById('resetFilters')
             .addEventListener('click', function() {
 
@@ -851,24 +935,6 @@ $catStyles = [
 
         });
     </script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     <?php include('includes/script.php'); ?>
 </body>
-
 </html>

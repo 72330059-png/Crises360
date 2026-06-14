@@ -1,3 +1,71 @@
+<?php
+require_once('class/DAL.class.php');
+$dalNotif        = new DAL();
+$unreadCount     = $dalNotif->countUnread();
+$notifications   = $dalNotif->getUnreadNotifications();
+?>
+
+<style>
+ 
+ 
+@keyframes dropIn {
+    from { opacity:0; transform:translateY(-6px); }
+    to   { opacity:1; transform:translateY(0); }
+}
+
+@keyframes modalIn {
+    from { opacity:0; transform:scale(.95); }
+    to   { opacity:1; transform:scale(1); }
+}
+ 
+@media (max-width: 768px) {
+    .top-nav {
+        padding: 0 14px;
+        height: 58px;
+        gap: 8px;
+    }
+ 
+    /* Hide user name/role text, show only avatar */
+    .user-details,
+    .admin-arrow {
+        display: none !important;
+    }
+ 
+    .crm-user-dropdown {
+        padding: 4px;
+        gap: 0;
+    }
+ 
+    /* Breadcrumb shorter */
+    .bc-current { max-width: 110px; font-size: 13px; }
+ 
+    /* Notification dropdown goes left on mobile so it doesn't overflow */
+    .notif-dropdown {
+        right: auto;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 290px;
+    }
+ 
+    /* Dropdown menu doesn't overflow right edge */
+    .dropdown-menu {
+        right: 0;
+        min-width: 150px;
+    }
+ 
+    .crm-divider { display: none; }
+ 
+    .crm-modal-content {
+        padding: 24px 18px;
+        border-radius: 16px;
+    }
+}
+ 
+@media (max-width: 400px) {
+    .bc-current { max-width: 80px; font-size: 12px; }
+    .notif-dropdown { width: 260px; }
+}
+</style>
 <nav class="top-nav">
     <div class="crm-nav-left">
         <button id="toggleSidebar" class="crm-toggle-btn">
@@ -10,26 +78,65 @@
         </div>
     </div>
 
-    <div class="crm-nav-center">
+    <!-- <div class="crm-nav-center">
         <div class="crm-search-container">
             <i class="fa fa-search"></i>
             <input type="text" placeholder="Type here to search...">
         </div>
-    </div>
+    </div> -->
 
     <div class="crm-nav-right">
         <div class="crm-icon-stack" style="display: flex; gap: 18px; margin-right: 10px; color: #8392ab;">
-            <!-- <i class="fa fa-cog" style="cursor: pointer;"></i> -->
-            <div class="notification-wrapper" style="position: relative; cursor: pointer;">
-                <i class="fa fa-bell"></i>
-                <!-- <span class="badge-notify-dot"></span> -->
-                 <span class="badge-notify-num">3</span>
+            <!-- <i class="fa fa-cog" style="cursor: pointer;"></i>//style="position: relative; cursor: pointer;" -->
+            <div class="notif-wrapper">
+                <div class="notif-bell" onclick="toggleNotifDropdown()">
+                    <i class="fas fa-bell"></i>
+                    <?php if ($unreadCount > 0): ?>
+                        <span class="notif-badge"><?= $unreadCount ?></span>
+                    <?php endif; ?>
+                </div>
+
+                <div class="notif-dropdown" id="notifDropdown" style="display:none;">
+                    <div class="notif-header">
+                        <span>Notifications</span>
+                        <span class="notif-count"><?= $unreadCount ?> unread</span>
+                    </div>
+
+                    <?php if (empty($notifications)): ?>
+                        <div class="notif-empty">
+                            <i class="fas fa-check-circle"></i>
+                            <p>No new notifications</p>
+                        </div>
+                    <?php else: ?>
+                        <?php foreach ($notifications as $notif):
+                            $icon  = $notif['type'] === 'mission' ? 'fa-shield-alt' : 'fa-box';
+                            $color = $notif['type'] === 'mission' ? '#1e3a5f' : '#e67e22';
+                            $bg    = $notif['type'] === 'mission' ? '#eef2f7' : '#fef5ec';
+                        ?>
+
+                            <div class="notif-item" id="notif-<?= $notif['id'] ?>">
+                                <div class="notif-icon" style="background:<?= $bg ?>">
+                                    <i class="fas <?= $icon ?>" style="color:<?= $color ?>"></i>
+                                </div>
+                                <div class="notif-text"
+                                    style="<?= $notif['type'] === 'need' ? 'cursor:pointer;' : '' ?>"
+                                    onclick="<?= $notif['type'] === 'need' ? 'goToNeeds(' . $notif['id'] . ')' : '' ?>">
+                                    <p><?= htmlspecialchars($notif['message']) ?></p>
+                                    <span><?= date('M d, h:i A', strtotime($notif['created_at'])) ?></span>
+                                </div>
+                                <button onclick="markRead(<?= $notif['id'] ?>)" class="notif-seen-btn" title="Mark as read">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </div>
             </div>
         </div>
         <div class="crm-divider"></div>
 
         <div class="crm-user-dropdown" id="userDropdownTrigger" style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
-        
+
             <div class="user-avatar">
                 <?php echo strtoupper(substr($_SESSION['name'], 0, 1)); ?>
             </div>
@@ -122,10 +229,10 @@
                     title: 'Password Mismatch',
                     text: 'Passwords do not match!'
                 });
-                return; 
+                return;
             }
 
-            const formData = $(this).serialize(); 
+            const formData = $(this).serialize();
 
             $.post('actions/update_admin_profile.php', formData, function(res) {
                 if (res.status === 'success') {
@@ -136,7 +243,7 @@
                         timer: 1500,
                         showConfirmButton: false
                     }).then(() => {
-                        
+
                         $('#profileModal').css('display', 'none');
                         const newName = $('#profileName').val();
                         $('#navAdminName').text(newName);
@@ -156,6 +263,88 @@
                 });
             });
         });
+
+        // Replace the old pollAdminNotifCount function with this one
+        // inside $(document).ready(function() { ... })
+
+        var lastNotifCount = <?= (int)$unreadCount ?>; // start from PHP-rendered count
+
+        function renderAdminNotifList(notifications) {
+            var typeIcons = {
+                mission: {
+                    icon: 'fa-shield-alt',
+                    color: '#1e3a5f',
+                    bg: '#eef2f7'
+                },
+                need: {
+                    icon: 'fa-box',
+                    color: '#e67e22',
+                    bg: '#fef5ec'
+                }
+            };
+
+            if (!notifications || notifications.length === 0) {
+                return '<div class="notif-empty"><i class="fas fa-check-circle"></i><p>No new notifications</p></div>';
+            }
+
+            var html = '';
+            notifications.forEach(function(notif) {
+                var t = typeIcons[notif.type] || typeIcons['need'];
+                var date = new Date(notif.created_at.replace(' ', 'T'));
+                var label = date.toLocaleString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    hour: 'numeric',
+                    minute: '2-digit'
+                });
+                var clickStyle = notif.type === 'need' ? 'cursor:pointer;' : '';
+                var clickAttr = notif.type === 'need' ? 'onclick="goToNeeds(' + notif.id + ')"' : '';
+
+                html += '<div class="notif-item" id="notif-' + notif.id + '">';
+                html += '  <div class="notif-icon" style="background:' + t.bg + '">';
+                html += '    <i class="fas ' + t.icon + '" style="color:' + t.color + '"></i>';
+                html += '  </div>';
+                html += '  <div class="notif-text" style="' + clickStyle + '" ' + clickAttr + '>';
+                html += '    <p>' + $('<div>').text(notif.message).html() + '</p>';
+                html += '    <span>' + label + '</span>';
+                html += '  </div>';
+                html += '  <button onclick="markRead(' + notif.id + ')" class="notif-seen-btn" title="Mark as read">';
+                html += '    <i class="fas fa-check"></i>';
+                html += '  </button>';
+                html += '</div>';
+            });
+            return html;
+        }
+
+        function pollAdminNotifCount() {
+            $.get('actions/get_admin_notifications.php', function(res) {
+                if (!res || typeof res.count === 'undefined') return;
+
+                var count = parseInt(res.count);
+                var badge = $('.notif-badge');
+
+                // --- update badge ---
+                if (count > 0) {
+                    if (badge.length) badge.text(count);
+                    else $('.notif-bell').append('<span class="notif-badge">' + count + '</span>');
+                    $('.notif-count').text(count + ' unread');
+                } else {
+                    badge.remove();
+                    $('.notif-count').text('0 unread');
+                }
+
+                // --- refresh list only if count changed (avoid flicker while open) ---
+                if (count !== lastNotifCount) {
+                    lastNotifCount = count;
+                    var dropdownBody = $('#notifDropdown').find('.notif-item, .notif-empty');
+                    dropdownBody.remove(); // clear old items
+                    $('#notifDropdown').append(renderAdminNotifList(res.notifications));
+                }
+
+            }, 'json');
+        }
+
+        setInterval(pollAdminNotifCount, 10000);
 
     });
 </script>

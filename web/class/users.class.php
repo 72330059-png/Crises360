@@ -3,13 +3,6 @@ require_once("DAL.class.php");
 
 class users extends DAL
 {
-
-    // public function getAdminById($id)
-    // {
-    //     $sql = "SELECT id, name, email FROM users WHERE id = $id";
-    //     $data = $this->getData($sql);
-    //     return $data ? $data[0] : null;
-    // }
     public function getAdminById($id)
     {
         $sql = "SELECT id, name, email FROM users WHERE id = ?";
@@ -73,11 +66,6 @@ class users extends DAL
         return $this->getdata($sql, [$name, $email, $role, $id]);
     }
 
-    // public function insertuser($name, $email, $password, $role)
-    // {
-    //     $query = "INSERT INTO `users`(`name`, `email`, `password`, `role`) VALUES ('$name','$email','$password','$role')";
-    //     $this->execute($query);
-    // }
     public function insertuser($name, $email, $password, $role)
     {
         $hashed = password_hash($password, PASSWORD_DEFAULT);
@@ -93,12 +81,6 @@ class users extends DAL
         ]);
     }
 
-    // public function deleteuser($userId)
-    // {
-    //     $userId = (int)$userId;
-    //     $sql = "DELETE FROM users WHERE id = $userId";
-    //     return $this->execute($sql);
-    // }
     public function deleteuser($userId)
     {
         $sql = "DELETE FROM users WHERE id = ?";
@@ -106,23 +88,6 @@ class users extends DAL
         return $this->executeSafe($sql, [$userId]);
     }
 
-    // public function updateuser($id, $name, $email, $password, $role)
-    // {
-    //     if (empty($password)) {
-    //         // ✅ Keep old password
-    //         $sql = "UPDATE users 
-    //             SET name='$name', email='$email', role='$role'
-    //             WHERE id='$id'";
-    //     } else {
-    //         // ✅ Hash ONLY if user typed a new password
-    //         $hashed = password_hash($password, PASSWORD_DEFAULT);
-    //         $sql = "UPDATE users 
-    //             SET name='$name', email='$email', password='$hashed', role='$role'
-    //             WHERE id='$id'";
-    //     }
-
-    //     return $this->execute($sql);
-    // }
     public function updateuser($id, $name, $email, $password, $role)
     {
         if (empty($password)) {
@@ -157,7 +122,6 @@ class users extends DAL
 
     public function getEnumValues($table, $field)
     {
-        // allow only letters, numbers, underscore
         $table = preg_replace('/[^a-zA-Z0-9_]/', '', $table);
         $field = preg_replace('/[^a-zA-Z0-9_]/', '', $field);
 
@@ -174,4 +138,13 @@ class users extends DAL
 
         return [];
     }
+
+    public function getTeamActivity() {
+    $sql = "SELECT * FROM users 
+            ORDER BY FIELD(ustatus,'online','offline') 
+            LIMIT 3";
+    return $this->getdata($sql);
+}
+
+
 }

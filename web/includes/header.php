@@ -35,6 +35,12 @@ $obj->execute("
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
 <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
 <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.4/main.min.css' rel='stylesheet' />
+<!-- iocn-->
+
+<!-- <link rel="icon" type="image/png" sizes="32x32" href="/uploads/logonew.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/uploads/logonew.png"> -->
+
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
 
 <style>
     footer {
@@ -856,7 +862,7 @@ $obj->execute("
     }
 
     .text-in-progress {
-        color: #48c783ff !important;
+        color: #eab308 !important;
         font-weight: 700;
     }
 
@@ -866,7 +872,7 @@ $obj->execute("
     }
 
     .text-resolved {
-        color: #73d286ff !important;
+        color:  #22c55e !important;
         font-weight: 700;
     }
 
@@ -1079,4 +1085,183 @@ $obj->execute("
         padding: 8px 18px;
         font-weight: 600;
     }
+
+    .notif-wrapper {
+        position: relative;
+    }
+
+    .notif-bell {
+        position: relative;
+        cursor: pointer;
+        font-size: 18px;
+        color: #1e3a5f;
+        padding: 8px;
+    }
+
+    .notif-badge {
+        position: absolute;
+        top: 0px;
+        right: 0px;
+        background: #e74c3c;
+        color: white;
+        border-radius: 50%;
+        font-size: 10px;
+        width: 18px;
+        height: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+    }
+
+    .notif-dropdown {
+        position: absolute;
+        right: 0;
+        top: 45px;
+        width: 340px;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        z-index: 9999;
+        max-height: 420px;
+        overflow-y: auto;
+    }
+
+    .notif-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 18px;
+        border-bottom: 1px solid #f0f0f0;
+        font-weight: 600;
+        font-size: 14px;
+        color: #0f2238;
+    }
+
+    .notif-count {
+        font-size: 12px;
+        color: #9aa7b8;
+        font-weight: 400;
+    }
+
+    .notif-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 18px;
+        border-bottom: 1px solid #f8f9fa;
+        transition: 0.2s;
+    }
+
+    .notif-item:hover {
+        background: #f9fbfd;
+    }
+
+    .notif-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .notif-text {
+        flex-grow: 1;
+    }
+
+    .notif-text p {
+        font-size: 13px;
+        color: #2d3748;
+        margin: 0 0 3px 0;
+        line-height: 1.4;
+    }
+
+    .notif-text span {
+        font-size: 11px;
+        color: #9aa7b8;
+    }
+
+    .notif-seen-btn {
+        border: none;
+        background: #eef2f7;
+        border-radius: 50%;
+        width: 28px;
+        height: 28px;
+        cursor: pointer;
+        color: #1e3a5f;
+        font-size: 11px;
+        flex-shrink: 0;
+        transition: 0.2s;
+    }
+
+    .notif-seen-btn:hover {
+        background: #1e3a5f;
+        color: white;
+    }
+
+    .notif-empty {
+        padding: 30px;
+        text-align: center;
+        color: #9aa7b8;
+    }
+
+    .notif-empty i {
+        font-size: 30px;
+        margin-bottom: 8px;
+        color: #c5d0dc;
+    }
+
+    .notif-empty p {
+        font-size: 13px;
+        margin: 0;
+    }
+</style>
+<style>
+    
+@media (max-width: 768px) {
+ 
+    /* Force sidebar to always be collapsed — never expands */
+    #crm-sidebar {
+        width: 70px !important;
+        pointer-events: auto;
+    }
+ 
+    /* Override any JS-added .expanded class on small screens */
+    #crm-sidebar.expanded {
+        width: 70px !important;
+    }
+ 
+    /* Keep all the collapsed visual rules active */
+    #crm-sidebar .logo-full       { display: none !important; }
+    #crm-sidebar .logo-icon       { display: block !important; width: 36px !important; }
+    #crm-sidebar .sidebar-logo    { height: 64px !important; padding: 10px 0 !important; }
+    #crm-sidebar .sidebar-logo img{ width: 36px !important; height: 36px !important; }
+ 
+    #crm-sidebar .menu-section    { padding: 0 !important; margin: 0 !important; height: 0 !important; overflow: hidden !important; }
+    #crm-sidebar .menu-section .title { display: none !important; }
+    #crm-sidebar .arrow           { display: none !important; }
+ 
+    #crm-sidebar .submenu         { display: block !important; height: auto !important; opacity: 1 !important; visibility: visible !important; }
+    #crm-sidebar .submenu li a    { justify-content: center !important; padding: 12px 0 !important; }
+    #crm-sidebar .submenu li a span{ display: none !important; }
+    #crm-sidebar .submenu li a i  { font-size: 20px !important; margin: 0 !important; }
+    #crm-sidebar .badge-notify    { display: none !important; }
+ 
+    /* Nav and content always use collapsed offset */
+    .top-nav {
+        left: 70px !important;
+    }
+ 
+    .main-content {
+        margin-left: 70px !important;
+        padding: 16px !important;
+    }
+ 
+    /* Hide the hamburger toggle button — not needed on small screens */
+    #toggleSidebar {
+        display: none !important;
+    }
+}
 </style>

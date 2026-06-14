@@ -2,7 +2,7 @@
 session_start();
 require_once("class/alerts.class.php");
 
-if (!isset($_SESSION['logged_in']) || $_SESSION['role'] !== 'admin') {
+if (!isset($_SESSION['logged_in']) ) {
     header("Location: login.php");
     exit;
 }
@@ -23,6 +23,30 @@ $regions = $alerts->getRegions();
 <head>
     <title>Alerts Management</title>
     <?php include('includes/header.php'); ?>
+    <style>
+        @media (max-width: 992px) {
+            .filter-row-container { flex-wrap: wrap; }
+            .search-container     { flex: 0 0 100% !important; min-width: 100% !important; }
+            .filter-group-item    { flex: 0 0 calc(50% - 5px) !important; min-width: calc(50% - 5px) !important; }
+            .btn-add-navy         { width: 100%; justify-content: center; }
+        }
+ 
+        @media (max-width: 768px) {
+            .top-nav      { left: 70px !important; padding: 0 16px; }
+            .main-content { margin-left: 70px !important; padding: 14px !important; }
+            .stat-col     { flex: 0 0 calc(50% - 8px); }
+            .card-subtext { display: none; }
+            .dashboard-card { padding: 12px; min-height: auto; }
+        }
+ 
+        /* Small phones */
+        @media (max-width: 480px) {
+            .stat-col          { flex: 0 0 100%; }
+            .filter-group-item { flex: 0 0 100% !important; min-width: 100% !important; }
+            .main-content      { padding: 10px !important; }
+        }
+    </style>
+  
 </head>
 
 <div class="modal fade" id="addAlertModal" tabindex="-1">
@@ -151,19 +175,6 @@ $regions = $alerts->getRegions();
                 </div>
             </div>
 
-            <!-- <div class="col">
-                <div class="dashboard-card">
-                    <div class="card-icon" style="background: #f4f7fe; color: #4318ff;">
-                        <i class="fa-solid fa-users"></i>
-                    </div>
-                    <div class="card-content">
-                        <span class="card-title">Recipients</span>
-                        <span class="card-value">12k</span>
-                        <span class="card-subtext">Total reach</span>
-                    </div>
-                </div>
-            </div> -->
-
             <div class="col">
                 <div class="dashboard-card">
                     <div class="card-icon" style="background: #fff5f5; color: #ee5d50;">
@@ -244,19 +255,11 @@ $regions = $alerts->getRegions();
                         foreach ($allallerts  as $row) {
 
                             if ($row['severity'] == 'Critical') {
-
-                                // $icon = "fa-circle-exclamation";
-                                // $iconColor = "#ee5d50";
                                 $severityClass = "text-danger";
                             } elseif ($row['severity'] == 'Warning') {
 
-                                // $icon = "fa-triangle-exclamation";
-                                // $iconColor = "#ffb547";
                                 $severityClass = "text-warning";
                             } else {
-
-                                // $icon = "fa-circle-info";
-                                // $iconColor = "#4318ff";
                                 $severityClass = "text-success";
                             }
 
@@ -270,9 +273,6 @@ $regions = $alerts->getRegions();
                         ?>
 
                             <tr>
-
-                                <!-- <td>#<?= $row['id'] ?></td> -->
-
                                 <td class="alert-message">
                                     <span style="font-weight:700;">
                                         <?= $row['alert_message'] ?>
@@ -286,14 +286,7 @@ $regions = $alerts->getRegions();
                                 <td class="alert-region">
                                     <?= $row['region'] ?>
                                 </td>
-
-                                <!-- <td>
-                                    <i class="fa-solid fa-users me-1"
-                                        style="font-size: 12px; color: #a3adc2;"></i>
-
-                                    <?= number_format($row['recepients_count']) ?>
-                                </td> -->
-
+                                
                                 <td class="alert-status">
                                     <span class="status-text <?= $statusClass ?>">
                                         <?= $row['status'] ?>

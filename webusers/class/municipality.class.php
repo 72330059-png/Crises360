@@ -91,6 +91,17 @@ class Municipality extends DAL
         ]);
     }
 
+
+    public function getShelterById($id)
+{
+    return $this->getRowSafe(
+        "SELECT id, capacity, occupied, available
+         FROM shelters
+         WHERE id = ?",
+        [$id]
+    );
+}
+
     public function calculateStatus($capacity, $occupied)
     {
         if ($occupied >= $capacity) {
@@ -202,7 +213,7 @@ class Municipality extends DAL
 
         return explode("','", $matches[1]);
     }
-   
+
 
     public function getResources($org_id)
     {
@@ -213,41 +224,26 @@ class Municipality extends DAL
         return $this->getdata($sql, [$org_id]);
     }
 
-    public function addResource($data)
-    {
-        $sql = "INSERT INTO resources
-    (
-        organization_id,
-        resource_name,
-        category,
-        address,
-        contact_number,
-        opening_hours,
-        status,
-        notes
-    )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+  public function addResource($data) {
+    $sql = "INSERT INTO resources
+        (organization_id, resource_name, category, address,
+         contact_number, opening_hours, status, notes, lat, lng)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-        return $this->executeSafe($sql, [
+    return $this->executeSafe($sql, [
+        (int)$data['organization_id'],
+        $this->clean($data['resource_name']),
+        $this->clean($data['category']),
+        $this->clean($data['address']),
+        $this->clean($data['contact_number']),
+        $this->clean($data['opening_hours']),
+        $this->clean($data['status']),
+        $this->clean($data['notes']),
+        $data['lat'],
+        $data['lng']
+    ]);
+}
 
-            (int)$data['organization_id'],
-
-            $this->clean($data['resource_name']),
-
-            $this->clean($data['category']),
-
-            $this->clean($data['address']),
-
-            $this->clean($data['contact_number']),
-
-            $this->clean($data['opening_hours']),
-
-            $this->clean($data['status']),
-
-            $this->clean($data['notes'])
-
-        ]);
-    }
     public function updateResource($data)
     {
         $sql = "UPDATE resources SET
@@ -291,7 +287,7 @@ class Municipality extends DAL
         return $this->executeSafe($sql, [(int)$id]);
     }
 
- 
+
 
     public function getDonations($org_id)
     {
@@ -351,7 +347,7 @@ class Municipality extends DAL
 
         return explode("','", $matches[1]);
     }
-  
+
 
     public function getDisplacedPeople($org_id)
     {
@@ -411,7 +407,7 @@ class Municipality extends DAL
         return $this->executeSafe($sql, [$id]);
     }
 
-  
+
 
     public function totalShelters($org_id)
     {

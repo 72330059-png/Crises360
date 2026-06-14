@@ -258,6 +258,7 @@
             "searching": false,
             "lengthChange": false,
             "pageLength": 10,
+            "ordering": false,
             "language": {
                 "info": "Showing _START_ to _END_ of _TOTAL_ entries",
                 "paginate": {
@@ -275,8 +276,8 @@
             "ordering": true,
             "info": true,
             "lengthChange": false,
-            "pageLength": 10,
-            "order":[],
+            "pageLength": 13,
+            "order": [],
             "responsive": true,
             "dom": 'rt<"d-flex justify-content-between align-items-center mt-3"ip>',
             "columnDefs": [{
@@ -471,7 +472,11 @@
             success: function(response) {
 
                 if (response.status === 'success') {
+                    const modal = bootstrap.Modal.getInstance(
+                        document.getElementById('addIncidentModal')
+                    );
 
+                    modal.hide();
                     Swal.fire({
                         icon: 'success',
                         title: 'Success',
@@ -588,7 +593,6 @@
 
         row.find('.incident-status').html(`
         <select class="form-select edit-status">
-            <option ${status == 'Investigating' ? 'selected' : ''}>Investigating</option>
             <option ${status == 'In Progress' ? 'selected' : ''}>In Progress</option>
             <option ${status == 'Resolved' ? 'selected' : ''}>Resolved</option>
         </select>
@@ -773,4 +777,81 @@
     $('#statusFilter').on('change', filterIncidents);
 
     $('#dateFilter').on('change', filterIncidents);
+</script>
+<script>
+    function togglePassword() {
+        const input = document.getElementById('passwordInput');
+        const open = document.getElementById('eyeOpen');
+        const closed = document.getElementById('eyeClosed');
+        if (input.type === 'password') {
+            input.type = 'text';
+            open.style.display = 'none';
+            closed.style.display = 'block';
+        } else {
+            input.type = 'password';
+            open.style.display = 'block';
+            closed.style.display = 'none';
+        }
+    }
+
+    function toggleNotifDropdown() {
+        const d = document.getElementById('notifDropdown');
+        d.style.display = d.style.display === 'none' ? 'block' : 'none';
+    }
+
+    // close when clicking outside
+    document.addEventListener('click', function(e) {
+        const wrapper = document.querySelector('.notif-wrapper');
+        if (wrapper && !wrapper.contains(e.target)) {
+            document.getElementById('notifDropdown').style.display = 'none';
+        }
+    });
+
+    function markRead(id) {
+        $.post('actions/mark_read.php', {
+            id: id
+        }, function(res) {
+            if (res.status === 'success') {
+                location.reload(); // ← just this
+                $('#notif-' + id).fadeOut(300);
+                let badge = $('.notif-badge');
+                let count = parseInt(badge.text()) - 1;
+                if (count <= 0) {
+                    badge.hide();
+                    $('.notif-count').text('0 unread');
+                } else {
+                    badge.text(count);
+                    $('.notif-count').text(count + ' unread');
+                }
+            }
+        }, 'json');
+    }
+
+    function goToNeeds(id) {
+        markRead(id);
+        window.location.href = 'needs.php';
+    }
+</script>
+<script>
+    // Prevent sidebar toggle on small screens
+    var origToggle = document.getElementById('toggleSidebar');
+    if (origToggle) {
+        origToggle.addEventListener('click', function(e) {
+            if (window.innerWidth <= 768) {
+                e.stopImmediatePropagation();
+                e.preventDefault();
+            }
+        }, true); // true = capture phase, runs before existing handlers
+    }
+
+    // Also re-lock sidebar if window is resized down to mobile
+    window.addEventListener('resize', function() {
+        if (window.innerWidth <= 768) {
+            var sb = document.getElementById('crm-sidebar');
+            if (sb) {
+                sb.classList.remove('expanded');
+                sb.classList.add('collapsed');
+            }
+        }
+    });
 </script>

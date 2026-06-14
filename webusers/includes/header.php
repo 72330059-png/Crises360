@@ -25,7 +25,15 @@ $obj = new DAL();
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
 <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
 <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.4/main.min.css' rel='stylesheet' />
+<!-- iocn-->
+<!-- <link rel="icon" type="image/png" sizes="32x32" href="/uploads/logo3.png"> -->
+<!-- <link rel="apple-touch-icon" sizes="180x180" href="/uploads/logo3.png">     -->
 
+
+        <!-- <link rel="icon" type="image/png" sizes="32x32" href="/uploads/logonew.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/uploads/logonew.png"> -->
+
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
 <style>
     body {
         background-color: #f7f9fc;
@@ -54,30 +62,12 @@ $obj = new DAL();
 
     .main-content {
         margin-left: 230px;
+        padding-top: 90px;
+        transition: margin-left 0.25s ease;
     }
 
     .main-content .container-fluid {
         padding-top: 0;
-    }
-
-    .topbar {
-        position: sticky;
-
-        margin-left: 230px;
-        margin-right: 20px;
-        margin-top: 15px;
-
-        height: 80px;
-        background: white;
-        border-radius: 16px;
-        margin-bottom: 10px;
-        padding: 15px 25px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
-        z-index: 10;
     }
 
     .main-content .row:first-child {
@@ -363,4 +353,377 @@ $obj = new DAL();
     .dataTables_wrapper .dataTables_table.no-footer {
         border-bottom: none !important;
     }
+</style>
+<style>
+.top-nav {
+    position: absolute;    
+    top: 10px;
+    left: 240px;            
+    right: 10px;            
+    height: 80px;
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 30px;
+    z-index: 1000;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    margin: 0;              
+}
+.swal2-container{
+    z-index: 10000000 !important;
+}
+    .crm-nav-left {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .crm-nav-right {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .crm-divider {
+        width: 1px;
+        height: 25px;
+        background-color: #e2e8f0;
+        margin: 0 5px;
+    }
+
+    .crm-toggle-btn {
+        background: none;
+        border: none;
+        font-size: 18px;
+        color: #8392ab;
+        cursor: pointer;
+        padding: 5px;
+    }
+
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        background: #1e3a5f;
+        color: #fff;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 16px;
+        flex-shrink: 0;
+    }
+
+    .crm-user-dropdown {
+        position: relative;
+    }
+
+    .dropdown-menu {
+        position: absolute;
+        top: 50px;
+        right: 0;
+        width: 180px;
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, .1);
+        display: none;
+        padding: 10px 0;
+        z-index: 9999;
+        border: 1px solid #eee;
+    }
+
+    .dropdown-menu.show {
+        display: block !important;
+    }
+
+    .dropdown-menu li a {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 16px;
+        font-size: 13px;
+        color: #334155;
+        text-decoration: none;
+        transition: background .15s;
+    }
+
+    .dropdown-menu li a:hover {
+        background: #f8f9fa;
+    }
+
+    .admin-arrow {
+        transition: transform .3s;
+    }
+
+    .admin-arrow.rotate {
+        transform: rotate(180deg);
+    }
+
+    .notif-wrapper {
+        position: relative;
+    }
+
+    .notif-bell {
+        position: relative;
+        cursor: pointer;
+        font-size: 18px;
+        color: #1e3a5f;
+        padding: 8px;
+    }
+
+    .notif-badge {
+        position: absolute;
+        top: 0;
+        right: 0;
+        background: #e74c3c;
+        color: white;
+        border-radius: 50%;
+        font-size: 10px;
+        width: 18px;
+        height: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+    }
+
+    .notif-dropdown {
+        position: absolute;
+        right: 0;
+        top: 45px;
+        width: 340px;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, .12);
+        z-index: 9999;
+        max-height: 420px;
+        overflow-y: auto;
+    }
+
+    .notif-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 18px;
+        border-bottom: 1px solid #f0f0f0;
+        font-weight: 600;
+        font-size: 14px;
+        color: #0f2238;
+    }
+
+    .notif-count {
+        font-size: 12px;
+        color: #9aa7b8;
+        font-weight: 400;
+    }
+
+    .notif-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 18px;
+        border-bottom: 1px solid #f8f9fa;
+        transition: .2s;
+    }
+
+    .notif-item:hover {
+        background: #f9fbfd;
+    }
+
+    .notif-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .notif-text {
+        flex-grow: 1;
+    }
+
+    .notif-text p {
+        font-size: 13px;
+        color: #2d3748;
+        margin: 0 0 3px;
+        line-height: 1.4;
+    }
+
+    .notif-text span {
+        font-size: 11px;
+        color: #9aa7b8;
+    }
+
+    .notif-seen-btn {
+        border: none;
+        background: #eef2f7;
+        border-radius: 50%;
+        width: 28px;
+        height: 28px;
+        cursor: pointer;
+        color: #1e3a5f;
+        font-size: 11px;
+        flex-shrink: 0;
+        transition: .2s;
+    }
+
+    .notif-seen-btn:hover {
+        background: #1e3a5f;
+        color: white;
+    }
+
+    .notif-empty {
+        padding: 30px;
+        text-align: center;
+        color: #9aa7b8;
+    }
+
+    .notif-empty i {
+        font-size: 30px;
+        margin-bottom: 8px;
+        color: #c5d0dc;
+        display: block;
+    }
+
+    .notif-empty p {
+        font-size: 13px;
+        margin: 0;
+    }
+
+    .crm-modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, .45);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(3px);
+    }
+
+    .crm-modal-content {
+        background: #fff;
+        border-radius: 18px;
+        padding: 30px;
+        width: 420px;
+        max-width: 92vw;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, .2);
+        position: relative;
+    }
+
+    .crm-modal-content h2 {
+        font-size: 18px;
+        font-weight: 700;
+        color: #1b2559;
+        margin-bottom: 20px;
+    }
+
+    .crm-modal-content label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #8392ab;
+        text-transform: uppercase;
+        letter-spacing: .4px;
+        display: block;
+        margin-bottom: 5px;
+        margin-top: 12px;
+    }
+
+    .close-modal {
+        position: absolute;
+        top: 16px;
+        right: 20px;
+        font-size: 20px;
+        cursor: pointer;
+        color: #8392ab;
+        background: none;
+        border: none;
+    }
+
+    .crm-btn {
+        width: 100%;
+        margin-top: 18px;
+        padding: 10px;
+        background: #1e3a5f;
+        color: #fff;
+        border: none;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background .15s;
+    }
+
+    .crm-btn:hover {
+        background: #162d4a;
+    }
+</style>
+
+<style>
+@media (max-width: 1100px) {
+    .sidebar { display: none; }
+    .top-nav { left: 10px; right: 10px; }
+    .main-content { margin-left: 0; }
+    .police-layout { grid-template-columns: 1fr; }
+}
+
+
+@media (max-width: 767px) {
+    .top-nav { left: 8px; right: 8px; top: 8px; height: 60px; padding: 0 12px; }
+    .main-content { padding-top: 78px; padding-left: 8px; padding-right: 8px; }
+
+    .crm-nav-left { min-width: 0; overflow: hidden; flex: 1; }
+    .crm-nav-left div > div { display: none; }
+    .crm-nav-left span { font-size: 13px !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+
+    .user-details .user-name { display: none !important; }
+    .user-details .user-role { font-size: 12px; }
+
+    .col-md-2, .col-md-3, .col-md-4,
+    .col-md-6, .col-md-8,
+    .col-lg-4, .col-lg-8 {
+        width: 100% !important;
+        flex: 0 0 100% !important;
+        max-width: 100% !important;
+    }
+
+    .card.p-4 { padding: 12px !important; }
+    .card.p-3 { padding: 10px !important; }
+
+    .map-toolbar { flex-wrap: wrap; gap: 6px; }
+    #map { height: 340px; }
+    .side-panel { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 1024px) {
+    .col-lg-4, .col-lg-8 {
+        width: 100% !important;
+        flex: 0 0 100% !important;
+        max-width: 100% !important;
+    }
+}
+
+@media (max-width: 600px) {
+    .police-nav-sub { display: none !important; }
+    .crm-nav-right .user-details { display: none; }
+    .crm-nav-left { max-width: 180px; overflow: hidden; }
+    .crm-nav-left span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+}
+
+@media (max-width: 480px) {
+    .col-md-2 {
+        width: 50% !important;
+        flex: 0 0 50% !important;
+        max-width: 50% !important;
+    }
+
+    .side-panel { grid-template-columns: 1fr; }
+    #map { height: 280px; }
+    .card.p-4 { padding: 10px !important; }
+    .action-buttons .btn { padding: 4px 6px; font-size: 11px; }
+}
 </style>

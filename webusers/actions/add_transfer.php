@@ -1,48 +1,27 @@
 <?php
-
 session_start();
-
 require_once("../class/hospital.class.php");
-// echo "<pre>";
 
-// print_r($_POST);
-
-// exit;
-$hospital = new hospital_dashboard();
-
-$hospital_id = $_POST['hospital_id'];
-
-$destination_organization_id =
-$_POST['destination_organization_id'];
-
+$hospital     = new hospital_dashboard();
+$hospital_id  = $_POST['hospital_id'];
+$dest_org_id  = $_POST['destination_organization_id'];
 $patients_count = $_POST['patients_count'];
 
-// $status = $_POST['status'];
+$transfer_id = $hospital->addTransfer($hospital_id, $dest_org_id, $patients_count);
 
-$result = $hospital->addTransfer(
-    $hospital_id,
-    $destination_organization_id,
-    $patients_count
-);
-// var_dump($result);
-// exit;
-if($result){
+if ($transfer_id) {
+    $senderName = $hospital->getHospitalNameByHospitalId($hospital_id);
 
-    /*UPDATE TOTAL PATIENTS*/
+    $message = "🏥 New transfer request from " . $senderName . " — " . $patients_count . " patient(s). Please accept or reject.";
+    $hospital->addHospitalNotification(
+        $dest_org_id,                        // to
+        $_SESSION['org_id'],                 // from
+        $transfer_id,                        // transfer
+        $message,
+        'transfer_request'
+    );
 
-    // $hospital->decreasePatients(
-    //     $hospital_id,
-    //     $patients_count
-    // );
-
-    echo json_encode([
-        "success" => true
-    ]);
-
-}else{
-
-    echo json_encode([
-        "success" => false
-    ]);
-
+    echo json_encode(["success" => true]);
+} else {
+    echo json_encode(["success" => false]);
 }

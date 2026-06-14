@@ -4,13 +4,17 @@ require_once("DAL.class.php");
 
 class muni extends DAL
 {
+    public function getNeedById($id)
+    {
+        $sql = "SELECT id, need_name, organization_id FROM needs WHERE id = ?";
+        return $this->getRowSafe($sql, [(int)$id]);
+    }
 
-    // public function getAllShelters()
-    // {
-    //     $sql = "SELECT * FROM shelters ORDER BY created_at DESC";
-
-    //     return $this->getdata($sql);
-    // }
+public function insertNeedNotification($org_id, $message) {
+    $sql = "INSERT INTO notifications (target_org_id, message, type, is_read, created_at) 
+            VALUES (?, ?, 'need_response', 0, NOW())";
+    return $this->executeSafe($sql, [$org_id, $message]);
+}
     public function fulfillNeed($id)
     {
         $sql = "UPDATE needs 
@@ -228,87 +232,49 @@ class muni extends DAL
         return $this->getdata($sql);
     }
 
+public function insertShelter(
+    $organization_id,
+    $organization_name,
+    $organization_location,
+    $organization_email,
+    $organization_password,
+    $shelter_name,
+    $location,
+    $capacity,
+    $shelter_lat = null, $shelter_lng = null,
+    $org_lat = null,     $org_lng = null
+) {
+    if (!empty($organization_id)) {
+        $final_organization_id = $organization_id;
+    } else {
+        $type = "municipality";
+        $hashed_password = password_hash($organization_password, PASSWORD_DEFAULT);
 
+        $sqlOrg = "INSERT INTO organizations
+            (name, type, location, email, password, lat, lng)
+            VALUES (?, ?, ?, ?, ?, ?, ?)";
 
-    public function insertShelter(
-        $organization_id,
-        $organization_name,
-        $organization_location,
-        $organization_email,
-        $organization_password,
-        $shelter_name,
-        $location,
-        $capacity
-    ) {
+        $final_organization_id = $this->executeSafe($sqlOrg, [
+            $organization_name, $type, $organization_location,
+            $organization_email, $hashed_password,
+            $org_lat, $org_lng
+        ]);
 
-        // CASE 1:
-        // existing organization selected
-
-        if (!empty($organization_id)) {
-
-            $final_organization_id = $organization_id;
-        } else {
-
-            // CASE 2:
-            // create new municipality
-
-            $type = "municipality";
-
-            $hashed_password = password_hash(
-                $organization_password,
-                PASSWORD_DEFAULT
-            );
-
-            $sqlOrg = "INSERT INTO organizations
-        (name, type, location, email, password)
-        VALUES (?, ?, ?, ?, ?)";
-
-            $final_organization_id = $this->executeSafe(
-                $sqlOrg,
-                [
-                    $organization_name,
-                    $type,
-                    $organization_location,
-                    $organization_email,
-                    $hashed_password
-                ]
-            );
-
-            if (
-                !$final_organization_id ||
-                is_array($final_organization_id)
-            ) {
-                return false;
-            }
-        }
-
-        // DEFAULT VALUES
-
-        $occupied = 0;
-        $status = "open";
-        // INSERT SHELTER
-
-        $sqlShelter = "INSERT INTO shelters
-    (
-        organization_id,
-        shelter_name,
-        location,
-        capacity,
-        occupied,
-        status
-    )
-    VALUES (?, ?, ?, ?, ?,?)";
-
-        return $this->executeSafe(
-            $sqlShelter,
-            [
-                $final_organization_id,
-                $shelter_name,
-                $location,
-                $capacity,
-                $occupied,
-                $status
-            ]
-        );
+        if (!$final_organization_id || is_array($final_organization_id)) return false;
     }
+
+    $occupied = 0;
+    $status = "open";
+
+    $sqlShelter = "INSERT INTO shelters
+        (organization_id, shelter_name, location, capacity, occupied, status, lat, lng)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+
+    return $this->executeSafe($sqlShelter, [
+        $final_organization_id, $shelter_name, $location,
+        $capacity, $occupied, $status,
+        $shelter_lat, $shelter_lng
+    ]);
+}
+
 }

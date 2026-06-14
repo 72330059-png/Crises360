@@ -13,4 +13,5 @@
 .externalNativeBuild
 .cxx
 local.properties
-config/db.php
+web/.env
+webusers/.env

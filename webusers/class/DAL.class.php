@@ -264,12 +264,19 @@ class DAL
         return $escaped;
     }
 
-    public function validatePhone($phone)
-    {
-        $phone = trim($phone);
+    // public function validatePhone($phone)
+    // {
+    //     $phone = trim($phone);
 
-        return preg_match('/^\+?[0-9]{8,15}$/', $phone);
-    }
+    //     return preg_match('/^\+?[0-9]{8,15}$/', $phone);
+    // }for public universal
+
+ public function validatePhone($phone)
+{
+    $phone = trim($phone);
+
+    return preg_match('/^(\+961|961|0)?(3|70|71|76|78|79|81)\d{6}$/', $phone);
+}
     public function clean($value)
     {
         return trim($value ?? '');
@@ -402,5 +409,11 @@ class DAL
         $conn->close();
 
         return $row ?: null;
+    }
+    public function insertNotification($message, $type)
+    {
+        $sql = "INSERT INTO notifications (message, type) 
+            VALUES (?, ?)";
+        return $this->executeSafe($sql, [$message, $type]);
     }
 }

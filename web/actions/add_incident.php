@@ -1,10 +1,6 @@
-
 <?php
-
 session_start();
-
 header('Content-Type: application/json');
-
 require_once("../class/incidents.class.php");
 
 if (!isset($_SESSION['logged_in'])) {

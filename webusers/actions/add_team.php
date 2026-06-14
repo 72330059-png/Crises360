@@ -1,9 +1,6 @@
 <?php
-
 session_start();
-
 require_once("../class/hospital.class.php");
-
 header("Content-Type: application/json");
 
 if ($_SERVER['REQUEST_METHOD'] != 'POST') {
@@ -24,13 +21,9 @@ $current_location = trim($_POST['current_location']);
 $members = json_decode($_POST['members'], true);
 
 $hospital = new hospital_dashboard();
-
-$members_count = count($members);
-
 $team_id = $hospital->addTeam(
     $hospital_id,
     $team_name,
-    $members_count,
     $status,
     $current_location
 );

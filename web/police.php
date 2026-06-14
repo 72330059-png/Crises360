@@ -3,7 +3,7 @@ session_start();
 require_once("class/police.class.php");
 require_once("class/incidents.class.php");
 
-if (!isset($_SESSION['logged_in']) || $_SESSION['role'] !== 'admin') {
+if (!isset($_SESSION['logged_in'])) {
     header("Location: login.php");
     exit;
 }
@@ -36,6 +36,38 @@ $activeIncidents = array_filter($activeIncidents, function ($i) {
             background: #F4F7FE;
             font-family: 'DM Sans', sans-serif;
             color: #1B2559;
+        }
+
+        .action-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-view {
+            background: #eff6ff;
+            color: #2563eb;
+        }
+
+        .btn-view:hover {
+            background: #2563eb;
+            color: #fff;
+        }
+
+        .btn-delete {
+            background: #fff5f5;
+            color: #ee5d50;
+        }
+
+        .btn-delete:hover {
+            background: #ee5d50;
+            color: #fff;
         }
 
         .btn-here {
@@ -266,7 +298,6 @@ $activeIncidents = array_filter($activeIncidents, function ($i) {
 
         }
 
-        /* REMOVE BOOTSTRAP */
         .alerts-table tr,
         .alerts-table td {
             border: none !important;
@@ -278,10 +309,6 @@ $activeIncidents = array_filter($activeIncidents, function ($i) {
         .alerts-table tbody tr {
             transition: 0.2s;
         }
-
-        /* .alerts-table tbody tr:hover {
-            transform: translateX(3px);
-        } */
 
         /* ICON TD */
         .alert-icon-td {
@@ -461,6 +488,163 @@ $activeIncidents = array_filter($activeIncidents, function ($i) {
         .updates-wrapper::-webkit-scrollbar-track {
             background: transparent;
         }
+
+   
+@media (max-width: 991px) {
+
+    .main-content {
+        margin-left: 70px !important;
+        padding: 15px !important;
+        width: calc(100% - 70px) !important;
+    }
+
+    /* Header */
+    .main-content>.d-flex:first-child {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 15px;
+    }
+
+    /* Search + Filters */
+    #policeSearch,
+    #regionFilter,
+    #typeFilter {
+        max-width: 100% !important;
+    }
+
+    /* Stats cards scroll */
+    .row.g-3.mb-4 {
+        flex-wrap: nowrap !important;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding-bottom: 10px;
+        scrollbar-width: thin;
+    }
+
+    .row.g-3.mb-4>.col {
+        flex: 0 0 220px !important;
+        min-width: 220px !important;
+    }
+
+    .row.g-3.mb-4::-webkit-scrollbar {
+        height: 6px;
+    }
+
+    .row.g-3.mb-4::-webkit-scrollbar-thumb {
+        background: #d6d6d6;
+        border-radius: 20px;
+    }
+
+    .db-stat-card {
+        height: 100%;
+    }
+
+    /* Recent updates card */
+    .alerts-card {
+        padding: 18px;
+    }
+
+    .alert-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 16px;
+    }
+
+    .update-line {
+        left: 23px;
+    }
+
+    /* Mission filter section */
+    #missionSearchBox {
+        width: 100%;
+    }
+
+    #missionTable_filter input {
+        width: 100% !important;
+        margin-left: 0 !important;
+    }
+}
+
+@media (max-width: 768px) {
+
+    .main-content {
+        margin-left: 70px !important;
+        width: calc(100% - 70px) !important;
+        padding: 10px !important;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+    }
+
+    .modern-card {
+        padding: 15px;
+    }
+
+    /* Filters stack nicely */
+    .main-content .d-flex.gap-2.mb-4 {
+        flex-wrap: wrap;
+    }
+
+    #policeSearch,
+    #regionFilter,
+    #typeFilter {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    /* Mission controls */
+    #missionStatusFilter {
+        width: 100%;
+    }
+
+    /* Updates section */
+    .alert-title {
+        font-size: 14px;
+    }
+
+    .alert-subtext,
+    .update-date,
+    .update-time {
+        font-size: 11px;
+    }
+
+    /* Buttons */
+    .btn-here {
+        white-space: nowrap;
+    }
+}
+@media (max-width: 576px) {
+
+    .main-content {
+        margin-left: 70px !important;
+        width: calc(100% - 70px) !important;
+        padding: 8px !important;
+    }
+
+    .row.g-3.mb-4>.col {
+        flex: 0 0 200px !important;
+        min-width: 200px !important;
+    }
+
+    .db-main-value {
+        font-size: 1rem;
+    }
+
+    .db-label {
+        font-size: 0.75rem;
+    }
+
+    .db-icon-box {
+        width: 40px;
+        height: 40px;
+    }
+
+    .modern-card,
+    .alerts-card {
+        padding: 12px;
+    }
+}
     </style>
 </head>
 <div class="modal fade" id="addUnitModal" tabindex="-1">
@@ -1061,6 +1245,13 @@ $activeIncidents = array_filter($activeIncidents, function ($i) {
                             <!-- Search -->
                             <div id="missionSearchBox"></div>
 
+                            <select id="missionStatusFilter" class="form-select" style="max-width:160px; border-radius:12px; font-size:13px;">
+                                <option value="">All Statuses</option>
+                                <option value="active">Active</option>
+                                <option value="completed">Completed</option>
+                                <option value="pending">Pending</option>
+                            </select>
+
                             <!-- Button -->
                             <button class="btn btn-sm btn-here rounded-pill px-3"
                                 style="font-size: 12px;" data-bs-toggle="modal" data-bs-target="#addMissionModal">
@@ -1108,7 +1299,7 @@ $activeIncidents = array_filter($activeIncidents, function ($i) {
                                     }
 
                                     ?>
-                                    <tr>
+                                    <tr data-id="<?= $mission['mission_id'] ?>">
                                         <!-- Mission -->
                                         <td class="fw-bold text-dark mission_title">
                                             <?= $mission['title']; ?>
@@ -1164,7 +1355,11 @@ $activeIncidents = array_filter($activeIncidents, function ($i) {
                                                 data-id="<?= $mission['mission_id']; ?>"
                                                 data-incident="<?= $mission['incident_id'] ?? 0; ?>">
                                             </i>
-
+                                            <button class="action-btn btn-delete cancelMissionXBtn"
+                                                data-id="<?= $mission['mission_id']; ?>"
+                                                title="Cancel Mission">
+                                                <i class="fa-solid fa-xmark"></i>
+                                            </button>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
@@ -1247,7 +1442,6 @@ $activeIncidents = array_filter($activeIncidents, function ($i) {
                 }
             });
 
-            // move search input beside title/button
             $('#missionTable_filter').appendTo('#missionSearchBox');
 
         });
@@ -1400,9 +1594,12 @@ $activeIncidents = array_filter($activeIncidents, function ($i) {
             <option ${status == 'off_duty' ? 'selected' : ''}>off_duty</option>
             </select> `);
 
-            row.find('td:last').html(`
-            <button class="btn btn-success btn-sm saveBtnpol" data-unitid="${unitId}" data-orgid="${orgId}"> Save </button>
-            <button class="btn btn-secondary btn-sm cancelBtnpol" > Cancel </button>`);
+            row.find('td:last').html(`<div class="d-flex gap-2 justify-content-center align-items-center">
+            <button class="btn btn-success btn-sm saveBtnpol" data-unitid="${unitId}" data-orgid="${orgId}">
+            Save </button>
+
+            <button class="btn btn-secondary btn-sm cancelBtnpol">Cancel</button>
+            </div>`);
         });
 
         $(document).on('click', '.saveBtnpol', function() {
@@ -1533,7 +1730,6 @@ $activeIncidents = array_filter($activeIncidents, function ($i) {
 
             let incidentId = $(this).data('incident');
 
-            // Add this after row.find('.mission_title').html(...)
             row.find('td:nth-child(2)').html(`
             <select class="form-select edit-incident-id">
             <option value="0">— No incident —</option>
@@ -1573,20 +1769,18 @@ $activeIncidents = array_filter($activeIncidents, function ($i) {
 
             row.find('.mission_status').html(`
             <select class="form-select edit-mission-status">
-            <option value="active" ${status == 'active' ? 'selected' : ''}> Active </option>
             <option value="completed" ${status == 'completed' ? 'selected' : ''}> Completed </option>
-            <option value="late" ${status == 'late' ? 'selected' : ''}> Late </option>
             <option value="sent " ${status == 'sent' ? 'selected' : ''}> Sent </option>
-            <option value="rejected " ${status == 'rejected' ? 'selected' : ''}> Rejected </option>
             </select> `);
 
-            row.find('.mission_action').html(`<button class="btn btn-success btn-sm saveMissionBtn" data-id="${missionId}">
-            Save
-            </button>
+            row.find('.mission_action').html(`<div class="d-flex gap-2 justify-content-center">
+            <button class="btn btn-success btn-sm saveMissionBtn" data-id="${missionId}">
+            Save </button>
 
             <button class="btn btn-secondary btn-sm cancelMissionBtn">
             Cancel
-            </button> `);
+            </button>
+            </div>`);
         });
 
         $(document).on('click', '.saveMissionBtn', function() {
@@ -1642,8 +1836,117 @@ $activeIncidents = array_filter($activeIncidents, function ($i) {
             location.reload();
 
         });
-    </script>
 
+        $('#missionStatusFilter').on('change', function() {
+            missionTable.column(5).search(this.value).draw();
+        });
+        $(document).on('click', '.cancelMissionXBtn', function() {
+            let missionId = $(this).data('id');
+            let row = $(this).closest('tr');
+            let title = row.find('.mission_title').text().trim();
+
+            Swal.fire({
+                title: 'Cancel Mission?',
+                html: `<b>${title}</b><br><small style="color:#94a3b8">Assigned units will be freed and notified.</small>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ee5d50',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, cancel it'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: 'actions/cancel_mission.php',
+                        type: 'POST',
+                        data: {
+                            mission_id: missionId
+                        },
+                        dataType: 'json',
+                        success: function(response) {
+                            if (response.status === 'success') {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Canceled',
+                                    text: response.message,
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                }).then(() => {
+                                    location.reload(); 
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: response.message
+                                });
+                            }
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+<script>
+function pollMissions() {
+    if ($('.saveMissionBtn').length > 0) return;
+
+    $.getJSON('actions/poll_missions.php', function(data) {
+        if (!data.missions) return;
+        $.each(data.missions, function(_, m) {
+            let row = $('#missionTable tr[data-id="' + m.id + '"]');
+            if (!row.length) return;
+            let span = row.find('.mission_status span');
+            if (span.text().trim().toLowerCase() === m.status.trim().toLowerCase()) return;
+
+            span.text(m.status);
+            span.removeClass('status-warning status-safe status-danger');
+            let s = m.status.toLowerCase();
+            if      (s === 'active')    span.addClass('status-warning');
+            else if (s === 'completed') span.addClass('status-safe');
+            else                        span.addClass('status-danger');
+
+            row.css('background', '#fffbe6');
+            setTimeout(() => row.css('background', ''), 1500);
+        });
+    });
+}
+setInterval(pollMissions, 10000);
+</script>
+<script>
+function pollUnits() {
+    if ($('.saveBtnpol').length > 0) return; 
+
+    $.getJSON('actions/poll_units.php', function(data) {
+        if (!data.units) return;
+        $.each(data.units, function(_, u) {
+            let row = $('#policeTable tr').filter(function() {
+                return $(this).find('.editpol').data('unitid') == u.id;
+            });
+            if (!row.length) return;
+
+            let span = row.find('.unit_status span');
+            if (span.text().trim().toLowerCase() === u.status.trim().toLowerCase()) return;
+
+            // Update text
+            span.text(u.status);
+
+            // Swap class
+            span.removeClass('status-safe status-warning status-danger');
+            if      (u.status === 'available')  span.addClass('status-safe');
+            else if (u.status === 'on_mission') span.addClass('status-warning');
+            else                                span.addClass('status-danger');
+
+            // Flash row
+            row.css('background', '#fffbe6');
+            setTimeout(() => row.css('background', ''), 1500);
+        });
+    });
+}
+
+// Run all 3 polls every 10 seconds
+setInterval(pollMissions, 10000);
+setInterval(pollUnits, 10000);
+</script>
 </body>
 
 </html>

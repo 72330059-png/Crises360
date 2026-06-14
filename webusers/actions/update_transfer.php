@@ -1,9 +1,6 @@
 <?php
-
 session_start();
-
 header("Content-Type: application/json");
-
 require_once("../class/hospital.class.php");
 
 $hospital = new hospital_dashboard();

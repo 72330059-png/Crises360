@@ -24,8 +24,8 @@ class hospital_dashboard extends DAL
     public function getTodayStats($hospital_id)
     {
         $sql = "SELECT *
-                FROM hospital_daily_stats
-                WHERE hospital_id = ?";
+            FROM hospital_daily_stats
+            WHERE hospital_id = ?";
 
         $data = $this->getdata($sql, [$hospital_id]);
 
@@ -141,7 +141,6 @@ class hospital_dashboard extends DAL
     public function addTeam(
         $hospital_id,
         $team_name,
-        $members_count,
         $status,
         $current_location
     ) {
@@ -150,17 +149,15 @@ class hospital_dashboard extends DAL
                 (
                     hospital_id,
                     team_name,
-                    members_count,
                     status,
                     current_location
                 )
                 VALUES
-                (?, ?, ?, ?, ?)";
+                (?, ?, ?, ?)";
 
         return $this->executeSafe($sql, [
             $hospital_id,
             $team_name,
-            $members_count,
             $status,
             $current_location
         ]);
@@ -232,43 +229,6 @@ class hospital_dashboard extends DAL
             $role
         ]);
     }
-
-    public function getTransfers($hospital_id)
-    {
-        $sql = "SELECT
-                ht.*,
-                o.name AS destination_name
-            FROM hospital_transfers ht
-            INNER JOIN organizations o
-            ON ht.destination_organization_id = o.id
-            WHERE ht.hospital_id = ?
-            ORDER BY ht.request_time DESC";
-
-        return $this->getdata($sql, [$hospital_id]);
-    }
-
-
-    public function addTransfer(
-        $hospital_id,
-        $destination_organization_id,
-        $patients_count
-    ) {
-        $sql = "INSERT INTO hospital_transfers
-                (
-                    hospital_id,
-                    destination_organization_id,
-                    request_time,
-                    patients_count
-                )
-                VALUES
-                (?, ?, NOW(), ?)";
-        return $this->executeSafe($sql, [
-            $hospital_id,
-            $destination_organization_id,
-            $patients_count,
-        ]);
-    }
-
 
     public function updateHospitalStatus(
         $hospital_id,
@@ -416,5 +376,165 @@ class hospital_dashboard extends DAL
             (int)$children_martyrs,
             (int)$hospital_id
         ]);
+    }
+
+
+    public function addTransfer($hospital_id, $destination_organization_id, $patients_count)
+    {
+        $sql = "INSERT INTO hospital_transfers
+                (hospital_id, destination_organization_id, request_time, patients_count, status)
+            VALUES (?, ?, NOW(), ?, 'pending')";
+        return $this->executeSafe($sql, [$hospital_id, $destination_organization_id, $patients_count]);
+    }
+
+    public function updateTransferStatus($transfer_id, $status)
+    {
+        $sql = "UPDATE hospital_transfers SET status = ? WHERE id = ?";
+        return $this->executeSafe($sql, [$status, $transfer_id]);
+    }
+
+
+    public function getTransferById($transfer_id)
+    {
+        $sql = "SELECT * FROM hospital_transfers WHERE id = ?";
+        return $this->getRowSafe($sql, [$transfer_id]);
+    }
+
+
+    public function getOrgIdByHospitalId($hospital_id)
+    {
+        $sql = "SELECT organization_id FROM hospitals WHERE id = ?";
+        $row = $this->getRowSafe($sql, [$hospital_id]);
+        return $row['organization_id'] ?? null;
+    }
+
+
+    public function getHospitalNameByHospitalId($hospital_id)
+    {
+        $sql = "SELECT o.name FROM hospitals h
+                JOIN organizations o ON o.id = h.organization_id
+                WHERE h.id = ?";
+        $row = $this->getRowSafe($sql, [$hospital_id]);
+        return $row['name'] ?? 'Unknown Hospital';
+    }
+
+
+    public function addHospitalNotification($to_org_id, $from_org_id, $transfer_id, $message, $type)
+    {
+        $sql = "INSERT INTO hospital_notifications
+                    (to_hospital_org_id, from_hospital_org_id, transfer_id, message, type, is_read)
+                VALUES (?, ?, ?, ?, ?, 0)";
+        return $this->executeSafe($sql, [$to_org_id, $from_org_id, $transfer_id, $message, $type]);
+    }
+
+
+    public function getHospitalNotifications($org_id)
+    {
+        $sql = "SELECT * FROM hospital_notifications
+                WHERE to_hospital_org_id = ? AND is_read = 0
+                ORDER BY created_at DESC";
+        return $this->getdata($sql, [$org_id]);
+    }
+
+
+    public function getHospitalNotifCount($org_id)
+    {
+        $sql = "SELECT COUNT(*) as cnt FROM hospital_notifications
+                WHERE to_hospital_org_id = ? AND is_read = 0";
+        $row = $this->getRowSafe($sql, [$org_id]);
+        return (int)($row['cnt'] ?? 0);
+    }
+
+
+    public function markHospitalNotifRead($id)
+    {
+        $sql = "UPDATE hospital_notifications SET is_read = 1 WHERE id = ?";
+        return $this->executeSafe($sql, [$id]);
+    }
+
+
+    public function getTransfers($hospital_id)
+    {
+        $sql = "SELECT ht.*,
+                       o.name AS destination_name
+                FROM hospital_transfers ht
+                LEFT JOIN organizations o ON o.id = ht.destination_organization_id
+                WHERE ht.hospital_id = ?
+                ORDER BY ht.request_time DESC";
+        return $this->getdata($sql, [$hospital_id]);
+    }
+
+
+    public function getIncomingTransfers($org_id)
+    {
+        $sql = "SELECT ht.*,
+                       o.name AS sender_name
+                FROM hospital_transfers ht
+                LEFT JOIN organizations o ON o.id = (
+                    SELECT organization_id FROM hospitals WHERE id = ht.hospital_id
+                )
+                WHERE ht.destination_organization_id = ? AND ht.status = 'pending'
+                ORDER BY ht.request_time DESC";
+        return $this->getdata($sql, [$org_id]);
+    }
+
+
+
+    public function updateHospitalCards(
+        $hospital_id,
+        $available_beds,
+        $total_beds,
+        $available_icu_beds,
+        $icu_beds,
+        $staff_on_duty,
+        $ambulances
+    ) {
+        $sql = "UPDATE hospitals SET
+                    available_beds     = ?,
+                    total_beds         = ?,
+                    available_icu_beds = ?,
+                    icu_beds           = ?,
+                    staff_on_duty      = ?,
+                    ambulances         = ?
+                WHERE id = ?";
+        return $this->executeSafe($sql, [
+            $available_beds,
+            $total_beds,
+            $available_icu_beds,
+            $icu_beds,
+            $staff_on_duty,
+            $ambulances,
+            $hospital_id
+        ]);
+    }
+
+    public function updateDailyStatsCards($hospital_id, $total_patients, $critical_cases)
+    {
+        return $this->executeSafe(
+            "UPDATE hospital_daily_stats
+         SET total_patients = ?, critical_cases = ?
+         WHERE hospital_id = ?",
+            [$total_patients, $critical_cases, $hospital_id]
+        );
+    }
+    public function updateTotalPatients($hospital_id, $total_patients)
+    {
+        return $this->executeSafe(
+            "UPDATE hospital_daily_stats
+         SET total_patients = ?
+         WHERE hospital_id = ?",
+            [$total_patients, $hospital_id]
+        );
+    }
+    public function getTotalPatients($hospital_id)
+    {
+        $row = $this->getRowSafe(
+            "SELECT total_patients
+         FROM hospital_daily_stats
+         WHERE hospital_id = ?",
+            [$hospital_id]
+        );
+
+        return (int)($row['total_patients'] ?? 0);
     }
 }
