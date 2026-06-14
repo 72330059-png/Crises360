@@ -36,12 +36,12 @@ public class Notifications extends AppCompatActivity {
 
     private String loginDate;
 
-    private static final String API_ALERTS    = "http://192.168.0.106/crises_api/get_alerts.php";
-    private static final String API_MAP       = "http://192.168.0.106/crises_api/get_map_data.php";
-    private static final String API_NEWS      = "http://192.168.0.106/crises_api/get_news.php";
-    private static final String API_HOSPITALS = "http://192.168.0.106/crises_api/get_hospitals.php";
-    private static final String API_NEEDS     = "http://192.168.0.106/crises_api/get_needs.php";
-    private static final String API_SHELTERS  = "http://192.168.0.106/crises_api/get_shelters.php";
+    private static final String API_ALERTS    = "https://crises360-mobile-api.onrender.com/get_alerts.php";
+    private static final String API_MAP       = "https://crises360-mobile-api.onrender.com/get_map_data.php";
+    private static final String API_NEWS      = "https://crises360-mobile-api.onrender.com/get_news.php";
+    private static final String API_HOSPITALS = "https://crises360-mobile-api.onrender.com/get_hospitals.php";
+    private static final String API_NEEDS     = "https://crises360-mobile-api.onrender.com/get_needs.php";
+    private static final String API_SHELTERS  = "https://crises360-mobile-api.onrender.com/get_shelters.php";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

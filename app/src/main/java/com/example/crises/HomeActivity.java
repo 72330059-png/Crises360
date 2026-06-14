@@ -72,7 +72,7 @@ public class HomeActivity extends BaseActivity {
     private static final int BACKGROUND_LOCATION_REQUEST   = 100;
     private static final int NOTIFICATION_PERMISSION_REQUEST = 101; // NEW
     private static final String API_URL =
-            "http://192.168.0.106/crises_api/get_map_data.php";
+            "https://crises360-mobile-api.onrender.com/get_map_data.php";
     private final List<JSONObject> zoneList = new ArrayList<>();
     private boolean zonesLoaded = false;
 

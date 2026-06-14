@@ -46,7 +46,7 @@ public class Hospitals extends AppCompatActivity {
     private final String[] statuses = {"All", "Safe", "Warning", "Dangerous"};
 
     private RequestQueue queue;
-    private static final String BASE_URL  = "http://192.168.0.106/crises_api/get_hospitals.php";
+    private static final String BASE_URL  = "https://crises360-mobile-api.onrender.com/get_hospitals.php";
     private static final int    RADIUS_KM = 50;
 
     private FusedLocationProviderClient fusedLocationClient;

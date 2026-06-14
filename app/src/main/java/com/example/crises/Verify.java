@@ -86,12 +86,12 @@ public class Verify extends AppCompatActivity {
     private void sendCode() {
         new Thread(() -> {
             try {
-                URL url = new URL("http://192.168.0.106/crises_api/send_2fa.php");
+                URL url = new URL("https://crises360-mobile-api.onrender.com/send_2fa.php");
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("POST");
                 conn.setDoOutput(true);
-                conn.setConnectTimeout(8000);
-                conn.setReadTimeout(8000);
+                conn.setConnectTimeout(60000);
+                conn.setReadTimeout(60000);
 
                 String data = "email=" + URLEncoder.encode(email, "UTF-8");
                 OutputStream os = conn.getOutputStream();
@@ -137,12 +137,12 @@ public class Verify extends AppCompatActivity {
     private void verifyCode(String code) {
         new Thread(() -> {
             try {
-                URL url = new URL("http://192.168.0.106/crises_api/verify_2fa.php");
+                URL url = new URL("https://crises360-mobile-api.onrender.com/verify_2fa.php");
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("POST");
                 conn.setDoOutput(true);
-                conn.setConnectTimeout(8000);
-                conn.setReadTimeout(8000);
+                conn.setConnectTimeout(60000);
+                conn.setReadTimeout(60000);
 
                 String data = "email=" + URLEncoder.encode(email, "UTF-8")
                         + "&code=" + URLEncoder.encode(code, "UTF-8");

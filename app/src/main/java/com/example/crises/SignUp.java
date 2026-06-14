@@ -97,7 +97,7 @@ public class SignUp extends AppCompatActivity {
                             String nationalId, String password) {
         new Thread(() -> {
             try {
-                URL url = new URL("http://192.168.0.106/crises_api/register.php");
+                URL url = new URL("https://crises360-mobile-api.onrender.com/register.php");
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("POST");
                 conn.setDoOutput(true);

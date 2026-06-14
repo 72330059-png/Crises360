@@ -59,7 +59,7 @@ public class Needs extends AppCompatActivity {
     // ── Network ───────────────────────────────────────────────────────────────
     private RequestQueue queue;
     private static final String BASE_URL =
-            "http://192.168.0.106/crises_api/get_needs.php";
+            "https://crises360-mobile-api.onrender.com/get_needs.php";
 
     // ── Location ──────────────────────────────────────────────────────────────
     private FusedLocationProviderClient fusedLocationClient;

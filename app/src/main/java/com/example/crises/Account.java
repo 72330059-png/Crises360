@@ -34,8 +34,8 @@ public class Account extends AppCompatActivity { // Declare Account activity, ex
     RequestQueue queue; // Volley request queue for managing HTTP requests
     SharedPreferences prefs; // SharedPreferences instance to read saved session data
 
-    static final String GET_URL    = "http://192.168.0.106/crises_api/get_members.php"; // URL to fetch member data from server
-    static final String UPDATE_URL = "http://192.168.0.106/crises_api/update_member.php"; // URL to update member data on server
+    static final String GET_URL    = "https://crises360-mobile-api.onrender.com/get_members.php"; // URL to fetch member data from server
+    static final String UPDATE_URL = "https://crises360-mobile-api.onrender.com/update_member.php"; // URL to update member data on server
 
     TextInputEditText etName, etId, etPhone, etDob,
             etFather, etMother, etCountry, etPlace; // Text fields for name, ID, phone, DOB, father, mother, country, place

@@ -91,12 +91,12 @@ public class Login extends AppCompatActivity {
     private void doLogin(String email, String password) {
         new Thread(() -> {
             try {
-                URL url = new URL("http://192.168.0.106/crises_api/login.php");
+                URL url = new URL("https://crises360-mobile-api.onrender.com/login.php");
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("POST");
                 conn.setDoOutput(true);
-                conn.setConnectTimeout(8000);
-                conn.setReadTimeout(8000);
+                conn.setConnectTimeout(60000);
+                conn.setReadTimeout(60000);
 
                 String data = "email="    + URLEncoder.encode(email,    "UTF-8")
                         + "&password=" + URLEncoder.encode(password, "UTF-8");
@@ -178,7 +178,8 @@ public class Login extends AppCompatActivity {
         input.setPadding(40, 20, 40, 20);
 
         new AlertDialog.Builder(this)
-                .setTitle("Reset Password")
+                .setTitle("Reset Passwo" +
+                        "2\rd")
                 .setMessage("We'll send a reset link to your email.")
                 .setView(input)
                 .setPositiveButton("Send", (dialog, which) -> {
@@ -196,12 +197,12 @@ public class Login extends AppCompatActivity {
     private void sendForgotPassword(String email) {
         new Thread(() -> {
             try {
-                URL url = new URL("http://192.168.0.106/crises_api/forgot_password.php");
+                URL url = new URL("https://crises360-mobile-api.onrender.com/forgot_password.php");
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("POST");
                 conn.setDoOutput(true);
-                conn.setConnectTimeout(8000);
-                conn.setReadTimeout(10000);
+                conn.setConnectTimeout(60000);
+                conn.setReadTimeout(60000);
 
                 String data = "email=" + URLEncoder.encode(email, "UTF-8");
                 OutputStream os = conn.getOutputStream();

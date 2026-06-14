@@ -51,7 +51,7 @@ public class PublicShelters extends AppCompatActivity {
 
     // ── Network ───────────────────────────────────────────────────────────────
     private RequestQueue queue;
-    private static final String BASE_URL = "http://192.168.0.106/crises_api/get_shelters.php";
+    private static final String BASE_URL = "https://crises360-mobile-api.onrender.com/get_shelters.php";
 
     // ── Location ──────────────────────────────────────────────────────────────
     private FusedLocationProviderClient fusedLocationClient;

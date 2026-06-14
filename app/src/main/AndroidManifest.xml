@@ -41,20 +41,24 @@
             android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".SelfHelp"
-            android:exported="false" />
+            android:exported="false"
+            android:fitsSystemWindows="true"/>
         <activity
             android:name=".PsychologicalSupport"
             android:exported="false"
             android:fitsSystemWindows="true"/>
         <activity
             android:name=".NewsDetailActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:fitsSystemWindows="true"/>
         <activity
             android:name=".Verify"
-            android:exported="false" />
+            android:exported="false"
+            android:fitsSystemWindows="true"/>
         <activity
             android:name=".SignUp"
-            android:exported="false" />
+            android:exported="false"
+            android:fitsSystemWindows="true"/>
         <activity
             android:name=".StartingActivity"
             android:exported="false" />
@@ -102,7 +106,8 @@
             android:exported="false" />
         <activity
             android:name=".Account"
-            android:exported="false" />
+            android:exported="false"
+            android:fitsSystemWindows="true"/>
         <activity
             android:name=".MapActivity"
             android:exported="false"

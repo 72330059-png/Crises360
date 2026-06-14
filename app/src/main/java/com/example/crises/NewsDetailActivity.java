@@ -3,6 +3,7 @@ package com.example.crises;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -27,39 +28,86 @@ public class NewsDetailActivity extends AppCompatActivity {
 
         // ── BACK ──────────────────────────────────────────────────────────
         CardView btnBack = findViewById(R.id.btnBack);
-        btnBack.setOnClickListener(v -> finish());
+        if (btnBack != null) {
+            btnBack.setClickable(true);
+            btnBack.setFocusable(true);
+
+            // Disable click on children so CardView gets the event
+            for (int i = 0; i < btnBack.getChildCount(); i++) {
+                btnBack.getChildAt(i).setClickable(false);
+                btnBack.getChildAt(i).setFocusable(false);
+            }
+
+            // Force touch — bypasses NestedScrollView stealing
+            btnBack.setOnTouchListener((v, event) -> {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    return true; // consume DOWN so we receive UP
+                }
+                if (event.getAction() == MotionEvent.ACTION_UP) {
+                    finish();
+                    return true;
+                }
+                return false;
+            });
+        } else {
+            android.util.Log.e("NewsDetail", "btnBack is NULL — check R.id.btnBack");
+        }
+
+        // ActionBar fallback
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
 
         // ── HERO ──────────────────────────────────────────────────────────
         View      hero    = findViewById(R.id.heroBackground);
         ImageView heroImg = findViewById(R.id.heroImage);
         int       color   = getCategoryColor(category);
 
-        // Solid color background
-        hero.setBackgroundColor(color);
+        if (hero != null)
+            hero.setBackgroundColor(color);
 
-        // Category icon as hero visual
-        heroImg.setImageResource(getCategoryIcon(category));
-        heroImg.setColorFilter(Color.argb(140, 255, 255, 255)); // subtle watermark
-        heroImg.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
-        int pad = dpToPx(52);
-        heroImg.setPadding(pad, pad, pad, pad);
+        if (heroImg != null) {
+            heroImg.setImageResource(getCategoryIcon(category));
+            heroImg.setColorFilter(Color.argb(140, 255, 255, 255));
+            heroImg.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+            int pad = dpToPx(52);
+            heroImg.setPadding(pad, pad, pad, pad);
+        }
 
         // ── TEXTS ─────────────────────────────────────────────────────────
-        ((TextView) findViewById(R.id.tvDetailCategory))
-                .setText(category != null ? category.toUpperCase() : "NEWS");
-        ((TextView) findViewById(R.id.tvDetailTitle)).setText(title);
-        ((TextView) findViewById(R.id.tvDetailContent)).setText(content);
-        ((TextView) findViewById(R.id.tvDetailDate))
-                .setText(date + "  ·  " + views + " views");
+        TextView tvCategory = findViewById(R.id.tvDetailCategory);
+        TextView tvTitle    = findViewById(R.id.tvDetailTitle);
+        TextView tvContent  = findViewById(R.id.tvDetailContent);
+        TextView tvDate     = findViewById(R.id.tvDetailDate);
+
+        if (tvCategory != null)
+            tvCategory.setText(category != null ? category.toUpperCase() : "NEWS");
+        if (tvTitle != null)
+            tvTitle.setText(title);
+        if (tvContent != null)
+            tvContent.setText(content);
+        if (tvDate != null)
+            tvDate.setText(date + "  ·  " + views + " views");
 
         // ── TAGS ──────────────────────────────────────────────────────────
         LinearLayout tagsRow = findViewById(R.id.tagsRow);
-        if (category != null && !category.isEmpty())
-            addTag(tagsRow, "#" + category, false);
-        if (type != null && !type.isEmpty())
-            addTag(tagsRow, "#" + type,
-                    type.equalsIgnoreCase("alert") || type.equalsIgnoreCase("breaking"));
+        if (tagsRow != null) {
+            if (category != null && !category.isEmpty())
+                addTag(tagsRow, "#" + category, false);
+            if (type != null && !type.isEmpty())
+                addTag(tagsRow, "#" + type,
+                        type.equalsIgnoreCase("alert") || type.equalsIgnoreCase("breaking"));
+        }
     }
+
+    // ── ActionBar back arrow ───────────────────────────────────────────────
+    @Override
+    public boolean onSupportNavigateUp() {
+        finish();
+        return true;
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────
 
     private int getCategoryIcon(String category) {
         if (category == null) return R.drawable.ic_general;
@@ -80,16 +128,16 @@ public class NewsDetailActivity extends AppCompatActivity {
     private int getCategoryColor(String category) {
         if (category == null) return Color.parseColor("#1E3A5F");
         switch (category.toLowerCase()) {
-            case "weather":        return Color.parseColor("#1565A8"); // sky blue
-            case "traffic":        return Color.parseColor("#B94C00"); // burnt orange
-            case "safety":         return Color.parseColor("#2E6B3E"); // forest green
-            case "medical":        return Color.parseColor("#0C447C"); // deep blue
-            case "infrastructure": return Color.parseColor("#5C3D8F"); // purple
-            case "tech":           return Color.parseColor("#1A6B6B"); // teal
-            case "sports":         return Color.parseColor("#A3521D"); // amber brown
-            case "politics":       return Color.parseColor("#7B2D2D"); // deep red
-            case "economy":        return Color.parseColor("#3B5E1E"); // dark green
-            default:               return Color.parseColor("#1E3A5F"); // navy
+            case "weather":        return Color.parseColor("#1565A8");
+            case "traffic":        return Color.parseColor("#B94C00");
+            case "safety":         return Color.parseColor("#2E6B3E");
+            case "medical":        return Color.parseColor("#0C447C");
+            case "infrastructure": return Color.parseColor("#5C3D8F");
+            case "tech":           return Color.parseColor("#1A6B6B");
+            case "sports":         return Color.parseColor("#A3521D");
+            case "politics":       return Color.parseColor("#7B2D2D");
+            case "economy":        return Color.parseColor("#3B5E1E");
+            default:               return Color.parseColor("#1E3A5F");
         }
     }
 

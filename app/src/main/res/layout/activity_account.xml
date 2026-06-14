@@ -13,8 +13,8 @@
         android:background="#1E3A5F"
         android:gravity="center_horizontal"
         android:orientation="vertical"
-        android:paddingTop="32dp"
-        android:paddingBottom="24dp">
+        android:paddingTop="56dp"
+        android:paddingBottom="24dp">>
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="72dp"

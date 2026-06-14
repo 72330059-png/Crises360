@@ -14,7 +14,6 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="220dp">
@@ -44,7 +43,10 @@
                     android:id="@+id/btnBack"
                     android:layout_width="36dp"
                     android:layout_height="36dp"
-                    android:layout_margin="16dp"
+                    android:layout_marginTop="48dp"
+                    android:layout_marginStart="16dp"
+                    android:clickable="true"
+                    android:focusable="true"
                     app:cardCornerRadius="18dp"
                     app:cardBackgroundColor="#33FFFFFF"
                     app:cardElevation="0dp">
@@ -52,6 +54,8 @@
                         android:layout_width="20dp"
                         android:layout_height="20dp"
                         android:layout_gravity="center"
+                        android:clickable="false"
+                        android:focusable="false"
                         android:src="@android:drawable/ic_media_previous"
                         app:tint="#FFFFFF" />
                 </androidx.cardview.widget.CardView>
@@ -85,6 +89,7 @@
                         android:textStyle="bold"
                         android:textColor="#FFFFFF"
                         android:lineSpacingExtra="3dp" />
+
                 </LinearLayout>
 
             </FrameLayout>
