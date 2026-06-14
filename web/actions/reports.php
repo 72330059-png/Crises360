@@ -3,7 +3,6 @@ session_start();
 require_once("../class/DAL.class.php");
 require_once("../class/hospitals.class.php");
 require_once("../class/municipality.class.php");
-
 header('Content-Type: application/json');
 
 if (!isset($_SESSION['logged_in']) || $_SESSION['role'] !== 'admin') {

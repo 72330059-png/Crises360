@@ -1,7 +1,6 @@
 <?php
-
+session_start();
 header("Content-Type: application/json");
-
 require_once("../class/police.class.php");
 $incident_id = intval($_POST['incident_id'] ?? 0);
 $mission_id = intval($_POST['mission_id'] ?? 0);

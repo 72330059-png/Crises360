@@ -1,7 +1,6 @@
 <?php
 session_start();
 require_once('../class/DAL.class.php');
-
 header('Content-Type: application/json');
 
 if (!isset($_SESSION['logged_in'])) {

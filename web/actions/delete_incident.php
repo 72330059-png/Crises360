@@ -1,8 +1,6 @@
-
 <?php
-
+session_start();
 require_once("../class/incidents.class.php");
-
 header('Content-Type: application/json');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {

@@ -1,9 +1,8 @@
 <?php
-
 session_start();
 header('Content-Type: application/json');
-
 require_once("../class/alerts.class.php");
+
 if (!isset($_SESSION['logged_in'])) {
     echo json_encode([
         'status' => 'error',
