@@ -31,17 +31,21 @@ if (empty($messages)) {
 }
 
 $payload = [
-    "model"    => "llama3.2",
-    "messages" => $fullMessages,
-    "stream"   => false
+    "model"      => "llama-3.1-8b-instant",
+    "messages"   => $fullMessages,
+    "max_tokens" => 1024
 ];
 
-$ch = curl_init("http://192.168.0.106:11434/api/chat");
+$ch = curl_init("https://api.groq.com/openai/v1/chat/completions");
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_POST,           true);
 curl_setopt($ch, CURLOPT_POSTFIELDS,     json_encode($payload));
-curl_setopt($ch, CURLOPT_HTTPHEADER,     ["Content-Type: application/json"]);
-curl_setopt($ch, CURLOPT_TIMEOUT,        120);
+curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+curl_setopt($ch, CURLOPT_HTTPHEADER,     [
+    "Content-Type: application/json",
+    "Authorization: Bearer " . getenv("GROQ_API_KEY")
+]);
+curl_setopt($ch, CURLOPT_TIMEOUT, 120);
 
 $response  = curl_exec($ch);
 $curlError = curl_error($ch);
@@ -52,10 +56,10 @@ if ($curlError) {
     exit;
 }
 
-// ── Parse Ollama response ──────────────────────────────────────────
-// Ollama returns: {"message":{"role":"assistant","content":"Hi!"}, ...}
-$ollamaData = json_decode($response, true);
-$text = $ollamaData["message"]["content"] ?? "Sorry, I could not respond.";
+// Parse Groq response
+// Groq returns: {"choices":[{"message":{"content":"Hi!"}}]}
+$groqData = json_decode($response, true);
+$text = $groqData["choices"][0]["message"]["content"] ?? "Sorry, I could not respond.";
 
 // Return in format your Android app expects
 echo json_encode([

@@ -1,5 +1,5 @@
 <?php
-define('MAIL_FROM',     'ayoubsaja176@gmail.com');
-define('MAIL_PASSWORD', 'uusxfnbvtesczqdf');
-define('MAIL_NAME',     'Crises App');
+define('MAIL_HOST',     getenv("MAIL_HOST"));
+define('MAIL_USERNAME', getenv("MAIL_USERNAME"));
+define('MAIL_PASSWORD', getenv("MAIL_PASSWORD"));
 ?>
