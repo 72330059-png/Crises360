@@ -54,25 +54,23 @@ $body = "
 </div>
 ";
 
-// ── Send via Resend API ───────────────────────────────────────
-$ch = curl_init("https://api.resend.com/emails");
+// ── Send via Elastic Email API ────────────────────────────────
+$ch = curl_init("https://api.elasticemail.com/v2/email/send");
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_POST,           true);
-curl_setopt($ch, CURLOPT_POSTFIELDS,     json_encode([
-    "from"    => "Crises App <onboarding@resend.dev>",
-    "to"      => ["72330059@students.liu.edu.lb"],
-    "subject" => "Your Crises App Login Code",
-    "html"    => $body
+curl_setopt($ch, CURLOPT_POSTFIELDS,     http_build_query([
+    "apikey"          => "AEA45D540E5150EEAAAA972AF5D49A43C7015F763B792DE2F1C5DBF88FD5FFB584943C9B0E7DE31EB2E4A8B707ACBD69",
+    "from"            => "ayoubsaja176@gmail.com",
+    "fromName"        => "Crises App",
+    "to"              => $email,
+    "subject"         => "Your Crises App Login Code",
+    "bodyHtml"        => $body,
+    "isTransactional" => true
 ]));
 curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-curl_setopt($ch, CURLOPT_HTTPHEADER,     [
-    "Content-Type: application/json",
-    "Authorization: Bearer re_Ayk1rYpc_7164RiN8Cp4J8hSSvGffwAnw"
-]);
-curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+curl_setopt($ch, CURLOPT_TIMEOUT,        30);
 
 $result    = curl_exec($ch);
-$httpCode  = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 $curlError = curl_error($ch);
 curl_close($ch);
 
@@ -82,7 +80,7 @@ if ($curlError) {
 }
 
 $resultData = json_decode($result, true);
-$sent = ($httpCode == 200);
+$sent = isset($resultData["success"]) && $resultData["success"] === true;
 
 if ($sent) {
     echo json_encode(["status" => "success", "message" => "Code sent to your email"]);
