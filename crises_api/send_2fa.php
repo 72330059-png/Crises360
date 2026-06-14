@@ -2,7 +2,8 @@
 date_default_timezone_set('Asia/Beirut');
 header('Content-Type: application/json');
 include 'db.php';
-require_once 'mailer_helper.php';
+require_once 'gmail_helper.php'; 
+
 
 $email = trim($_POST['email'] ?? '');
 
@@ -39,7 +40,8 @@ $update->execute();
 // ── Send email ────────────────────────────────────────────────
 $name    = $row['full_name'];
 $subject = "Your Crises App Login Code";
-$body    = "
+
+$body = "
 <div style='font-family:sans-serif;max-width:460px;margin:auto;padding:32px;
             border:1px solid #eee;border-radius:16px;text-align:center'>
   <h2 style='color:#2d5a27;margin-bottom:8px'>Login Verification</h2>
@@ -56,12 +58,19 @@ $body    = "
 </div>
 ";
 
-$sent = sendMail($email, $subject, $body);
+/
+$sent = sendEmail($email, $subject, $body);
 
 if ($sent) {
-    echo json_encode(["status" => "success", "message" => "Code sent to your email"]);
+    echo json_encode([
+        "status" => "success",
+        "message" => "Code sent to your email"
+    ]);
 } else {
-    echo json_encode(["status" => "error", "message" => "Could not send email. Check mail config."]);
+    echo json_encode([
+        "status" => "error",
+        "message" => "Failed to send email"
+    ]);
 }
 
 $conn->close();
