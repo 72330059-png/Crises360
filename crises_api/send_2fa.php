@@ -2,6 +2,7 @@
 date_default_timezone_set('Asia/Beirut');
 header('Content-Type: application/json');
 include 'db.php';
+require_once 'mailer_helper.php';
 
 $email = trim($_POST['email'] ?? '');
 
@@ -35,9 +36,10 @@ $update = $conn->prepare("
 $update->bind_param("sss", $code, $expiry, $email);
 $update->execute();
 
-// ── Email body ────────────────────────────────────────────────
-$name = $row['full_name'];
-$body = "
+// ── Send email ────────────────────────────────────────────────
+$name    = $row['full_name'];
+$subject = "Your Crises App Login Code";
+$body    = "
 <div style='font-family:sans-serif;max-width:460px;margin:auto;padding:32px;
             border:1px solid #eee;border-radius:16px;text-align:center'>
   <h2 style='color:#2d5a27;margin-bottom:8px'>Login Verification</h2>
@@ -54,45 +56,12 @@ $body = "
 </div>
 ";
 
-// ── Send via Brevo API ────────────────────────────────────────
-$brevoPayload = json_encode([
-    "sender"      => ["name" => "Crises App", "email" => "ayoubsaja176@gmail.com"],
-    "to"          => [["email" => $email, "name" => $name]],
-    "subject"     => "Your Crises App Login Code",
-    "htmlContent" => $body
-]);
-
-$ch = curl_init("https://api.brevo.com/v3/smtp/email");
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_POST,           true);
-curl_setopt($ch, CURLOPT_POSTFIELDS,     $brevoPayload);
-curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-curl_setopt($ch, CURLOPT_HTTPHEADER,     [
-    "Content-Type: application/json",
-    "api-key: " . getenv("BREVO_API_KEY")
-]);
-curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-
-$result    = curl_exec($ch);
-$curlError = curl_error($ch);
-curl_close($ch);
-
-if ($curlError) {
-    echo json_encode(["status" => "error", "message" => "curl error: " . $curlError]);
-    exit;
-}
-
-$resultData = json_decode($result, true);
-$sent = isset($resultData["messageId"]);
+$sent = sendMail($email, $subject, $body);
 
 if ($sent) {
     echo json_encode(["status" => "success", "message" => "Code sent to your email"]);
 } else {
-    echo json_encode([
-        "status"  => "error",
-        "message" => "Could not send email",
-        "debug"   => $resultData
-    ]);
+    echo json_encode(["status" => "error", "message" => "Could not send email. Check mail config."]);
 }
 
 $conn->close();
