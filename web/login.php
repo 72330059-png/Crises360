@@ -124,6 +124,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Playfair+Display:wght@500;600;700&display=swap"
         rel="stylesheet">
 
+        <link rel="icon" type="image/png" sizes="32x32" href="/uploads/logonew.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/uploads/logonew.png">
+
     <style>
         * {
             margin: 0;
