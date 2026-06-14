@@ -30,9 +30,10 @@ $obj = new DAL();
 <!-- <link rel="apple-touch-icon" sizes="180x180" href="/uploads/logo3.png">     -->
 
 
-        <link rel="icon" type="image/png" sizes="32x32" href="/uploads/logonew.png">
-<link rel="apple-touch-icon" sizes="180x180" href="/uploads/logonew.png">
+        <!-- <link rel="icon" type="image/png" sizes="32x32" href="/uploads/logonew.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/uploads/logonew.png"> -->
 
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
 <style>
     body {
         background-color: #f7f9fc;
