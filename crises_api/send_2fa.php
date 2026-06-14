@@ -60,7 +60,7 @@ curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_POST,           true);
 curl_setopt($ch, CURLOPT_POSTFIELDS,     json_encode([
     "from"    => "Crises App <onboarding@resend.dev>",
-    "to"      => [$email],
+    "to"      => ["72330059@students.liu.edu.lb"],
     "subject" => "Your Crises App Login Code",
     "html"    => $body
 ]));
@@ -71,8 +71,8 @@ curl_setopt($ch, CURLOPT_HTTPHEADER,     [
 ]);
 curl_setopt($ch, CURLOPT_TIMEOUT, 30);
 
-$result   = curl_exec($ch);
-$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+$result    = curl_exec($ch);
+$httpCode  = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 $curlError = curl_error($ch);
 curl_close($ch);
 
