@@ -54,26 +54,25 @@ $body = "
 </div>
 ";
 
-// ── Send via Brevo API ────────────────────────────────────────
-$brevoPayload = json_encode([
-    "sender"      => ["name" => "Crises App", "email" => "ayoubsaja176@gmail.com"],
-    "to"          => [["email" => $email, "name" => $name]],
-    "subject"     => "Your Crises App Login Code",
-    "htmlContent" => $body
-]);
-
-$ch = curl_init("https://api.brevo.com/v3/smtp/email");
+// ── Send via Resend API ───────────────────────────────────────
+$ch = curl_init("https://api.resend.com/emails");
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_POST,           true);
-curl_setopt($ch, CURLOPT_POSTFIELDS,     $brevoPayload);
+curl_setopt($ch, CURLOPT_POSTFIELDS,     json_encode([
+    "from"    => "Crises App <onboarding@resend.dev>",
+    "to"      => [$email],
+    "subject" => "Your Crises App Login Code",
+    "html"    => $body
+]));
 curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 curl_setopt($ch, CURLOPT_HTTPHEADER,     [
     "Content-Type: application/json",
-    "api-key: " . getenv("BREVO_API_KEY")
+    "Authorization: Bearer " . getenv("RESEND_API_KEY")
 ]);
 curl_setopt($ch, CURLOPT_TIMEOUT, 30);
 
-$result    = curl_exec($ch);
+$result   = curl_exec($ch);
+$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 $curlError = curl_error($ch);
 curl_close($ch);
 
@@ -83,7 +82,7 @@ if ($curlError) {
 }
 
 $resultData = json_decode($result, true);
-$sent = isset($resultData["messageId"]);
+$sent = ($httpCode == 200);
 
 if ($sent) {
     echo json_encode(["status" => "success", "message" => "Code sent to your email"]);
