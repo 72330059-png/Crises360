@@ -59,7 +59,7 @@ $ch = curl_init("https://api.elasticemail.com/v2/email/send");
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_POST,           true);
 curl_setopt($ch, CURLOPT_POSTFIELDS,     http_build_query([
-    "apikey"          => "815CAB57B3F633A2E70D0BC1134996A344EED4FD2FFE821BB13C252E0AA026A23FA2AAC1826E9F080C23BFAB563FE11A",
+    "apikey"          => "7EF954DAC0C6CA8377D3E4C674A11359940A4A45BDD70BA3F6BB94F309293EFE13DE74FB438D40647D5DEEE0655D458E",
     "from"            => "ayoubsaja176@gmail.com",
     "fromName"        => "Crises App",
     "to"              => $email,
