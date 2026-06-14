@@ -15,8 +15,8 @@ function sendMail(string $toEmail, string $subject, string $htmlBody): bool {
         $mail->SMTPAuth   = true;
         $mail->Username   = MAIL_FROM;
         $mail->Password   = MAIL_PASSWORD;
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port       = 587;
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMIME;
+        $mail->Port       = 465;
  
         $mail->setFrom(MAIL_FROM, MAIL_NAME);
         $mail->addAddress($toEmail);
