@@ -29,7 +29,7 @@ $expiry = date('Y-m-d H:i:s', strtotime('+1 hour'));
 // ── Save token to database ────────────────────────────────────
 $update = $conn->prepare("
     UPDATE members
-    SET reset_token = ?, reset_expiry = ?
+    SET reset_token = ?, reset_token_expiry = ?
     WHERE email = ?
 ");
 $update->bind_param("sss", $token, $expiry, $email);
