@@ -11,4 +11,8 @@ RUN chown -R www-data:www-data /var/www/html \
 
 RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
+# Disable PHP error display
+RUN echo "display_errors = Off" >> /usr/local/etc/php/php.ini \
+    && echo "log_errors = On" >> /usr/local/etc/php/php.ini
+
 EXPOSE 80
