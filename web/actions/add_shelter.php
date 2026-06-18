@@ -38,7 +38,7 @@ function groqResolveLocation(string $locationText): ?array {
         'Content-Type: application/json',
         'Authorization: Bearer ' . GROQ_API_KEY
     ]);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 30);
     $response = curl_exec($ch);
     curl_close($ch);
 
@@ -64,11 +64,11 @@ function nominatimQuery(string $q): ?array {
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 30);
     curl_setopt($ch, CURLOPT_HTTPHEADER, ['User-Agent: Crisis360App/1.0']);
     $response = curl_exec($ch);
     curl_close($ch);
-    usleep(300000);
+    usleep(100000);
     $data = json_decode($response, true);
     if (!empty($data)) {
         return ['lat' => (float)$data[0]['lat'], 'lng' => (float)$data[0]['lon']];
