@@ -759,10 +759,11 @@ $catStyles = [
                                     text: response.message,
                                     timer: 1500,
                                     showConfirmButton: false
+                                }).then(() => {
+
+                                    location.reload();
+
                                 });
-
-                                $('.deleteNewsBtn[data-id="' + id + '"]').closest('tr').fadeOut();
-
                             } else {
 
                                 Swal.fire({

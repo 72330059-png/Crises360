@@ -169,15 +169,17 @@ $allHospitals = $hospital->getAllHospitals();
         .action-btn.delete-btn {
             color: #EE5D50;
         }
-.phone-link {
-    color: #1B2559; 
-    text-decoration: none;
-}
 
-.phone-link:hover {
-    color: #1B2559;
-    text-decoration: none;
-}
+        .phone-link {
+            color: #1B2559;
+            text-decoration: none;
+        }
+
+        .phone-link:hover {
+            color: #1B2559;
+            text-decoration: none;
+        }
+
         .teams-badge {
             background: #F4F7FE;
             color: #1B2559;
@@ -528,7 +530,7 @@ $allHospitals = $hospital->getAllHospitals();
 
                 var status = $(this).val();
 
-                table.column(5).search(status).draw();
+                table.column(6).search(status).draw();
 
             });
         });

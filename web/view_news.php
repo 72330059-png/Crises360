@@ -131,13 +131,18 @@ if (!$article) {
         <?= nl2br($article['content']) ?>
     </div>
 
-    <button
+    <!-- <button
         onclick="window.print()"
         class="btn btn-primary print-btn"
     >
         Download / Print PDF
-    </button>
-
+    </button> -->
+ <a
+    href="download_news_pdf.php?id=<?= $article['id'] ?>"
+    class="btn btn-primary print-btn"
+>
+    Download PDF
+</a>
 </div>
 
 </body>

@@ -2,7 +2,7 @@
 session_start();
 require_once("class/alerts.class.php");
 
-if (!isset($_SESSION['logged_in']) ) {
+if (!isset($_SESSION['logged_in'])) {
     header("Location: login.php");
     exit;
 }
@@ -25,28 +25,73 @@ $regions = $alerts->getRegions();
     <?php include('includes/header.php'); ?>
     <style>
         @media (max-width: 992px) {
-            .filter-row-container { flex-wrap: wrap; }
-            .search-container     { flex: 0 0 100% !important; min-width: 100% !important; }
-            .filter-group-item    { flex: 0 0 calc(50% - 5px) !important; min-width: calc(50% - 5px) !important; }
-            .btn-add-navy         { width: 100%; justify-content: center; }
+            .filter-row-container {
+                flex-wrap: wrap;
+            }
+
+            .search-container {
+                flex: 0 0 100% !important;
+                min-width: 100% !important;
+            }
+
+            .filter-group-item {
+                flex: 0 0 calc(50% - 5px) !important;
+                min-width: calc(50% - 5px) !important;
+            }
+
+            .btn-add-navy {
+                width: 100%;
+                justify-content: center;
+            }
         }
- 
+
         @media (max-width: 768px) {
-            .top-nav      { left: 70px !important; padding: 0 16px; }
-            .main-content { margin-left: 70px !important; padding: 14px !important; }
-            .stat-col     { flex: 0 0 calc(50% - 8px); }
-            .card-subtext { display: none; }
-            .dashboard-card { padding: 12px; min-height: auto; }
+            .top-nav {
+                left: 70px !important;
+                padding: 0 16px;
+            }
+
+            .main-content {
+                margin-left: 70px !important;
+                padding: 14px !important;
+            }
+
+            .stat-col {
+                flex: 0 0 calc(50% - 8px);
+            }
+
+            .card-subtext {
+                display: none;
+            }
+
+            .dashboard-card {
+                padding: 12px;
+                min-height: auto;
+            }
         }
- 
+
         /* Small phones */
         @media (max-width: 480px) {
-            .stat-col          { flex: 0 0 100%; }
-            .filter-group-item { flex: 0 0 100% !important; min-width: 100% !important; }
-            .main-content      { padding: 10px !important; }
+            .stat-col {
+                flex: 0 0 100%;
+            }
+
+            .filter-group-item {
+                flex: 0 0 100% !important;
+                min-width: 100% !important;
+            }
+
+            .main-content {
+                padding: 10px !important;
+            }
+        }
+
+        .alert-actions {
+            display: flex;
+            gap: 8px;
         }
     </style>
-  
+
 </head>
 
 <div class="modal fade" id="addAlertModal" tabindex="-1">
@@ -286,7 +331,7 @@ $regions = $alerts->getRegions();
                                 <td class="alert-region">
                                     <?= $row['region'] ?>
                                 </td>
-                                
+
                                 <td class="alert-status">
                                     <span class="status-text <?= $statusClass ?>">
                                         <?= $row['status'] ?>
@@ -446,9 +491,12 @@ $regions = $alerts->getRegions();
                                     text: response.message,
                                     timer: 1500,
                                     showConfirmButton: false
+                                }).then(() => {
+
+                                    location.reload();
+
                                 });
 
-                                $('.deleteAlertsBtn[data-id="' + id + '"]').closest('tr').fadeOut();
 
                             } else {
 
@@ -493,10 +541,12 @@ $regions = $alerts->getRegions();
             <option ${status == 'Pending' ? 'selected' : ''}>Pending</option>
             </select>`);
 
-            // Replace buttons
-            row.find('td:last').html(`<button class="btn btn-success btn-sm saveAlertBtn" data-id="${$(this).data('id')}">Save</button>
-            <button class="btn btn-secondary btn-sm cancelAlertBtn" data-id="${$(this).data('id')}">Cancel</button>`);
-
+            row.find('td:last').html(`
+    <div class="alert-actions">
+        <button class="btn btn-success btn-sm saveAlertBtn" data-id="${$(this).data('id')}">Save</button>
+        <button class="btn btn-secondary btn-sm cancelAlertBtn" data-id="${$(this).data('id')}">Cancel</button>
+    </div>
+`);
         });
 
         $(document).on('click', '.saveAlertBtn', function() {

@@ -627,7 +627,7 @@ foreach ($chartData as $row) {
                                             <?php
                                             if ($row['status'] == 'full') {
                                                 $class = "status-high";
-                                            } elseif ($row['status'] == 'near full') {
+                                            } elseif ($row['status'] == 'near_full') {
                                                 $class = "status-medium";
                                             } else {
                                                 $class = "status-low";
@@ -978,9 +978,11 @@ foreach ($chartData as $row) {
                                     text: response.message,
                                     timer: 1500,
                                     showConfirmButton: false
-                                });
+                                }).then(() => {
 
-                                $('.dltshelter[data-id="' + id + '"]').closest('tr').fadeOut();
+                                    location.reload();
+
+                                });
 
                             } else {
 

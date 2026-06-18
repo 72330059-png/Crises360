@@ -126,12 +126,6 @@ def weighted_avg(vals):
     weights = list(range(1, n+1))
     return sum(v*w for v,w in zip(vals,weights)) / sum(weights)
 
-def predict_next(vals):
-    if len(vals) < 2: return None
-    recent = vals[-3:] if len(vals) >= 3 else vals
-    wa = weighted_avg(recent)
-    trend = (recent[-1] - recent[0]) / (len(recent)-1) if len(recent) >= 2 else 0
-    return max(0, round(wa + trend * 0.5))
 
 SEV_COLOR = {"critical": C_RED, "high": C_AMBER, "medium": C_AMBER, "low": C_GREEN, "info": C_BLUE}
 ST_INC    = {"resolved": C_GREEN, "in progress": C_AMBER, "active": C_RED, "in_progress": C_AMBER}

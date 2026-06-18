@@ -1249,7 +1249,7 @@ $activeIncidents = array_filter($activeIncidents, function ($i) {
                                 <option value="">All Statuses</option>
                                 <option value="active">Active</option>
                                 <option value="completed">Completed</option>
-                                <option value="pending">Pending</option>
+                                <option value="sent">Sent</option>
                             </select>
 
                             <!-- Button -->
@@ -1378,7 +1378,7 @@ $activeIncidents = array_filter($activeIncidents, function ($i) {
 
             var table = $('#policeTable').DataTable({
 
-                pageLength: 6,
+                pageLength: 4,
                 order: [],
                 dom: 'rt<"d-flex justify-content-between"ip>',
 
@@ -1444,6 +1444,10 @@ $activeIncidents = array_filter($activeIncidents, function ($i) {
 
             $('#missionTable_filter').appendTo('#missionSearchBox');
 
+
+        $('#missionStatusFilter').on('change', function() {
+            missionTable.column(5).search(this.value).draw();
+        });
         });
 
         $('#addUnitForm').on('submit', function(e) {
@@ -1542,9 +1546,11 @@ $activeIncidents = array_filter($activeIncidents, function ($i) {
                                     text: response.message,
                                     timer: 1500,
                                     showConfirmButton: false
-                                });
+                                }).then(() => {
 
-                                $('.dltunit[data-id="' + id + '"]').closest('tr').fadeOut();
+                                    location.reload();
+
+                                });
 
                             } else {
 
@@ -1806,7 +1812,7 @@ $activeIncidents = array_filter($activeIncidents, function ($i) {
                     units: units
                 },
                 dataType: 'json',
-                traditional: true,
+                // traditional: true,/
                 success: function(response) {
                     if (response.status == 'success') {
                         Swal.fire({
@@ -1837,9 +1843,6 @@ $activeIncidents = array_filter($activeIncidents, function ($i) {
 
         });
 
-        $('#missionStatusFilter').on('change', function() {
-            missionTable.column(5).search(this.value).draw();
-        });
         $(document).on('click', '.cancelMissionXBtn', function() {
             let missionId = $(this).data('id');
             let row = $(this).closest('tr');
