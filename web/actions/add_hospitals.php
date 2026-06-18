@@ -13,6 +13,7 @@ if (!defined('GROQ_API_KEY')) {
     }
     define('GROQ_API_KEY', getenv('GROQ_API_KEY'));
 }
+error_log("GROQ_API_KEY is set: " . (GROQ_API_KEY ? 'YES' : 'NO'));  // ADD THIS
 
 // ─── STEP 1: Ask Groq to identify location + variants ───────────────────────
 function groqResolveLocation(string $locationText): ?array {
@@ -40,6 +41,8 @@ function groqResolveLocation(string $locationText): ?array {
     ]);
     curl_setopt($ch, CURLOPT_TIMEOUT, 30);
     $response = curl_exec($ch);
+      error_log("Groq curl error: " . curl_error($ch));  // ADD THIS
+    error_log("Groq raw response: " . $response);      // ADD THIS
     curl_close($ch);
 
     $data = json_decode($response, true);
@@ -47,6 +50,7 @@ function groqResolveLocation(string $locationText): ?array {
     $text = preg_replace('/```json\s*/i', '', $text);
     $text = preg_replace('/```\s*/i', '', $text);
     $result = json_decode(trim($text), true);
+    error_log("Groq parsed result: " . print_r($result, true));  // ADD THIS
 
     if (!empty($result['canonical'])) return $result;
     return null;
@@ -67,6 +71,8 @@ function nominatimQuery(string $q): ?array {
     curl_setopt($ch, CURLOPT_TIMEOUT, 30);
     curl_setopt($ch, CURLOPT_HTTPHEADER, ['User-Agent: Crisis360App/1.0']);
     $response = curl_exec($ch);
+        error_log("Nominatim query: $q | curl error: " . curl_error($ch) . " | response: " . $response);  // ADD THIS
+
     curl_close($ch);
     usleep(100000);
     $data = json_decode($response, true);
