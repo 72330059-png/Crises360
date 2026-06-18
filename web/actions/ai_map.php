@@ -2,6 +2,13 @@
 session_start();
 require_once("../class/DAL.class.php");
 if (!defined('GROQ_API_KEY')) {
+    $envPath = __DIR__ . '/../.env';
+    if (file_exists($envPath)) {
+        foreach (file($envPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
+            if (strpos(trim($line), '#') === 0) continue;
+            if (strpos($line, '=') !== false) putenv(trim($line));
+        }
+    }
     define('GROQ_API_KEY', getenv('GROQ_API_KEY'));
 }
 // define('GROQ_API_KEY', 'GROQ_API_KEY_Secret');

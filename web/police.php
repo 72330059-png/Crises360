@@ -644,6 +644,10 @@ $activeIncidents = array_filter($activeIncidents, function ($i) {
     .alerts-card {
         padding: 12px;
     }
+
+    #addMissionModal .modal-dialog {
+    margin-top: 4rem;
+}
 }
     </style>
 </head>
@@ -1464,49 +1468,35 @@ $activeIncidents = array_filter($activeIncidents, function ($i) {
 
                 dataType: 'json',
 
-                success: function(response) {
-
-                    if (response.status == 'success') {
-
-                        Swal.fire({
-
-                            icon: 'success',
-
-                            title: 'Success',
-
-                            text: response.message,
-
-                            timer: 2000,
-
-                            showConfirmButton: false
-
-                        });
-
-                        $('#addUnitModal').modal('hide');
-
-                        $('#addUnitForm')[0].reset();
-
-                        setTimeout(function() {
-
-                            location.reload();
-
-                        }, 1500);
-
-                    } else {
-
-                        Swal.fire({
-
-                            icon: 'error',
-
-                            title: 'Error',
-
-                            text: response.message
-
-                        });
-
-                    }
-
-                }
+                       success: function(response) {
+    if (response.status == 'success') {
+        $('#addUnitModal').modal('hide');
+        $('#addUnitForm')[0].reset();
+        Swal.fire({
+            icon: 'success',
+            title: 'Unit Added Successfully',
+            confirmButtonColor: '#2d5a27',
+            timer: 1500,
+            showConfirmButton: false
+        }).then(() => { location.reload(); });
+    } else if (response.message === 'email_duplicate') {
+        Swal.fire({
+            icon: 'error',
+            title: 'Email Already Exists',
+            text: 'This email is already registered. Please use a different one.',
+            confirmButtonColor: '#2d5a27'
+        });
+    } else if (response.message === 'location_not_found') {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Location Not Found',
+            text: 'Could not find this location. Try a different spelling or description.',
+            confirmButtonColor: '#2d5a27'
+        });
+    } else {
+        Swal.fire({ icon: 'error', title: 'Error', text: response.message, confirmButtonColor: '#2d5a27' });
+    }
+}
 
             });
 
