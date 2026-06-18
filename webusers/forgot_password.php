@@ -3,15 +3,11 @@ date_default_timezone_set('Asia/Beirut');
 session_start();
 require('class/DAL.class.php');
 require 'vendor/autoload.php';
-
+require 'send_gmail_oauth.php';
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
-
 $dal = new DAL();
-
 $message = "";
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -41,63 +37,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // $resetLink = "http://localhost/senior/crises360/webusers/reset_password.php?token=$token";
         $resetLink = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https://" : "http://") . $_SERVER['HTTP_HOST'] . "/reset_password.php?token=$token";
 
-        $mail = new PHPMailer(true);
+          $htmlBody = "
+    <div style='font-family:Poppins,sans-serif;padding:20px'>
+        <h2 style='color:#2d5a27'>Reset Your Password</h2>
+        <p>Click the button below to reset your password.</p>
+        <a href='$resetLink'
+           style='background:#2d5a27;color:white;padding:12px 20px;
+                  text-decoration:none;border-radius:8px;display:inline-block'>
+            Reset Password
+        </a>
+        <p style='margin-top:20px'>This link expires in 1 hour.</p>
+    </div>
+";
 
-        try {
+$result = sendGmailOAuth($email, 'Reset Password - Crisis360', $htmlBody);
 
-            $mail->isSMTP();
-
-            $mail->Host = 'smtp.gmail.com';
-
-            $mail->SMTPAuth = true;
-
-            $mail->Username = 'mourtadadouaa@gmail.com';
-
-            $mail->Password = GMAIL_APP_PASSWORD;
-
-            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-
-            $mail->Port = 587;
-
-            $mail->setFrom('mourtadadouaa@gmail.com', 'Crisis360');
-
-            $mail->addAddress($email);
-
-            $mail->isHTML(true);
-
-            $mail->Subject = 'Reset Password - Crisis360';
-
-            $mail->Body = "
-                <div style='font-family:Poppins,sans-serif;padding:20px'>
-                    <h2 style='color:#2d5a27'>Reset Your Password</h2>
-
-                    <p>
-                        Click the button below to reset your password.
-                    </p>
-
-                    <a href='$resetLink'
-                       style='background:#2d5a27;
-                              color:white;
-                              padding:12px 20px;
-                              text-decoration:none;
-                              border-radius:8px;
-                              display:inline-block'>
-                        Reset Password
-                    </a>
-
-                    <p style='margin-top:20px'>
-                        This link expires in 1 hour.
-                    </p>
-                </div>
-            ";
-
-            $mail->send();
-
-            $message = "success";
-        } catch (Exception $e) {
-
-            $message = $mail->ErrorInfo;
-        }
+if ($result['success']) {
+    $message = "success";
+} else {
+    $message = $result['error'];
+    echo "<pre>" . $result['error'] . "</pre>";
+}
     } else {
 
         $message = "Email not found";
@@ -166,6 +126,98 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             cursor: pointer;
             font-size: 15px;
         }
+        /* Responsive Design */
+
+@media (max-width: 768px) {
+
+    body {
+        padding: 20px;
+    }
+
+    .card {
+        width: 100%;
+        max-width: 500px;
+        padding: 30px;
+    }
+
+    h2 {
+        font-size: 24px;
+    }
+
+    p {
+        font-size: 14px;
+        line-height: 1.6;
+    }
+
+    input,
+    button {
+        font-size: 14px;
+        padding: 13px;
+    }
+
+    .password-wrapper input {
+        height: 50px;
+    }
+}
+
+@media (max-width: 480px) {
+
+    body {
+        padding: 15px;
+    }
+
+    .card {
+        width: 100%;
+        padding: 25px 20px;
+        border-radius: 15px;
+    }
+
+    h2 {
+        font-size: 22px;
+        text-align: center;
+    }
+
+    p {
+        font-size: 13px;
+        text-align: center;
+    }
+
+    input,
+    button {
+        padding: 12px;
+        font-size: 14px;
+    }
+
+    .password-wrapper input {
+        padding-right: 45px;
+        height: 48px;
+    }
+
+    #eyeIcon {
+        right: 12px;
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 320px) {
+
+    .card {
+        padding: 20px 15px;
+    }
+
+    h2 {
+        font-size: 20px;
+    }
+
+    p {
+        font-size: 12px;
+    }
+
+    input,
+    button {
+        font-size: 13px;
+    }
+}
     </style>
 
 </head>
