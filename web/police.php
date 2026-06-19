@@ -644,6 +644,10 @@ $activeIncidents = array_filter($activeIncidents, function ($i) {
     .alerts-card {
         padding: 12px;
     }
+
+    #addMissionModal .modal-dialog {
+    margin-top: 4rem;
+}
 }
     </style>
 </head>
@@ -1249,7 +1253,7 @@ $activeIncidents = array_filter($activeIncidents, function ($i) {
                                 <option value="">All Statuses</option>
                                 <option value="active">Active</option>
                                 <option value="completed">Completed</option>
-                                <option value="pending">Pending</option>
+                                <option value="sent">Sent</option>
                             </select>
 
                             <!-- Button -->
@@ -1378,7 +1382,7 @@ $activeIncidents = array_filter($activeIncidents, function ($i) {
 
             var table = $('#policeTable').DataTable({
 
-                pageLength: 6,
+                pageLength: 4,
                 order: [],
                 dom: 'rt<"d-flex justify-content-between"ip>',
 
@@ -1444,6 +1448,10 @@ $activeIncidents = array_filter($activeIncidents, function ($i) {
 
             $('#missionTable_filter').appendTo('#missionSearchBox');
 
+
+        $('#missionStatusFilter').on('change', function() {
+            missionTable.column(5).search(this.value).draw();
+        });
         });
 
         $('#addUnitForm').on('submit', function(e) {
@@ -1460,49 +1468,35 @@ $activeIncidents = array_filter($activeIncidents, function ($i) {
 
                 dataType: 'json',
 
-                success: function(response) {
-
-                    if (response.status == 'success') {
-
-                        Swal.fire({
-
-                            icon: 'success',
-
-                            title: 'Success',
-
-                            text: response.message,
-
-                            timer: 2000,
-
-                            showConfirmButton: false
-
-                        });
-
-                        $('#addUnitModal').modal('hide');
-
-                        $('#addUnitForm')[0].reset();
-
-                        setTimeout(function() {
-
-                            location.reload();
-
-                        }, 1500);
-
-                    } else {
-
-                        Swal.fire({
-
-                            icon: 'error',
-
-                            title: 'Error',
-
-                            text: response.message
-
-                        });
-
-                    }
-
-                }
+                       success: function(response) {
+    if (response.status == 'success') {
+        $('#addUnitModal').modal('hide');
+        $('#addUnitForm')[0].reset();
+        Swal.fire({
+            icon: 'success',
+            title: 'Unit Added Successfully',
+            confirmButtonColor: '#2d5a27',
+            timer: 1500,
+            showConfirmButton: false
+        }).then(() => { location.reload(); });
+    } else if (response.message === 'email_duplicate') {
+        Swal.fire({
+            icon: 'error',
+            title: 'Email Already Exists',
+            text: 'This email is already registered. Please use a different one.',
+            confirmButtonColor: '#2d5a27'
+        });
+    } else if (response.message === 'location_not_found') {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Location Not Found',
+            text: 'Could not find this location. Try a different spelling or description.',
+            confirmButtonColor: '#2d5a27'
+        });
+    } else {
+        Swal.fire({ icon: 'error', title: 'Error', text: response.message, confirmButtonColor: '#2d5a27' });
+    }
+}
 
             });
 
@@ -1542,9 +1536,11 @@ $activeIncidents = array_filter($activeIncidents, function ($i) {
                                     text: response.message,
                                     timer: 1500,
                                     showConfirmButton: false
-                                });
+                                }).then(() => {
 
-                                $('.dltunit[data-id="' + id + '"]').closest('tr').fadeOut();
+                                    location.reload();
+
+                                });
 
                             } else {
 
@@ -1806,7 +1802,7 @@ $activeIncidents = array_filter($activeIncidents, function ($i) {
                     units: units
                 },
                 dataType: 'json',
-                traditional: true,
+                // traditional: true,/
                 success: function(response) {
                     if (response.status == 'success') {
                         Swal.fire({
@@ -1837,9 +1833,6 @@ $activeIncidents = array_filter($activeIncidents, function ($i) {
 
         });
 
-        $('#missionStatusFilter').on('change', function() {
-            missionTable.column(5).search(this.value).draw();
-        });
         $(document).on('click', '.cancelMissionXBtn', function() {
             let missionId = $(this).data('id');
             let row = $(this).closest('tr');

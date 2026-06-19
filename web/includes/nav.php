@@ -319,11 +319,9 @@ $notifications   = $dalNotif->getUnreadNotifications();
         function pollAdminNotifCount() {
             $.get('actions/get_admin_notifications.php', function(res) {
                 if (!res || typeof res.count === 'undefined') return;
-
                 var count = parseInt(res.count);
                 var badge = $('.notif-badge');
-
-                // --- update badge ---
+                // update badge 
                 if (count > 0) {
                     if (badge.length) badge.text(count);
                     else $('.notif-bell').append('<span class="notif-badge">' + count + '</span>');
@@ -332,15 +330,13 @@ $notifications   = $dalNotif->getUnreadNotifications();
                     badge.remove();
                     $('.notif-count').text('0 unread');
                 }
-
-                // --- refresh list only if count changed (avoid flicker while open) ---
+                // refresh list only if count changed
                 if (count !== lastNotifCount) {
                     lastNotifCount = count;
                     var dropdownBody = $('#notifDropdown').find('.notif-item, .notif-empty');
-                    dropdownBody.remove(); // clear old items
+                    dropdownBody.remove(); 
                     $('#notifDropdown').append(renderAdminNotifList(res.notifications));
                 }
-
             }, 'json');
         }
 

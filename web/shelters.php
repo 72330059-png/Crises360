@@ -282,6 +282,12 @@ foreach ($chartData as $row) {
 </head>
 <!-- ADD SHELTER MODAL -->
 
+
+
+<body>
+
+    <?php include('includes/sidebar.php'); ?>
+    <?php include('includes/nav.php'); ?>
 <div class="modal fade" id="addShelterModal" tabindex="-1">
 
     <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -454,12 +460,6 @@ foreach ($chartData as $row) {
     </div>
 
 </div>
-
-<body>
-
-    <?php include('includes/sidebar.php'); ?>
-    <?php include('includes/nav.php'); ?>
-
     <div class="main-content">
 
         <!-- HEADER -->
@@ -627,7 +627,7 @@ foreach ($chartData as $row) {
                                             <?php
                                             if ($row['status'] == 'full') {
                                                 $class = "status-high";
-                                            } elseif ($row['status'] == 'near full') {
+                                            } elseif ($row['status'] == 'near_full') {
                                                 $class = "status-medium";
                                             } else {
                                                 $class = "status-low";
@@ -887,44 +887,46 @@ foreach ($chartData as $row) {
 
                 dataType: 'json',
 
-                success: function(response) {
-
+             success: function(response) {
                     if (response.status == 'success') {
-
-                        Swal.fire({
-
-                            icon: 'success',
-
-                            title: 'Success',
-
-                            text: response.message,
-
-                            timer: 2000,
-
-                            showConfirmButton: false
-
-                        });
-
                         $('#addShelterModal').modal('hide');
-
                         $('#addShelterForm')[0].reset();
-
-                        setTimeout(function() {
-
-                            location.reload();
-
-                        }, 1500);
-
-                    } else {
-
                         Swal.fire({
-
+                            icon: 'success',
+                            title: 'Shelter Added Successfully',
+                            confirmButtonColor: '#2d5a27',
+                            timer: 1500,
+                            showConfirmButton: false
+                        }).then(() => {
+                            location.reload();
+                        });
+                    } else if (response.message === 'email_duplicate') {
+                        Swal.fire({
                             icon: 'error',
-
+                            title: 'Email Already Exists',
+                            text: 'This email is already registered. Please use a different one.',
+                            confirmButtonColor: '#2d5a27'
+                        });
+                    } else if (response.message === 'location_not_found') {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Shelter Location Not Found',
+                            text: 'Could not find the shelter location. Try a different spelling.',
+                            confirmButtonColor: '#2d5a27'
+                        });
+                    } else if (response.message === 'org_location_not_found') {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Municipality Location Not Found',
+                            text: 'Could not find the municipality location. Try a different spelling.',
+                            confirmButtonColor: '#2d5a27'
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
                             title: 'Error',
-
-                            text: response.message
-
+                            text: response.message,
+                            confirmButtonColor: '#2d5a27'
                         });
                     }
                 },
@@ -978,9 +980,11 @@ foreach ($chartData as $row) {
                                     text: response.message,
                                     timer: 1500,
                                     showConfirmButton: false
-                                });
+                                }).then(() => {
 
-                                $('.dltshelter[data-id="' + id + '"]').closest('tr').fadeOut();
+                                    location.reload();
+
+                                });
 
                             } else {
 

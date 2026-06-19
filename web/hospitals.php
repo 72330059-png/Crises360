@@ -169,15 +169,17 @@ $allHospitals = $hospital->getAllHospitals();
         .action-btn.delete-btn {
             color: #EE5D50;
         }
-.phone-link {
-    color: #1B2559; 
-    text-decoration: none;
-}
 
-.phone-link:hover {
-    color: #1B2559;
-    text-decoration: none;
-}
+        .phone-link {
+            color: #1B2559;
+            text-decoration: none;
+        }
+
+        .phone-link:hover {
+            color: #1B2559;
+            text-decoration: none;
+        }
+
         .teams-badge {
             background: #F4F7FE;
             color: #1B2559;
@@ -528,7 +530,7 @@ $allHospitals = $hospital->getAllHospitals();
 
                 var status = $(this).val();
 
-                table.column(5).search(status).draw();
+                table.column(6).search(status).draw();
 
             });
         });
@@ -556,8 +558,7 @@ $allHospitals = $hospital->getAllHospitals();
                     },
                     dataType: 'json',
 
-                    success: function(response) {
-
+                       success: function(response) {
                         console.log(response);
 
                         if (response.success) {
@@ -565,23 +566,36 @@ $allHospitals = $hospital->getAllHospitals();
                                 document.getElementById('addHospitalModal')
                             );
                             modal.hide();
-
                             Swal.fire({
                                 icon: 'success',
-                                title: 'Success',
-                                text: response.message,
+                                title: 'Hospital Added Successfully',
+                                confirmButtonColor: '#2d5a27',
                                 timer: 1500,
                                 showConfirmButton: false
                             }).then(() => {
                                 window.location.reload();
                             });
+                        } else if (response.message === 'email_duplicate') {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Email Already Exists',
+                                text: 'This email is already registered. Please use a different one.',
+                                confirmButtonColor: '#2d5a27'
+                            });
+                        } else if (response.message === 'location_not_found') {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Location Not Found',
+                                text: 'Could not find this location. Try a different spelling or description.',
+                                confirmButtonColor: '#2d5a27'
+                            });
                         } else {
-
-                            Swal.fire(
-                                'Error',
-                                response.message,
-                                'error'
-                            );
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: response.message,
+                                confirmButtonColor: '#2d5a27'
+                            });
                         }
                     },
 

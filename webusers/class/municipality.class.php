@@ -472,4 +472,11 @@ class Municipality extends DAL
 
         return explode(",", $enum);
     }
+
+  public function getOrganizationById($org_id) {
+    return $this->getRowSafe(
+        "SELECT * FROM organizations WHERE id = ?",
+        [$org_id]
+    );
+}
 }

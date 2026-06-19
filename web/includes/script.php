@@ -423,7 +423,13 @@
                         text: response.message,
                         timer: 1500,
                         showConfirmButton: false
-                    });
+                    }).then(() => {
+
+            $('#viewIncidentModal').modal('hide');
+
+            location.reload();
+
+        });
 
                 } else {
 
@@ -541,9 +547,11 @@
                                 text: response.message,
                                 timer: 1500,
                                 showConfirmButton: false
-                            });
+                            }).then(() => {
 
-                            $('.deleteBtn[data-id="' + id + '"]').closest('tr').fadeOut();
+            location.reload();
+
+        });
 
                         } else {
 

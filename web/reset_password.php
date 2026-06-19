@@ -126,6 +126,98 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             color: #9aa7b8;
             font-size: 18px;
         }
+        /* Responsive Design */
+
+@media (max-width: 768px) {
+
+    body {
+        padding: 20px;
+    }
+
+    .card {
+        width: 100%;
+        max-width: 500px;
+        padding: 30px;
+    }
+
+    h2 {
+        font-size: 24px;
+    }
+
+    p {
+        font-size: 14px;
+        line-height: 1.6;
+    }
+
+    input,
+    button {
+        font-size: 14px;
+        padding: 13px;
+    }
+
+    .password-wrapper input {
+        height: 50px;
+    }
+}
+
+@media (max-width: 480px) {
+
+    body {
+        padding: 15px;
+    }
+
+    .card {
+        width: 100%;
+        padding: 25px 20px;
+        border-radius: 15px;
+    }
+
+    h2 {
+        font-size: 22px;
+        text-align: center;
+    }
+
+    p {
+        font-size: 13px;
+        text-align: center;
+    }
+
+    input,
+    button {
+        padding: 12px;
+        font-size: 14px;
+    }
+
+    .password-wrapper input {
+        padding-right: 45px;
+        height: 48px;
+    }
+
+    #eyeIcon {
+        right: 12px;
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 320px) {
+
+    .card {
+        padding: 20px 15px;
+    }
+
+    h2 {
+        font-size: 20px;
+    }
+
+    p {
+        font-size: 12px;
+    }
+
+    input,
+    button {
+        font-size: 13px;
+    }
+}
     </style>
 
 </head>

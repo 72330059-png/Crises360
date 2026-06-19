@@ -5,6 +5,16 @@ require_once("DAL.class.php");
 class incident extends DAL
 {
 
+
+public function getLocations()
+{
+    $sql = "SELECT DISTINCT location
+            FROM incidents
+            ORDER BY location ASC";
+
+    return $this->getdata($sql);
+}
+
     public function getAllIncidents()
     {
         $sql = "SELECT * FROM incidents ORDER BY reported_at DESC";

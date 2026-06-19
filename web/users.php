@@ -88,7 +88,7 @@ $roles = $index->getEnumValues("users", "role");
 
             </div>
             <div class="modal-body">
-                <form id="addForm" action="actions/add_users.php" method="POST" enctype="multipart/form-data">
+                <form id="addForm" >
                     <div class="input-group mb-3">
                         <div class="input-group-prepend">
                             <span class="input-group-text" id="basic-addon1" style="width: 150px;">Name</span>
@@ -219,6 +219,7 @@ $roles = $index->getEnumValues("users", "role");
             $.post('actions/update_user.php', $(this).serialize(), function(res) {
 
                 if (res.status === 'success') {
+                    bootstrap.Modal.getInstance(document.getElementById('edituserModal')).hide();
                     Swal.fire('Updated!', res.message, 'success').then(() => {
                         location.reload();
                     });
@@ -228,6 +229,45 @@ $roles = $index->getEnumValues("users", "role");
 
             }, 'json');
         });
+        $('#addForm').submit(function(e) {
+
+    e.preventDefault();
+
+    $.ajax({
+        url: 'actions/add_users.php',
+        type: 'POST',
+        data: $(this).serialize(),
+        dataType: 'json',
+
+        success: function(res) {
+
+            if (res.status === 'success') {
+
+                bootstrap.Modal.getInstance(
+                    document.getElementById('addModal')
+                ).hide();
+
+                Swal.fire(
+                    'Added!',
+                    res.message,
+                    'success'
+                ).then(() => {
+                    location.reload();
+                });
+
+            } else {
+
+                Swal.fire(
+                    'Error!',
+                    res.message,
+                    'error'
+                );
+
+            }
+        }
+    });
+
+});
     </script>
 
 

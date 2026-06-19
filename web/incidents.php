@@ -12,17 +12,12 @@ if (!isset($_SESSION['logged_in'])) {
 $incident = new incident();
 
 $allIncidents = $incident->getAllIncidents();
-
+$locations = $incident->getLocations();
 $total = $incident->totalIncidents();
-
 $active = $incident->activeIncidents();
-
 $progress = $incident->inProgressIncidents();
-
 $resolved = $incident->resolvedIncidents();
-
 $critical = $incident->criticalIncidents();
-
 ?>
 <!DOCTYPE html>
 <html>
@@ -31,224 +26,264 @@ $critical = $incident->criticalIncidents();
     <title>Incidents</title>
     <?php include('includes/header.php'); ?>
     <style>
-      
         @media (max-width: 992px) {
-            .filter-row-container { flex-wrap: wrap; }
-            .search-container     { flex: 0 0 100% !important; min-width: 100% !important; }
-            .filter-group-item    { flex: 0 0 calc(50% - 5px) !important; min-width: calc(50% - 5px) !important; }
-            .btn-add-navy         { width: 100%; justify-content: center; }
+            .filter-row-container {
+                flex-wrap: wrap;
+            }
+
+            .search-container {
+                flex: 0 0 100% !important;
+                min-width: 100% !important;
+            }
+
+            .filter-group-item {
+                flex: 0 0 calc(50% - 5px) !important;
+                min-width: calc(50% - 5px) !important;
+            }
+
+            .btn-add-navy {
+                width: 100%;
+                justify-content: center;
+            }
         }
- 
+
         /* Mobile */
         @media (max-width: 768px) {
-            .top-nav      { left: 70px !important; padding: 0 16px; }
-            .main-content { margin-left: 70px !important; padding: 14px !important; }
-            .stat-col     { flex: 0 0 calc(50% - 8px); }
-            .card-subtext { display: none; }
-            .dashboard-card { padding: 12px; min-height: auto; }
+            .top-nav {
+                left: 70px !important;
+                padding: 0 16px;
+            }
+
+            .main-content {
+                margin-left: 70px !important;
+                padding: 14px !important;
+            }
+
+            .stat-col {
+                flex: 0 0 calc(50% - 8px);
+            }
+
+            .card-subtext {
+                display: none;
+            }
+
+            .dashboard-card {
+                padding: 12px;
+                min-height: auto;
+            }
         }
- 
+
         /* Small phones */
         @media (max-width: 480px) {
-            .stat-col          { flex: 0 0 100%; }
-            .filter-group-item { flex: 0 0 100% !important; min-width: 100% !important; }
-            .main-content      { padding: 10px !important; }
+            .stat-col {
+                flex: 0 0 100%;
+            }
+
+            .filter-group-item {
+                flex: 0 0 100% !important;
+                min-width: 100% !important;
+            }
+
+            .main-content {
+                padding: 10px !important;
+            }
         }
     </style>
 </head>
+
 <body>
-<div class="modal fade" id="viewIncidentModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content rounded-4">
+    <div class="modal fade" id="viewIncidentModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4">
 
-            <div class="modal-header">
+                <div class="modal-header">
 
-                <h5 class="modal-title" id="incidentTitle">
-                    Incident Details
-                </h5>
+                    <h5 class="modal-title" id="incidentTitle">
+                        Incident Details
+                    </h5>
 
-                <div class="d-flex align-items-center gap-2">
+                    <div class="d-flex align-items-center gap-2">
 
-                    <!-- EDIT DESCRIPTION -->
-                    <i class="fa fa-pen text-primary"
-                        id="editDescriptionBtn"
-                        style="cursor:pointer;">
-                    </i>
+                        <!-- EDIT DESCRIPTION -->
+                        <i class="fa fa-pen text-primary"
+                            id="editDescriptionBtn"
+                            style="cursor:pointer;">
+                        </i>
 
-                    <button type="button"
+                        <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal">
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <div class="modal-body">
+
+                    <h6>Description</h6>
+
+                    <!-- NORMAL VIEW -->
+                    <p id="incidentDescription"></p>
+
+                    <!-- EDIT TEXTAREA -->
+                    <textarea
+                        id="editDescriptionTextarea"
+                        class="form-control d-none"
+                        rows="5">
+                </textarea>
+
+                    <!-- SAVE BUTTON -->
+                    <button
+                        class="btn btn-success mt-3 d-none"
+                        id="saveDescriptionBtn">
+                        Save Description
+                    </button>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="addIncidentModal" tabindex="-1">
+
+        <div class="modal-dialog modal-dialog-centered modal-md">
+
+            <div class="modal-content rounded-4">
+
+                <div class="modal-header">
+
+                    <h5 class="modal-title">
+                        Add New Incident
+                    </h5>
+
+                    <button
+                        type="button"
                         class="btn-close"
                         data-bs-dismiss="modal">
                     </button>
 
                 </div>
 
-            </div>
+                <div class="modal-body">
 
-            <div class="modal-body">
+                    <form id="addIncidentForm">
 
-                <h6>Description</h6>
+                        <div class="input-group mb-3">
 
-                <!-- NORMAL VIEW -->
-                <p id="incidentDescription"></p>
+                            <span class="input-group-text" style="width:150px;">
+                                Incident
+                            </span>
 
-                <!-- EDIT TEXTAREA -->
-                <textarea
-                    id="editDescriptionTextarea"
-                    class="form-control d-none"
-                    rows="5">
-                </textarea>
+                            <input
+                                type="text"
+                                class="form-control"
+                                id="addIncidentName"
+                                placeholder="Incident name">
+                        </div>
 
-                <!-- SAVE BUTTON -->
-                <button
-                    class="btn btn-success mt-3 d-none"
-                    id="saveDescriptionBtn">
-                    Save Description
-                </button>
+                        <div class="input-group mb-3">
 
-            </div>
+                            <span class="input-group-text" style="width:150px;">
+                                Location
+                            </span>
 
-        </div>
-    </div>
-</div>
+                            <input
+                                type="text"
+                                class="form-control"
+                                id="addLocation"
+                                placeholder="Location">
+                        </div>
 
-<div class="modal fade" id="addIncidentModal" tabindex="-1">
+                        <div class="input-group mb-3">
 
-    <div class="modal-dialog modal-dialog-centered modal-md">
+                            <span class="input-group-text" style="width:150px;">
+                                Severity
+                            </span>
 
-        <div class="modal-content rounded-4">
+                            <select class="form-select" id="addSeverity">
 
-            <div class="modal-header">
+                                <option value="">Select</option>
 
-                <h5 class="modal-title">
-                    Add New Incident
-                </h5>
+                                <option value="Low">Low</option>
 
-                <button
-                    type="button"
-                    class="btn-close"
-                    data-bs-dismiss="modal">
-                </button>
+                                <option value="Medium">Medium</option>
 
-            </div>
+                                <option value="High">High</option>
 
-            <div class="modal-body">
+                            </select>
 
-                <form id="addIncidentForm">
+                        </div>
 
-                    <div class="input-group mb-3">
+                        <div class="input-group mb-3">
 
-                        <span class="input-group-text" style="width:150px;">
-                            Incident
-                        </span>
+                            <span class="input-group-text" style="width:150px;">
+                                Status
+                            </span>
 
-                        <input
-                            type="text"
-                            class="form-control"
-                            id="addIncidentName"
-                            placeholder="Incident name">
-                    </div>
+                            <select class="form-select" id="addStatus">
 
-                    <div class="input-group mb-3">
+                                <option value="">Select</option>
 
-                        <span class="input-group-text" style="width:150px;">
-                            Location
-                        </span>
+                                <option value="Investigating">
+                                    Investigating
+                                </option>
 
-                        <input
-                            type="text"
-                            class="form-control"
-                            id="addLocation"
-                            placeholder="Location">
-                    </div>
+                                <option value="In Progress">
+                                    In Progress
+                                </option>
 
-                    <div class="input-group mb-3">
+                                <option value="Resolved">
+                                    Resolved
+                                </option>
 
-                        <span class="input-group-text" style="width:150px;">
-                            Severity
-                        </span>
+                            </select>
 
-                        <select class="form-select" id="addSeverity">
+                        </div>
 
-                            <option value="">Select</option>
+                        <div class="mb-3">
 
-                            <option value="Low">Low</option>
+                            <label class="form-label fw-bold">
+                                Description
+                            </label>
 
-                            <option value="Medium">Medium</option>
-
-                            <option value="High">High</option>
-
-                        </select>
-
-                    </div>
-
-                    <div class="input-group mb-3">
-
-                        <span class="input-group-text" style="width:150px;">
-                            Status
-                        </span>
-
-                        <select class="form-select" id="addStatus">
-
-                            <option value="">Select</option>
-
-                            <option value="Investigating">
-                                Investigating
-                            </option>
-
-                            <option value="In Progress">
-                                In Progress
-                            </option>
-
-                            <option value="Resolved">
-                                Resolved
-                            </option>
-
-                        </select>
-
-                    </div>
-
-                    <div class="mb-3">
-
-                        <label class="form-label fw-bold">
-                            Description
-                        </label>
-
-                        <textarea
-                            class="form-control"
-                            rows="3"
-                            id="addDescription"
-                            placeholder="Write description...">
+                            <textarea
+                                class="form-control"
+                                rows="3"
+                                id="addDescription"
+                                placeholder="Write description...">
             </textarea>
 
-                    </div>
+                        </div>
 
-                </form>
+                    </form>
 
-            </div>
+                </div>
 
-            <div class="modal-footer">
+                <div class="modal-footer">
 
-                <button
-                    type="button"
-                    class="btn btn-secondary"
-                    data-bs-dismiss="modal">
-                    Cancel
-                </button>
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+                        Cancel
+                    </button>
 
-                <button
-                    type="button"
-                    class="btn btn-primary"
-                    id="saveIncidentBtn">
-                    Add Incident
-                </button>
+                    <button
+                        type="button"
+                        class="btn btn-primary"
+                        id="saveIncidentBtn">
+                        Add Incident
+                    </button>
+
+                </div>
 
             </div>
 
         </div>
 
     </div>
-
-</div>
 
     <!-- SIDEBAR -->
     <?php include('includes/sidebar.php'); ?>
@@ -337,7 +372,7 @@ $critical = $incident->criticalIncidents();
                     <input type="text" id="searchFilter" class="form-control filter-control" placeholder="Search incidents...">
                 </div>
 
-                <div class="filter-group-item">
+                <!-- <div class="filter-group-item">
                     <select
                         class="form-select filter-control"
                         id="regionFilter">
@@ -345,6 +380,21 @@ $critical = $incident->criticalIncidents();
                         <option value="Beirut">Beirut</option>
                         <option value="Tripoli">Tripoli</option>
                         <option value="Saida">Saida</option>
+                    </select>
+                </div> -->
+                <div class="filter-group-item">
+                    <select
+                        class="form-select filter-control"
+                        id="regionFilter">
+
+                        <option value="">All Regions</option>
+
+                        <?php foreach ($locations as $loc) { ?>
+                            <option value="<?php echo $loc['location']; ?>">
+                                <?php echo $loc['location']; ?>
+                            </option>
+                        <?php } ?>
+
                     </select>
                 </div>
 
@@ -490,7 +540,7 @@ $critical = $incident->criticalIncidents();
         </div>
     </div>
     <?php include('includes/script.php'); ?>
-   
+
 </body>
 
 </html>
