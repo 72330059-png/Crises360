@@ -42,9 +42,10 @@ function groqGeocode($location) {
     curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
+    $groqApiKey = getenv('GROQ_API_KEY') ?: ($_ENV['GROQ_API_KEY'] ?? '');
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
         'Content-Type: application/json',
-        'Authorization: Bearer ' . GROQ_API_KEY
+        'Authorization: Bearer ' . $groqApiKey
     ]);
     curl_setopt($ch, CURLOPT_TIMEOUT, 15);
     $response = curl_exec($ch);
