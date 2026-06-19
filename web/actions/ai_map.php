@@ -188,13 +188,22 @@ function nominatimQuery(string $q): ?array {
     return null;
 }
 
-function groqGeocodeQuery(string $location): ?array {
-    $prompt = "What are the latitude and longitude coordinates of \"$location\" in Lebanon? Reply ONLY with a JSON object containing lat and lng as decimal numbers. Example format: {\"lat\": 0.0, \"lng\": 0.0}";
-    
+function groqGeocodeQuery(string $location, string $region = 'south'): ?array {
+    $regionHints = [
+        'south'  => 'South Lebanon, near Tyre/Sidon area (lat ~33.0-33.5, lng ~35.1-35.5)',
+        'beirut' => 'Beirut capital area (lat ~33.85-33.92, lng ~35.45-35.55)',
+        'bekaa'  => 'Bekaa Valley, east Lebanon (lat ~33.5-34.2, lng ~35.7-36.5)',
+        'mount'  => 'Mount Lebanon (lat ~33.7-33.95, lng ~35.5-35.75)',
+        'north'  => 'North Lebanon, near Tripoli (lat ~34.2-34.7, lng ~35.6-36.2)',
+    ];
+    $hint = $regionHints[$region] ?? $regionHints['south'];
+
+    $prompt = "What are the exact latitude and longitude of the Lebanese village/city \"$location\"? It is located in $hint. Reply ONLY with JSON: {\"lat\": 0.0, \"lng\": 0.0}. Use the real GPS coordinates, never placeholder values.";
+
     $body = json_encode([
         'model' => 'llama-3.1-8b-instant',
         'messages' => [
-            ['role' => 'system', 'content' => 'You are a Lebanese geography expert. You know the exact GPS coordinates of every Lebanese village, city, and area. Reply ONLY with valid JSON containing lat and lng as real decimal numbers for the requested location. Never use placeholder or example values.'],
+            ['role' => 'system', 'content' => 'You are a Lebanese geography expert. You know exact GPS coordinates of every Lebanese village. Reply ONLY with valid JSON with lat and lng. Never use placeholder or example values.'],
             ['role' => 'user', 'content' => $prompt]
         ],
         'temperature' => 0.1, 'max_tokens' => 50
@@ -226,7 +235,7 @@ function groqGeocodeQuery(string $location): ?array {
     return null;
 }
 
-function geocodeWithFallback(array $location): array {
+function geocodeWithFallback(array $location ,string $region = 'south'): array {
     $canonical = trim($location['canonical'] ?? '');
     $variants  = $location['variants']  ?? [];
     $original  = trim($location['original'] ?? $canonical);
@@ -248,7 +257,7 @@ function geocodeWithFallback(array $location): array {
     }
 
     // Nominatim failed — fall back to Groq for coordinates
-    $result = groqGeocodeQuery($canonical ?: $original);
+    $result = groqGeocodeQuery($canonical ?: $original, $region);
     if ($result) {
         return [
             'name' => $canonical ?: $original, 'original' => $original,
@@ -270,7 +279,8 @@ foreach ($extracted['locations'] as $loc) {
     if (is_string($loc)) {
         $loc = ['canonical' => $loc, 'original' => $loc, 'variants' => []];
     }
-    $geocoded[] = geocodeWithFallback($loc);
+        $geocoded[] = geocodeWithFallback($loc, $extracted['region'] ?? 'south');
+
 }
 
 
