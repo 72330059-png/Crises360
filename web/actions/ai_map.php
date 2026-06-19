@@ -189,11 +189,12 @@ function nominatimQuery(string $q): ?array {
 }
 
 function groqGeocodeQuery(string $location): ?array {
-    $prompt = "Give me the latitude and longitude of \"$location\" in Lebanon. Reply ONLY with valid JSON: {\"lat\": 33.2704, \"lng\": 35.2037}. No explanation, no markdown.";
+    $prompt = "What are the latitude and longitude coordinates of \"$location\" in Lebanon? Reply ONLY with a JSON object containing lat and lng as decimal numbers. Example format: {\"lat\": 0.0, \"lng\": 0.0}";
+    
     $body = json_encode([
         'model' => 'llama-3.1-8b-instant',
         'messages' => [
-            ['role' => 'system', 'content' => 'You are a Lebanese geography expert. Reply ONLY with valid JSON with lat and lng fields.'],
+            ['role' => 'system', 'content' => 'You are a Lebanese geography expert. You know the exact GPS coordinates of every Lebanese village, city, and area. Reply ONLY with valid JSON containing lat and lng as real decimal numbers for the requested location. Never use placeholder or example values.'],
             ['role' => 'user', 'content' => $prompt]
         ],
         'temperature' => 0.1, 'max_tokens' => 50
@@ -214,9 +215,14 @@ function groqGeocodeQuery(string $location): ?array {
     $data = json_decode($response, true);
     $text = preg_replace('/```json\s*/i', '', $data['choices'][0]['message']['content'] ?? '');
     $text = preg_replace('/```\s*/i', '', trim($text));
+   // ... rest of curl ...
     $coords = json_decode($text, true);
-    if (!empty($coords['lat']) && !empty($coords['lng']))
+    if (!empty($coords['lat']) && !empty($coords['lng'])
+        && $coords['lat'] != 0.0 && $coords['lng'] != 0.0
+        && $coords['lat'] != 33.2704  // reject the old example value
+    ) {
         return ['lat' => (float)$coords['lat'], 'lng' => (float)$coords['lng'], 'display_name' => $location];
+    }
     return null;
 }
 
