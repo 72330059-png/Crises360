@@ -188,6 +188,37 @@ function nominatimQuery(string $q): ?array {
     return null;
 }
 
+function groqGeocodeQuery(string $location): ?array {
+    $prompt = "Give me the latitude and longitude of \"$location\" in Lebanon. Reply ONLY with valid JSON: {\"lat\": 33.2704, \"lng\": 35.2037}. No explanation, no markdown.";
+    $body = json_encode([
+        'model' => 'llama-3.1-8b-instant',
+        'messages' => [
+            ['role' => 'system', 'content' => 'You are a Lebanese geography expert. Reply ONLY with valid JSON with lat and lng fields.'],
+            ['role' => 'user', 'content' => $prompt]
+        ],
+        'temperature' => 0.1, 'max_tokens' => 50
+    ]);
+    $ch = curl_init('https://api.groq.com/openai/v1/chat/completions');
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'Content-Type: application/json',
+        'Authorization: Bearer ' . GROQ_API_KEY
+    ]);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+    $response = curl_exec($ch);
+    curl_close($ch);
+    $data = json_decode($response, true);
+    $text = preg_replace('/```json\s*/i', '', $data['choices'][0]['message']['content'] ?? '');
+    $text = preg_replace('/```\s*/i', '', trim($text));
+    $coords = json_decode($text, true);
+    if (!empty($coords['lat']) && !empty($coords['lng']))
+        return ['lat' => (float)$coords['lat'], 'lng' => (float)$coords['lng'], 'display_name' => $location];
+    return null;
+}
 
 function geocodeWithFallback(array $location): array {
     $canonical = trim($location['canonical'] ?? '');
@@ -196,38 +227,34 @@ function geocodeWithFallback(array $location): array {
 
     $queries = [];
     if ($canonical) $queries[] = $canonical . ', Lebanon';
-    foreach ($variants as $v) {
-        $v = trim($v);
-        if ($v && !in_array($v . ', Lebanon', $queries))
-            $queries[] = $v . ', Lebanon';
-    }
-    if ($original && !in_array($original . ', Lebanon', $queries))
-        $queries[] = $original . ', Lebanon';
-
-    $queries = array_slice($queries, 0, 5); // hard cap at 5
+    foreach (array_slice($variants, 0, 2) as $v)
+        $queries[] = trim($v) . ', Lebanon';
 
     foreach ($queries as $q) {
         $result = nominatimQuery($q);
         if ($result) {
             return [
-                'name'         => $canonical ?: $original,
-                'original'     => $original,
-                'tried'        => $q,
-                'lat'          => $result['lat'],
-                'lng'          => $result['lng'],
-                'display_name' => $result['display_name'],
-                'found'        => true,
+                'name' => $canonical ?: $original, 'original' => $original,
+                'tried' => $q, 'lat' => $result['lat'], 'lng' => $result['lng'],
+                'display_name' => $result['display_name'], 'found' => true,
             ];
         }
     }
 
+    // Nominatim failed — fall back to Groq for coordinates
+    $result = groqGeocodeQuery($canonical ?: $original);
+    if ($result) {
+        return [
+            'name' => $canonical ?: $original, 'original' => $original,
+            'tried' => 'groq-geocode', 'lat' => $result['lat'], 'lng' => $result['lng'],
+            'display_name' => $result['display_name'], 'found' => true,
+        ];
+    }
+
     return [
-        'name'    => $canonical ?: $original,
-        'original'=> $original,
-        'tried'   => implode(' / ', array_slice($queries, 0, 3)),
-        'lat'     => null,
-        'lng'     => null,
-        'found'   => false,
+        'name' => $canonical ?: $original, 'original' => $original,
+        'tried' => implode(' / ', $queries),
+        'lat' => null, 'lng' => null, 'found' => false,
     ];
 }
 
