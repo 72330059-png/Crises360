@@ -194,25 +194,37 @@ function geocodeWithFallback(array $location): array {
     $variants  = $location['variants']  ?? [];
     $original  = trim($location['original'] ?? $canonical);
 
+    // Build the list of queries to try, in order
     $queries = [];
-    if ($canonical) $queries[] = $canonical . ', Lebanon';
+
+    // 1. Canonical with countrycodes=lb (handled inside nominatimQuery)
+    if ($canonical) $queries[] = $canonical;
+
+    // 2. Each variant
     foreach ($variants as $v) {
         $v = trim($v);
-        if ($v && !in_array($v . ', Lebanon', $queries))
-            $queries[] = $v . ', Lebanon';
+        if ($v && !in_array($v, $queries)) $queries[] = $v;
     }
-    if ($original && !in_array($original . ', Lebanon', $queries))
-        $queries[] = $original . ', Lebanon';
 
-    $queries = array_slice($queries, 0, 5); // hard cap at 5
+    // 3. Original as typed (might work for Arabic directly)
+    if ($original && !in_array($original, $queries)) $queries[] = $original;
 
+    // 4. Append ", Lebanon" to each as extra fallback
+    $withLebanon = [];
     foreach ($queries as $q) {
+        $withLebanon[] = $q . ', Lebanon';
+    }
+    // Merge: try without ", Lebanon" first, then with
+    $allQueries = array_merge($queries, $withLebanon);
+    $allQueries = array_unique($allQueries);
+
+    foreach ($allQueries as $q) {
         $result = nominatimQuery($q);
         if ($result) {
             return [
                 'name'         => $canonical ?: $original,
                 'original'     => $original,
-                'tried'        => $q,
+                'tried'        => $q,           // which spelling worked
                 'lat'          => $result['lat'],
                 'lng'          => $result['lng'],
                 'display_name' => $result['display_name'],
@@ -221,16 +233,16 @@ function geocodeWithFallback(array $location): array {
         }
     }
 
+    // Nothing worked
     return [
-        'name'    => $canonical ?: $original,
-        'original'=> $original,
-        'tried'   => implode(' / ', array_slice($queries, 0, 3)),
-        'lat'     => null,
-        'lng'     => null,
-        'found'   => false,
+        'name'     => $canonical ?: $original,
+        'original' => $original,
+        'tried'    => implode(' / ', array_slice($allQueries, 0, 5)), // for debugging
+        'lat'      => null,
+        'lng'      => null,
+        'found'    => false,
     ];
 }
-
 
 $geocoded = [];
 foreach ($extracted['locations'] as $loc) {
