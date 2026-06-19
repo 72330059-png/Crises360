@@ -63,12 +63,12 @@ function getCoordinates($location) {
     if ($coords) return $coords;
     $coords = groqGeocode($location);
     if ($coords) return $coords;
-    return null; // explicitly null so we know to fall back
+    return ['lat' => null, 'lng' => null];
 }
 
 $municipality = new Municipality();
 
-$org_id      = $_SESSION['org_id'] ?? 0;
+$org_id       = $_SESSION['org_id'] ?? 0;
 $shelter_name = $municipality->clean($_POST['shelter_name'] ?? '');
 $location     = $municipality->clean($_POST['location'] ?? '');
 $capacity     = $_POST['capacity'] ?? 0;
@@ -90,17 +90,7 @@ if (!$municipality->validateInt($capacity)) {
     exit;
 }
 
-// Step 1: try to geocode the shelter's location text
 $coords = getCoordinates($location);
-
-// Step 2: if geocoding failed, fall back to the organization's own lat/lng
-if (!$coords) {
-    $org = $municipality->getOrganizationById((int)$org_id);
-    $coords = [
-        'lat' => $org['lat'] ?? null,
-        'lng' => $org['lng'] ?? null
-    ];
-}
 
 $data = [
     'organization_id' => (int)$org_id,
