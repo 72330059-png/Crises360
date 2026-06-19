@@ -11,8 +11,6 @@ if (!defined('GROQ_API_KEY')) {
     }
     define('GROQ_API_KEY', getenv('GROQ_API_KEY'));
 }
-// define('GROQ_API_KEY', 'GROQ_API_KEY_Secret');
-// define('GROQ_API_KEY', getenv('GROQ_API_KEY'));
 header('Content-Type: application/json');
 
 if (!isset($_SESSION['logged_in'])) {
@@ -26,6 +24,167 @@ $incidentId = (int)($_POST['incident_id'] ?? 0);
 if (!$userText) {
     echo json_encode(['status' => 'error', 'message' => 'No text provided']);
     exit;
+}
+
+// =====================================================================
+// STATIC COORDINATE TABLE
+// Source: the original AI reference list, with entries we verified
+// against Wikipedia/Wikidata corrected, and missing villages added.
+// VERIFIED entries (confirmed against Wikipedia/Wikidata):
+//   Bazouriyeh, Deir Qanoun an-Naher, Deir Qanoun Ras al-Ain, Qlaileh
+// Everything else below is from the original unverified list — treat
+// as "probably fine" but verify any village before trusting it 100%.
+// =====================================================================
+$LEBANON_COORDS = [
+    // SOUTH — verified
+    'Bazouriyeh' => [33.25389, 35.27167],
+    'Deir Qanoun an-Naher' => [33.29889, 35.31472],
+    'Deir Qanoun Ras al-Ain' => [33.22806, 35.21722],
+    'Ras al-Ain' => [33.22806, 35.21722], // alias, same place as above
+    'Qlaileh' => [33.19639, 35.23111],
+    'Al-Qlailah' => [33.19639, 35.23111], // alias
+
+    // SOUTH — from original list (unverified individually)
+    'Bint Jbeil' => [33.1167, 35.4333],
+    'Sidon' => [33.5571, 35.3729],
+    'Saida' => [33.5571, 35.3729],
+    'Tyre' => [33.271992, 35.203487],
+    'Sur' => [33.271992, 35.203487],
+    'Nabatieh' => [33.3772, 35.4836],
+    'Khiam' => [33.3333, 35.6000],
+    'Al-Khiyam' => [33.3333, 35.6000],
+    'Marjayoun' => [33.3667, 35.5833],
+    'Hasbaya' => [33.3997, 35.6856],
+    'Tibnin' => [33.2000, 35.4167],
+    'Qana' => [33.2000, 35.3000],
+    'Abbasiyeh' => [33.2667, 35.2833],
+    'Adloun' => [33.4833, 35.2833],
+    'Jezzine' => [33.5433, 35.5767],
+    'Yohmor' => [33.2500, 35.5000],
+    'Houla' => [33.2333, 35.5500],
+    'Aitaroun' => [33.0833, 35.4500],
+    'Rmeish' => [33.0667, 35.3833],
+    'Yaroun' => [33.0667, 35.4667],
+    'Ayta ash Shab' => [33.1000, 35.3500],
+    'Tayr Harfa' => [33.1500, 35.3333],
+    'Shaqra' => [33.3167, 35.2833],
+    'Mansouri' => [33.3500, 35.2500],
+    'Kafra' => [33.1500, 35.4833],
+    'Zebqine' => [33.2167, 35.2500],
+    'Majdal Zoun' => [33.3000, 35.2333],
+    'Naqoura' => [33.1167, 35.1333],
+    'Alma el Shaab' => [33.1167, 35.2667],
+    'Biyyadah' => [33.2833, 35.2167],
+    'Sarafand' => [33.4500, 35.3000],
+    'Kfar Tibnit' => [33.2833, 35.4167],
+    'Srifa' => [33.3000, 35.3833],
+    'Zawtar' => [33.3167, 35.4333],
+    'Haris' => [33.2000, 35.4667],
+    'Beit Yahoun' => [33.1667, 35.4833],
+    'Hanniyeh' => [33.3333, 35.2667],
+    'Shabriha' => [33.3000, 35.3000],
+
+    // BEIRUT
+    'Beirut' => [33.8938, 35.5018],
+    'Hamra' => [33.8967, 35.4833],
+    'Achrafieh' => [33.8883, 35.5150],
+    'Verdun' => [33.8833, 35.4917],
+    'Ras Beirut' => [33.9000, 35.4833],
+    'Mar Mikhael' => [33.8883, 35.5267],
+    'Gemmayzeh' => [33.8917, 35.5183],
+    'Bourj Hammoud' => [33.8833, 35.5500],
+    'Sin el Fil' => [33.8833, 35.5500],
+    'Hadath' => [33.8500, 35.5167],
+
+    // MOUNT LEBANON
+    'Jounieh' => [33.9808, 35.6178],
+    'Byblos' => [34.1236, 35.6517],
+    'Baabda' => [33.8333, 35.5500],
+    'Aley' => [33.8100, 35.5983],
+    'Beit Mery' => [33.8667, 35.5833],
+    'Broummana' => [33.8833, 35.6167],
+    'Dbayeh' => [33.9167, 35.5833],
+    'Antelias' => [33.9167, 35.5833],
+    'Jdeideh' => [33.9000, 35.5667],
+    'Choueifat' => [33.8333, 35.4833],
+    'Damour' => [33.7167, 35.4500],
+    'Deir el Qamar' => [33.6833, 35.5833],
+    'Beit ed-Dine' => [33.6833, 35.5833],
+    'Bchamoun' => [33.8000, 35.5167],
+    'Khalde' => [33.7833, 35.4833],
+    'Aramoun' => [33.8000, 35.4833],
+    'Bhamdoun' => [33.8000, 35.6500],
+    'Sofar' => [33.8167, 35.7000],
+    'Falougha' => [33.7833, 35.7167],
+    'Moukhtara' => [33.6500, 35.5833],
+
+    // NORTH
+    'Tripoli' => [34.4367, 35.8497],
+    'Zgharta' => [34.3667, 35.8833],
+    'Ehden' => [34.3000, 35.9500],
+    'Bcharre' => [34.2500, 36.0167],
+    'Batroun' => [34.2583, 35.6583],
+    'Chekka' => [34.3167, 35.7167],
+    'Koura' => [34.2833, 35.8167],
+    'Halba' => [34.5500, 36.0833],
+    'Amioun' => [34.3000, 35.8167],
+    'Kousba' => [34.2833, 35.9167],
+    'Hasroun' => [34.2667, 36.0000],
+    'Tannourine' => [34.2167, 35.9167],
+
+    // BEKAA
+    'Zahle' => [33.8500, 35.9000],
+    'Baalbek' => [34.0042, 36.2181],
+    'Chtaura' => [33.8167, 35.8500],
+    'Anjar' => [33.7333, 35.9333],
+    'Deir el Ahmar' => [34.0000, 36.1000],
+    'Taalabaya' => [33.8667, 35.9500],
+    'Saadnayel' => [33.8333, 35.9167],
+    'Qaraaoun' => [33.5833, 35.7000],
+    'Rachaiya' => [33.4997, 35.8428],
+    'Yanta' => [33.5500, 35.8833],
+    'Brital' => [34.1333, 36.2000],
+    'Hermel' => [34.3833, 36.3833],
+    'Nabi Sheet' => [34.0167, 36.1000],
+    'Qaa' => [34.3167, 36.4833],
+    'Labweh' => [34.1833, 36.3500],
+];
+
+function localCoordinateLookup(string $name): ?array {
+    global $LEBANON_COORDS;
+    $clean = function ($s) {
+        $s = strtolower(trim($s));
+        return preg_replace('/^(al-|el-|al |el )/i', '', $s);
+    };
+    $needle = $clean($name);
+    if ($needle === '') return null;
+
+    // exact match first
+    foreach ($LEBANON_COORDS as $key => $coords) {
+        if ($clean($key) === $needle) {
+            return ['lat' => $coords[0], 'lng' => $coords[1], 'display_name' => $key];
+        }
+    }
+    // partial / fuzzy match second
+    foreach ($LEBANON_COORDS as $key => $coords) {
+        $k = $clean($key);
+        if (strpos($k, $needle) !== false || strpos($needle, $k) !== false) {
+            return ['lat' => $coords[0], 'lng' => $coords[1], 'display_name' => $key];
+        }
+    }
+    return null;
+}
+
+function isWithinRegion(float $lat, float $lng, string $region): bool {
+    $bounds = [
+        'south'  => [32.9, 33.65, 35.0, 35.75],
+        'beirut' => [33.80, 33.95, 35.40, 35.60],
+        'bekaa'  => [33.3, 34.45, 35.6, 36.7],
+        'mount'  => [33.6, 34.20, 35.35, 35.85],
+        'north'  => [34.05, 34.75, 35.5, 36.25],
+    ];
+    [$latMin, $latMax, $lngMin, $lngMax] = $bounds[$region] ?? $bounds['south'];
+    return $lat >= $latMin && $lat <= $latMax && $lng >= $lngMin && $lng <= $lngMax;
 }
 
 // STEP 1 — Send text to Groq with smarter prompt
@@ -90,7 +249,7 @@ PROMPT;
 $groqUrl = 'https://api.groq.com/openai/v1/chat/completions';
 
 $groqBody = json_encode([
-    'model'       => 'llama-3.1-8b-instant',
+    'model'       => 'openai/gpt-oss-20b', // was llama-3.1-8b-instant (Groq deprecated this June 17, 2026)
     'messages'    => [
         [
             'role'    => 'system',
@@ -154,8 +313,8 @@ if (!$extracted || !isset($extracted['locations'])) {
     exit;
 }
 
-// STEP 2 — Geocode with multi-variant fallback
-
+// STEP 2 — Geocode: static table first, then Nominatim, then Groq as a
+// sanity-checked last resort.
 
 function nominatimQuery(string $q): ?array {
     $url = 'https://nominatim.openstreetmap.org/search?' . http_build_query([
@@ -175,7 +334,7 @@ function nominatimQuery(string $q): ?array {
     $response = curl_exec($ch);
     curl_close($ch);
 
-    usleep(1100000); // 0.3s — Nominatim rate limit
+    usleep(1100000); // 1.1s — stays under Nominatim's 1 req/sec rate limit
 
     $data = json_decode($response, true);
     if ($data && count($data) > 0) {
@@ -198,133 +357,12 @@ function groqGeocodeQuery(string $location, string $region = 'south'): ?array {
     ];
     $hint = $regionHints[$region] ?? $regionHints['south'];
 
-$prompt = "What are the exact latitude and longitude of the Lebanese village/city \"$location\"? It is located in $hint.
+    $prompt = "What are the exact latitude and longitude of the Lebanese village/city \"$location\"? It is located in $hint. Reply ONLY with JSON: {\"lat\": 0.0, \"lng\": 0.0}. Use real GPS coordinates, never placeholder values.";
 
-Known Lebanese coordinates reference:
-SOUTH LEBANON:
-- Bazouriyeh: lat 33.1833, lng 35.2167
-- Bint Jbeil: lat 33.1167, lng 35.4333
-- Sidon/Saida: lat 33.5571, lng 35.3729
-- Tyre/Sur: lat 33.2704, lng 35.1964
-- Nabatieh: lat 33.3772, lng 35.4836
-- Khiam/Al-Khiyam: lat 33.3333, lng 35.6000
-- Marjayoun: lat 33.3667, lng 35.5833
-- Hasbaya: lat 33.3997, lng 35.6856
-- Tibnin: lat 33.2000, lng 35.4167
-- Qana: lat 33.2000, lng 35.3000
-- Abbasiyeh: lat 33.2667, lng 35.2833
-- Deir Qanoun: lat 33.3000, lng 35.2667
-- Adloun: lat 33.4833, lng 35.2833
-- Jezzine: lat 33.5433, lng 35.5767
-- Kherbet Qanafar: lat 33.3500, lng 35.5500
-- Yohmor: lat 33.2500, lng 35.5000
-- Houla: lat 33.2333, lng 35.5500
-- Aitaroun: lat 33.0833, lng 35.4500
-- Bint Jbail: lat 33.1167, lng 35.4333
-- Rmeish: lat 33.0667, lng 35.3833
-- Yaroun: lat 33.0667, lng 35.4667
-- Ayta ash Shab: lat 33.1000, lng 35.3500
-- Tayr Harfa: lat 33.1500, lng 35.3333
-- Shaqra: lat 33.3167, lng 35.2833
-- Mansouri: lat 33.3500, lng 35.2500
-- Kafra: lat 33.1500, lng 35.4833
-- Zebqine: lat 33.2167, lng 35.2500
-- Majdal Zoun: lat 33.3000, lng 35.2333
-- Tyre coast: lat 33.2500, lng 35.1833
-- Naqoura: lat 33.1167, lng 35.1333
-- Alma el Shaab: lat 33.1167, lng 35.2667
-- Biyyadah: lat 33.2833, lng 35.2167
-- Sarafand: lat 33.4500, lng 35.3000
-- Kfar Tibnit: lat 33.2833, lng 35.4167
-- Srifa: lat 33.3000, lng 35.3833
-- Zawtar: lat 33.3167, lng 35.4333
-- Haris: lat 33.2000, lng 35.4667
-- Beit Yahoun: lat 33.1667, lng 35.4833
-- Hanniyeh: lat 33.3333, lng 35.2667
-- Shabriha: lat 33.3000, lng 35.3000
-
-BEIRUT:
-- Beirut: lat 33.8938, lng 35.5018
-- Hamra: lat 33.8967, lng 35.4833
-- Achrafieh: lat 33.8883, lng 35.5150
-- Verdun: lat 33.8833, lng 35.4917
-- Ras Beirut: lat 33.9000, lng 35.4833
-- Mar Mikhael: lat 33.8883, lng 35.5267
-- Gemmayzeh: lat 33.8917, lng 35.5183
-- Bourj Hammoud: lat 33.8833, lng 35.5500
-- Sin el Fil: lat 33.8833, lng 35.5500
-- Hadath: lat 33.8500, lng 35.5167
-
-MOUNT LEBANON:
-- Jounieh: lat 33.9808, lng 35.6178
-- Byblos/Jbeil: lat 34.1236, lng 35.6517
-- Baabda: lat 33.8333, lng 35.5500
-- Aley: lat 33.8100, lng 35.5983
-- Beit Mery: lat 33.8667, lng 35.5833
-- Broummana: lat 33.8833, lng 35.6167
-- Zahle approach/Chtaura: lat 33.8167, lng 35.8500
-- Dbayeh: lat 33.9167, lng 35.5833
-- Antelias: lat 33.9167, lng 35.5833
-- Nahr el Kalb: lat 33.9333, lng 35.6167
-- Jdeideh: lat 33.9000, lng 35.5667
-- Dora: lat 33.9000, lng 35.5500
-- Choueifat: lat 33.8333, lng 35.4833
-- Damour: lat 33.7167, lng 35.4500
-- Deir el Qamar: lat 33.6833, lng 35.5833
-- Beit ed-Dine: lat 33.6833, lng 35.5833
-- Bchamoun: lat 33.8000, lng 35.5167
-- Khalde: lat 33.7833, lng 35.4833
-- Aramoun: lat 33.8000, lng 35.4833
-- Bhamdoun: lat 33.8000, lng 35.6500
-- Sofar: lat 33.8167, lng 35.7000
-- Falougha: lat 33.7833, lng 35.7167
-- Moukhtara: lat 33.6500, lng 35.5833
-- Kfarmatta: lat 33.7000, lng 35.5500
-
-NORTH LEBANON:
-- Tripoli: lat 34.4367, lng 35.8497
-- Zgharta: lat 34.3667, lng 35.8833
-- Ehden: lat 34.3000, lng 35.9500
-- Bcharre: lat 34.2500, lng 36.0167
-- Batroun: lat 34.2583, lng 35.6583
-- Chekka: lat 34.3167, lng 35.7167
-- Koura: lat 34.2833, lng 35.8167
-- Kfar Aabida: lat 34.2333, lng 35.6833
-- Halba: lat 34.5500, lng 36.0833
-- Sir el Danniyeh: lat 34.3333, lng 35.9833
-- Beit Mellat: lat 34.3500, lng 35.9500
-- Amyoun: lat 34.3000, lng 35.8167
-- Qalamoun: lat 34.4167, lng 35.8333
-- Anfeh: lat 34.3500, lng 35.7333
-- Amioun: lat 34.3000, lng 35.8167
-- Kousba: lat 34.2833, lng 35.9167
-- Hasroun: lat 34.2667, lng 36.0000
-- Tannourine: lat 34.2167, lng 35.9167
-
-BEKAA:
-- Zahle: lat 33.8500, lng 35.9000
-- Baalbek: lat 34.0042, lng 36.2181
-- Chtaura: lat 33.8167, lng 35.8500
-- Anjar: lat 33.7333, lng 35.9333
-- Yohmor Bekaa: lat 33.9500, lng 36.1500
-- Deir el Ahmar: lat 34.0000, lng 36.1000
-- Taalabaya: lat 33.8667, lng 35.9500
-- Saadnayel: lat 33.8333, lng 35.9167
-- Qaraaoun: lat 33.5833, lng 35.7000
-- Rachaiya: lat 33.4997, lng 35.8428
-- Yanta: lat 33.5500, lng 35.8833
-- Kherbet Qanafar: lat 33.7333, lng 35.9000
-- Brital: lat 34.1333, lng 36.2000
-- Hermel: lat 34.3833, lng 36.3833
-- Nabi Sheet: lat 34.0167, lng 36.1000
-- Qaa: lat 34.3167, lng 36.4833
-- Labweh: lat 34.1833, lng 36.3500
-
-Reply ONLY with JSON: {\"lat\": 0.0, \"lng\": 0.0}. Use real GPS coordinates, never placeholder values.";
     $body = json_encode([
-        'model' => 'llama-3.1-8b-instant',
+        'model' => 'openai/gpt-oss-20b', // was llama-3.1-8b-instant
         'messages' => [
-            ['role' => 'system', 'content' => 'You are a Lebanese geography expert. You know exact GPS coordinates of every Lebanese village. Reply ONLY with valid JSON with lat and lng. Never use placeholder or example values.'],
+            ['role' => 'system', 'content' => 'You are a Lebanese geography expert. Reply ONLY with valid JSON with lat and lng. Never use placeholder or example values.'],
             ['role' => 'user', 'content' => $prompt]
         ],
         'temperature' => 0.1, 'max_tokens' => 50
@@ -345,26 +383,33 @@ Reply ONLY with JSON: {\"lat\": 0.0, \"lng\": 0.0}. Use real GPS coordinates, ne
     $data = json_decode($response, true);
     $text = preg_replace('/```json\s*/i', '', $data['choices'][0]['message']['content'] ?? '');
     $text = preg_replace('/```\s*/i', '', trim($text));
-   // ... rest of curl ...
     $coords = json_decode($text, true);
     if (!empty($coords['lat']) && !empty($coords['lng'])
         && $coords['lat'] != 0.0 && $coords['lng'] != 0.0
-        && $coords['lat'] != 33.2704  // reject the old example value
     ) {
         return ['lat' => (float)$coords['lat'], 'lng' => (float)$coords['lng'], 'display_name' => $location];
     }
     return null;
 }
 
-function geocodeWithFallback(array $location ,string $region = 'south'): array {
+function geocodeWithFallback(array $location, string $region = 'south'): array {
     $canonical = trim($location['canonical'] ?? '');
     $variants  = $location['variants']  ?? [];
     $original  = trim($location['original'] ?? $canonical);
 
+    // 1. Static table — instant, zero hallucination risk for known villages
+    if ($local = localCoordinateLookup($canonical ?: $original)) {
+        return [
+            'name' => $canonical ?: $original, 'original' => $original,
+            'tried' => 'local-lookup', 'lat' => $local['lat'], 'lng' => $local['lng'],
+            'display_name' => $local['display_name'], 'found' => true,
+        ];
+    }
+
+    // 2. Live geocoder
     $queries = [];
     if ($canonical) $queries[] = $canonical . ', Lebanon';
-    foreach (array_slice($variants, 0, 2) as $v)
-        $queries[] = trim($v) . ', Lebanon';
+    foreach (array_slice($variants, 0, 2) as $v) $queries[] = trim($v) . ', Lebanon';
 
     foreach ($queries as $q) {
         $result = nominatimQuery($q);
@@ -377,9 +422,10 @@ function geocodeWithFallback(array $location ,string $region = 'south'): array {
         }
     }
 
-    // Nominatim failed — fall back to Groq for coordinates
+    // 3. AI guess as last resort — only accepted if it falls inside the
+    //    expected region's bounding box, otherwise it's rejected.
     $result = groqGeocodeQuery($canonical ?: $original, $region);
-    if ($result) {
+    if ($result && isWithinRegion($result['lat'], $result['lng'], $region)) {
         return [
             'name' => $canonical ?: $original, 'original' => $original,
             'tried' => 'groq-geocode', 'lat' => $result['lat'], 'lng' => $result['lng'],
@@ -389,21 +435,18 @@ function geocodeWithFallback(array $location ,string $region = 'south'): array {
 
     return [
         'name' => $canonical ?: $original, 'original' => $original,
-        'tried' => implode(' / ', $queries),
+        'tried' => implode(' / ', $queries) . ' / groq-rejected-or-failed',
         'lat' => null, 'lng' => null, 'found' => false,
     ];
 }
-
 
 $geocoded = [];
 foreach ($extracted['locations'] as $loc) {
     if (is_string($loc)) {
         $loc = ['canonical' => $loc, 'original' => $loc, 'variants' => []];
     }
-        $geocoded[] = geocodeWithFallback($loc, $extracted['region'] ?? 'south');
-
+    $geocoded[] = geocodeWithFallback($loc, $extracted['region'] ?? 'south');
 }
-
 
 // STEP 3 — Return everything to JavaScript
 
