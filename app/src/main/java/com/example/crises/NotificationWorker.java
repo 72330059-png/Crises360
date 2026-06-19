@@ -41,10 +41,10 @@ import java.util.concurrent.TimeUnit;
 
 public class NotificationWorker extends Worker {
 
-    private static final String TAG              = "NotificationWorker";
-    private static final String CHANNEL_ID       = "crises_alerts";
+    private static final String TAG               = "NotificationWorker";
+    private static final String CHANNEL_ID        = "crises_alerts";
     private static final String CHANNEL_ID_DANGER = "crises_danger";
-    private static final String PREF_LAST_ZONE   = "last_notified_zone";
+    private static final String PREF_LAST_ZONE    = "last_notified_zone";
 
     private static final String API_ALERTS    = "https://crises360-mobile-api.onrender.com/get_alerts.php";
     private static final String API_MAP       = "https://crises360-mobile-api.onrender.com/get_map_data.php";
@@ -53,7 +53,7 @@ public class NotificationWorker extends Worker {
     private static final String API_NEEDS     = "https://crises360-mobile-api.onrender.com/get_needs.php";
     private static final String API_SHELTERS  = "https://crises360-mobile-api.onrender.com/get_shelters.php";
 
-    private NotificationRepository repo;
+    private final NotificationRepository repo;
 
     public NotificationWorker(@NonNull Context context, @NonNull WorkerParameters params) {
         super(context, params);
@@ -101,12 +101,11 @@ public class NotificationWorker extends Worker {
         return Result.success();
     }
 
-    // ── Location zone check (background — works when app is closed) ───────
+    // ── Location zone check ───────────────────────────────────────────────
 
     private void checkLocationZone() {
         Context ctx = getApplicationContext();
 
-        // Check location permission
         if (ContextCompat.checkSelfPermission(ctx,
                 android.Manifest.permission.ACCESS_FINE_LOCATION)
                 != android.content.pm.PackageManager.PERMISSION_GRANTED) {
@@ -120,15 +119,14 @@ public class NotificationWorker extends Worker {
 
             Location location = null;
 
-            // Try last known location first (fast)
             try {
                 location = Tasks.await(fusedClient.getLastLocation(), 5, TimeUnit.SECONDS);
-                Log.d(TAG, "Last location: " + (location != null ? location.getLatitude() + "," + location.getLongitude() : "null"));
+                Log.d(TAG, "Last location: " + (location != null
+                        ? location.getLatitude() + "," + location.getLongitude() : "null"));
             } catch (Exception e) {
                 Log.e(TAG, "getLastLocation failed: " + e.getMessage());
             }
 
-            // If null, request a fresh location (slower but reliable)
             if (location == null) {
                 Log.d(TAG, "Last location null — requesting fresh location");
                 try {
@@ -140,7 +138,8 @@ public class NotificationWorker extends Worker {
                     location = Tasks.await(
                             fusedClient.getCurrentLocation(req, null),
                             15, TimeUnit.SECONDS);
-                    Log.d(TAG, "Fresh location: " + (location != null ? location.getLatitude() + "," + location.getLongitude() : "null"));
+                    Log.d(TAG, "Fresh location: " + (location != null
+                            ? location.getLatitude() + "," + location.getLongitude() : "null"));
                 } catch (Exception e) {
                     Log.e(TAG, "getCurrentLocation failed: " + e.getMessage());
                 }
@@ -154,12 +153,10 @@ public class NotificationWorker extends Worker {
             double userLat = location.getLatitude();
             double userLng = location.getLongitude();
 
-            // Fetch zones from API
             JSONObject mapData = fetchJson(API_MAP);
             JSONArray  zones   = mapData.getJSONArray("zones");
             JSONArray  alerts  = mapData.getJSONArray("alerts");
 
-            // Build combined zone list
             List<JSONObject> allZones = new ArrayList<>();
             for (int i = 0; i < zones.length(); i++)
                 allZones.add(zones.getJSONObject(i));
@@ -174,7 +171,6 @@ public class NotificationWorker extends Worker {
                 allZones.add(z);
             }
 
-            // Find highest threat zone
             String highestThreat = "none";
             String detectedName  = null;
 
@@ -201,7 +197,6 @@ public class NotificationWorker extends Worker {
 
             Log.d(TAG, "Zone result: " + highestThreat + " / " + detectedName);
 
-            // Only notify if zone changed (avoid spamming every 15 min)
             String lastNotifiedZone = ctx
                     .getSharedPreferences("notif_zone_prefs", Context.MODE_PRIVATE)
                     .getString(PREF_LAST_ZONE, "none");
@@ -224,7 +219,6 @@ public class NotificationWorker extends Worker {
                             detectedName != null ? detectedName : "Stay alert.");
                     vibrateDevice();
                 } else if (!lastNotifiedZone.equals("none") && highestThreat.equals("none")) {
-                    // User left a danger/warning zone
                     sendDangerNotification(
                             "✅ You have left the risk area",
                             "You are now in a safe zone.");
@@ -236,7 +230,7 @@ public class NotificationWorker extends Worker {
         }
     }
 
-    // ── Send danger/zone notification (high priority, alarm sound) ────────
+    // ── Send danger/zone notification ─────────────────────────────────────
 
     private void sendDangerNotification(String title, String body) {
         Context             ctx = getApplicationContext();
@@ -244,7 +238,7 @@ public class NotificationWorker extends Worker {
                 ctx.getSystemService(Context.NOTIFICATION_SERVICE);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            Uri            soundUri  = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
+            Uri             soundUri  = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
             AudioAttributes audioAttr = new AudioAttributes.Builder()
                     .setUsage(AudioAttributes.USAGE_ALARM).build();
             NotificationChannel channel = new NotificationChannel(
@@ -283,76 +277,82 @@ public class NotificationWorker extends Worker {
         Log.d(TAG, "Seeding items before: " + loginDate);
 
         try {
-            JSONArray alerts = new JSONArray(fetchRaw(API_ALERTS));
-            Set<String> ids  = new HashSet<>();
+            JSONArray   alerts = new JSONArray(fetchRaw(API_ALERTS));
+            Set<String> ids    = new HashSet<>();
             for (int i = 0; i < alerts.length(); i++) {
-                JSONObject a    = alerts.getJSONObject(i);
-                String itemDate = extractDate(a.optString("created_at", ""));
+                JSONObject a        = alerts.getJSONObject(i);
+                String     itemDate = extractDate(a.optString("created_at", ""));
                 if (isBeforeLoginDate(itemDate, loginDate))
-                    ids.add("a_" + a.getString("id"));
+                    ids.add("a_" + a.optString("id", ""));
             }
             if (!ids.isEmpty()) repo.seedNotified("alerts", ids);
         } catch (Exception e) { Log.e(TAG, "Seed alerts: " + e.getMessage()); }
 
         try {
-            JSONObject root   = fetchJson(API_MAP);
-            JSONArray  alerts = root.getJSONArray("alerts");
-            Set<String> ids   = new HashSet<>();
+            JSONObject  root   = fetchJson(API_MAP);
+            JSONArray   alerts = root.getJSONArray("alerts");
+            Set<String> ids    = new HashSet<>();
             for (int i = 0; i < alerts.length(); i++) {
-                JSONObject a    = alerts.getJSONObject(i);
-                String itemDate = extractDate(a.optString("created_at", ""));
+                JSONObject a        = alerts.getJSONObject(i);
+                String     itemDate = extractDate(a.optString("created_at", ""));
                 if (isBeforeLoginDate(itemDate, loginDate))
-                    ids.add("m_" + a.getString("id"));
+                    ids.add("m_" + a.optString("id", ""));
             }
             if (!ids.isEmpty()) repo.seedNotified("map_alerts", ids);
         } catch (Exception e) { Log.e(TAG, "Seed map: " + e.getMessage()); }
 
         try {
-            JSONArray news  = new JSONArray(fetchRaw(API_NEWS));
-            Set<String> ids = new HashSet<>();
+            JSONArray   news = new JSONArray(fetchRaw(API_NEWS));
+            Set<String> ids  = new HashSet<>();
             for (int i = 0; i < news.length(); i++) {
-                JSONObject n    = news.getJSONObject(i);
-                String itemDate = extractDate(n.optString("publish_date", ""));
+                JSONObject n        = news.getJSONObject(i);
+                String     itemDate = extractDate(n.optString("publish_date", ""));
                 if (isBeforeLoginDate(itemDate, loginDate))
-                    ids.add(n.getString("id"));
+                    ids.add(n.optString("id", ""));
             }
             if (!ids.isEmpty()) repo.seedNotified("news", ids);
         } catch (Exception e) { Log.e(TAG, "Seed news: " + e.getMessage()); }
 
         try {
-            JSONObject root  = fetchJson(API_HOSPITALS);
-            JSONArray  data  = root.getJSONArray("data");
+            JSONObject  root = fetchJson(API_HOSPITALS);
+            JSONArray   data = root.getJSONArray("data");
             Set<String> ids  = new HashSet<>();
             for (int i = 0; i < data.length(); i++) {
-                JSONObject h    = data.getJSONObject(i);
-                String itemDate = extractDate(h.optString("updated_at", ""));
+                JSONObject h        = data.getJSONObject(i);
+                String     itemDate = extractDate(h.optString("updated_at", ""));
                 if (isBeforeLoginDate(itemDate, loginDate))
-                    ids.add(h.getString("id"));
+                    ids.add(h.optString("id", ""));
             }
             if (!ids.isEmpty()) repo.seedNotified("hospitals", ids);
         } catch (Exception e) { Log.e(TAG, "Seed hospitals: " + e.getMessage()); }
 
         try {
-            JSONObject root  = fetchJson(API_NEEDS);
-            JSONArray  data  = root.getJSONArray("data");
+            JSONObject  root = fetchJson(API_NEEDS);
+            JSONArray   data = root.getJSONArray("data");
             Set<String> ids  = new HashSet<>();
             for (int i = 0; i < data.length(); i++) {
-                JSONObject n    = data.getJSONObject(i);
-                String itemDate = extractDate(n.optString("created_at", ""));
+                JSONObject n        = data.getJSONObject(i);
+                String     itemDate = extractDate(n.optString("created_at", ""));
                 if (isBeforeLoginDate(itemDate, loginDate))
-                    ids.add(n.getString("resource_id"));
+                    ids.add(n.optString("resource_id", ""));
             }
             if (!ids.isEmpty()) repo.seedNotified("needs", ids);
         } catch (Exception e) { Log.e(TAG, "Seed needs: " + e.getMessage()); }
 
+        // ── Shelters seed: use optString to avoid crashes on missing keys ──
         try {
-            JSONArray shelters = new JSONArray(fetchRaw(API_SHELTERS));
-            Set<String> ids    = new HashSet<>();
+            JSONArray   shelters = new JSONArray(fetchRaw(API_SHELTERS));
+            Set<String> ids      = new HashSet<>();
             for (int i = 0; i < shelters.length(); i++) {
                 JSONObject s    = shelters.getJSONObject(i);
+                String     name = s.optString("shelter_name", "").trim();
+                if (name.isEmpty()) {
+                    Log.w(TAG, "Seed shelters: entry at index " + i + " has no shelter_name — skipping");
+                    continue;
+                }
                 String itemDate = extractDate(s.optString("created_at", ""));
                 if (isBeforeLoginDate(itemDate, loginDate))
-                    ids.add(s.getString("shelter_name"));
+                    ids.add(name);
             }
             if (!ids.isEmpty()) repo.seedNotified("shelters", ids);
         } catch (Exception e) { Log.e(TAG, "Seed shelters: " + e.getMessage()); }
@@ -366,7 +366,8 @@ public class NotificationWorker extends Worker {
         Set<String>  newIds = new HashSet<>();
         for (int i = 0; i < alerts.length(); i++) {
             JSONObject a  = alerts.getJSONObject(i);
-            String     id = "a_" + a.getString("id");
+            String     id = "a_" + a.optString("id", "");
+            if (id.equals("a_")) continue; // skip entries without an id
             if (!repo.isNotified("alerts", id)) {
                 found.add("🚨 " + a.optString("message", "New Alert"));
                 newIds.add(id);
@@ -383,7 +384,8 @@ public class NotificationWorker extends Worker {
         Set<String>  newIds = new HashSet<>();
         for (int i = 0; i < alerts.length(); i++) {
             JSONObject a  = alerts.getJSONObject(i);
-            String     id = "m_" + a.getString("id");
+            String     id = "m_" + a.optString("id", "");
+            if (id.equals("m_")) continue;
             if (!repo.isNotified("map_alerts", id)) {
                 found.add("🗺️ Map Alert: " + a.optString("title", ""));
                 newIds.add(id);
@@ -399,7 +401,8 @@ public class NotificationWorker extends Worker {
         Set<String>  newIds = new HashSet<>();
         for (int i = 0; i < news.length(); i++) {
             JSONObject n  = news.getJSONObject(i);
-            String     id = n.getString("id");
+            String     id = n.optString("id", "").trim();
+            if (id.isEmpty()) continue;
             if (!repo.isNotified("news", id)) {
                 found.add("📰 News: " + n.optString("title", ""));
                 newIds.add(id);
@@ -416,7 +419,8 @@ public class NotificationWorker extends Worker {
         Set<String>  newIds = new HashSet<>();
         for (int i = 0; i < data.length(); i++) {
             JSONObject h  = data.getJSONObject(i);
-            String     id = h.getString("id");
+            String     id = h.optString("id", "").trim();
+            if (id.isEmpty()) continue;
             if (!repo.isNotified("hospitals", id)) {
                 found.add("🏥 Hospital: " + h.optString("name", ""));
                 newIds.add(id);
@@ -433,7 +437,8 @@ public class NotificationWorker extends Worker {
         Set<String>  newIds = new HashSet<>();
         for (int i = 0; i < data.length(); i++) {
             JSONObject n  = data.getJSONObject(i);
-            String     id = n.getString("resource_id");
+            String     id = n.optString("resource_id", "").trim();
+            if (id.isEmpty()) continue;
             if (!repo.isNotified("needs", id)) {
                 found.add("📦 Resource: " + n.optString("resource_name", ""));
                 newIds.add(id);
@@ -443,23 +448,47 @@ public class NotificationWorker extends Worker {
         return found;
     }
 
+    // ── FIXED: checkShelters ───────────────────────────────────────────────
+    // Root cause: getString("shelter_name") throws JSONException when the key
+    // is absent, silently killing the entire loop via the outer try/catch in
+    // doWork(), so new shelters are never detected.
+    // Fix: use optString + skip empty names instead of crashing.
+
     private List<String> checkShelters() throws Exception {
         List<String> found    = new ArrayList<>();
         JSONArray    shelters = new JSONArray(fetchRaw(API_SHELTERS));
         Set<String>  newIds   = new HashSet<>();
+
+        Log.d(TAG, "Shelters from API: " + shelters.length());
+
         for (int i = 0; i < shelters.length(); i++) {
-            JSONObject s  = shelters.getJSONObject(i);
-            String     id = s.getString("shelter_name");
-            if (!repo.isNotified("shelters", id)) {
-                found.add("🏠 Shelter: " + id);
-                newIds.add(id);
+            JSONObject s    = shelters.getJSONObject(i);
+            String     name = s.optString("shelter_name", "").trim();
+
+            if (name.isEmpty()) {
+                Log.w(TAG, "Shelter[" + i + "] missing shelter_name — skipping");
+                continue;
+            }
+
+            boolean alreadyNotified = repo.isNotified("shelters", name);
+            Log.d(TAG, "Shelter[" + i + "] name=" + name + " notified=" + alreadyNotified);
+
+            if (!alreadyNotified) {
+                String status    = s.optString("status", "");
+                String emoji     = status.equals("open")      ? "✅"
+                        : status.equals("near_full") ? "🟡" : "🔴";
+                int    available = s.optInt("available", 0);
+                found.add(emoji + " New Shelter: " + name
+                        + " · Available: " + available);
+                newIds.add(name);
             }
         }
+
         if (!newIds.isEmpty()) repo.markNotified("shelters", newIds);
         return found;
     }
 
-    // ── Send general notification (new alerts/news/etc.) ──────────────────
+    // ── Send general notification ─────────────────────────────────────────
 
     private void sendNotification(List<String> items) {
         Context             ctx = getApplicationContext();
@@ -467,7 +496,7 @@ public class NotificationWorker extends Worker {
                 ctx.getSystemService(Context.NOTIFICATION_SERVICE);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            Uri            soundUri  = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+            Uri             soundUri  = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
             AudioAttributes audioAttr = new AudioAttributes.Builder()
                     .setUsage(AudioAttributes.USAGE_NOTIFICATION).build();
             NotificationChannel channel = new NotificationChannel(
@@ -523,7 +552,7 @@ public class NotificationWorker extends Worker {
     // ── Helpers ────────────────────────────────────────────────────────────
 
     private boolean isBeforeLoginDate(String itemDate, String loginDate) {
-        if (itemDate == null || itemDate.isEmpty()) return false;
+        if (itemDate  == null || itemDate.isEmpty())  return false;
         if (loginDate == null || loginDate.isEmpty()) return false;
         return itemDate.compareTo(loginDate) < 0;
     }
@@ -545,7 +574,7 @@ public class NotificationWorker extends Worker {
         BufferedReader br = new BufferedReader(
                 new InputStreamReader(conn.getInputStream()));
         StringBuilder sb = new StringBuilder();
-        String line;
+        String        line;
         while ((line = br.readLine()) != null) sb.append(line);
         br.close();
         conn.disconnect();
