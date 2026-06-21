@@ -2,7 +2,9 @@ package com.example.crises;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.InputType;
 import android.text.TextUtils;
+import android.view.MotionEvent;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -42,13 +44,37 @@ public class SignUp extends AppCompatActivity {
             return insets;
         });
 
-        etFullName   = findViewById(R.id.etUsername);   // "Name" field in your XML
-        etEmail      = findViewById(R.id.etEmail);
-        etNationalId = findViewById(R.id.etNationalId);
-        etPassword   = findViewById(R.id.etPassword);
-        btnSignUp    = findViewById(R.id.btnSignUp);
-        cbTerms      = findViewById(R.id.cbTerms);
+        etFullName      = findViewById(R.id.etUsername);
+        etEmail         = findViewById(R.id.etEmail);
+        etNationalId    = findViewById(R.id.etNationalId);
+        etPassword      = findViewById(R.id.etPassword);
+        btnSignUp       = findViewById(R.id.btnSignUp);
+        cbTerms         = findViewById(R.id.cbTerms);
         tvLoginRedirect = findViewById(R.id.tvLoginRedirect);
+
+        // ── Password eye toggle ───────────────────────────────
+        etPassword.setOnTouchListener((v, event) -> {
+            if (event.getAction() == MotionEvent.ACTION_UP) {
+                if (etPassword.getCompoundDrawables()[2] != null) {
+                    int drawableWidth = etPassword.getCompoundDrawables()[2].getBounds().width();
+                    if (event.getRawX() >= (etPassword.getRight() - drawableWidth - etPassword.getPaddingEnd())) {
+
+                        if (etPassword.getInputType() == (InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)) {
+                            // Show password
+                            etPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+                        } else {
+                            // Hide password
+                            etPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                        }
+
+                        // Keep cursor at end
+                        etPassword.setSelection(etPassword.getText().length());
+                        return true;
+                    }
+                }
+            }
+            return false;
+        });
 
         // ── Sign Up button ────────────────────────────────────
         btnSignUp.setOnClickListener(v -> {
@@ -104,10 +130,10 @@ public class SignUp extends AppCompatActivity {
                 conn.setConnectTimeout(8000);
                 conn.setReadTimeout(8000);
 
-                String data = "full_name="   + URLEncoder.encode(fullName,   "UTF-8")
-                        + "&email="      + URLEncoder.encode(email,      "UTF-8")
-                        + "&national_id="+ URLEncoder.encode(nationalId, "UTF-8")
-                        + "&password="   + URLEncoder.encode(password,   "UTF-8");
+                String data = "full_name="    + URLEncoder.encode(fullName,   "UTF-8")
+                        + "&email="       + URLEncoder.encode(email,      "UTF-8")
+                        + "&national_id=" + URLEncoder.encode(nationalId, "UTF-8")
+                        + "&password="    + URLEncoder.encode(password,   "UTF-8");
 
                 OutputStream os = conn.getOutputStream();
                 os.write(data.getBytes());

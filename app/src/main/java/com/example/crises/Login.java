@@ -3,7 +3,9 @@ package com.example.crises;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.InputType;
 import android.text.TextUtils;
+import android.view.MotionEvent;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -57,6 +59,30 @@ public class Login extends AppCompatActivity {
         // ✅ Pre-fill email if coming from SignUp
         String preEmail = getIntent().getStringExtra("email");
         if (preEmail != null) etEmail.setText(preEmail);
+
+        // ── Password eye toggle ───────────────────────────────
+        etPassword.setOnTouchListener((v, event) -> {
+            if (event.getAction() == MotionEvent.ACTION_UP) {
+                if (etPassword.getCompoundDrawables()[2] != null) {
+                    int drawableWidth = etPassword.getCompoundDrawables()[2].getBounds().width();
+                    if (event.getRawX() >= (etPassword.getRight() - drawableWidth - etPassword.getPaddingEnd())) {
+
+                        if (etPassword.getInputType() == (InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)) {
+                            // Show password
+                            etPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+                        } else {
+                            // Hide password
+                            etPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                        }
+
+                        // Keep cursor at end
+                        etPassword.setSelection(etPassword.getText().length());
+                        return true;
+                    }
+                }
+            }
+            return false;
+        });
 
         // ── Login button ──────────────────────────────────────
         btnLogin.setOnClickListener(v -> {
@@ -119,15 +145,11 @@ public class Login extends AppCompatActivity {
                         if (json.getString("status").equals("success")) {
 
                             // ✅ Save login date to notification_prefs
-                            // This is used to filter out old alerts/notifications
-                            // that existed before the user logged in.
                             String loginDate = new SimpleDateFormat(
                                     "yyyy-MM-dd", Locale.getDefault()).format(new Date());
                             getSharedPreferences("notification_prefs", MODE_PRIVATE)
                                     .edit()
                                     .putString("login_date", loginDate)
-                                    // ✅ Reset the seed flag so NotificationWorker
-                                    //    re-seeds with the new login date baseline
                                     .putBoolean("initial_seed_done", false)
                                     .apply();
 
@@ -178,8 +200,7 @@ public class Login extends AppCompatActivity {
         input.setPadding(40, 20, 40, 20);
 
         new AlertDialog.Builder(this)
-                .setTitle("Reset Passwo" +
-                        "2\rd")
+                .setTitle("Reset Password")
                 .setMessage("We'll send a reset link to your email.")
                 .setView(input)
                 .setPositiveButton("Send", (dialog, which) -> {
