@@ -12,42 +12,37 @@ class Municipality extends DAL
 
         return $this->getdata($sql, [$org_id]);
     }
+public function addShelter($data)
+{
+    $status = $this->calculateStatus(
+        $data['capacity'],
+        $data['occupied']
+    );
 
-    public function addShelter($data)
-    {
-        $status = $this->calculateStatus(
-            $data['capacity'],
-            $data['occupied']
-        );
+    $sql = "INSERT INTO shelters
+        (
+            organization_id,
+            shelter_name,
+            location,
+            capacity,
+            occupied,
+            status,
+            lat,
+            lng
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
-        $sql = "INSERT INTO shelters
-            (
-                organization_id,
-                shelter_name,
-                location,
-                capacity,
-                occupied,
-                status
-            )
-            VALUES (?, ?, ?, ?, ?, ?)";
-
-        return $this->executeSafe($sql, [
-
-            (int)$data['organization_id'],
-
-            trim($data['shelter_name']),
-
-            trim($data['location']),
-
-            (int)$data['capacity'],
-
-            (int)$data['occupied'],
-
-            $status
-
-        ]);
-    }
-
+    return $this->executeSafe($sql, [
+        (int)$data['organization_id'],
+        trim($data['shelter_name']),
+        trim($data['location']),
+        (int)$data['capacity'],
+        (int)$data['occupied'],
+        $status,
+        $data['lat'],
+        $data['lng']
+    ]);
+}
     public function updateShelter($data)
     {
         $status = $this->calculateStatus(
@@ -473,10 +468,10 @@ class Municipality extends DAL
         return explode(",", $enum);
     }
 
-  public function getOrganizationById($org_id) {
-    return $this->getRowSafe(
-        "SELECT * FROM organizations WHERE id = ?",
-        [$org_id]
-    );
+ public function getOrgById($id) {
+    $id = (int)$id;
+    $sql = "SELECT * FROM organizations WHERE id = $id LIMIT 1";
+    $result = $this->getdata($sql);
+    return $result[0] ?? null;
 }
 }
