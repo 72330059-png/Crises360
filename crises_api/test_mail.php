@@ -1,20 +1,36 @@
 <?php
 date_default_timezone_set('Asia/Beirut');
 header('Content-Type: application/json');
-require_once 'mailer_helper.php';
 
-$result = [];
-$result['MAIL_FROM']     = getenv('MAIL_FROM');
-$result['MAIL_NAME']     = getenv('MAIL_NAME');
-$result['MAIL_PASSWORD'] = getenv('MAIL_PASSWORD') ? 'SET' : 'NOT SET';
-
-$sent = false;
 try {
-    $sent = sendMail(getenv('MAIL_FROM'), "Test", "<p>Test email</p>");
-} catch (Exception $e) {
-    $result['exception'] = $e->getMessage();
-}
+    require_once 'mailer_config.php';
+    require_once 'PHPMailer/Exception.php';
+    require_once 'PHPMailer/PHPMailer.php';
+    require_once 'PHPMailer/SMTP.php';
 
-$result['sent'] = $sent;
-echo json_encode($result);
+    use PHPMailer\PHPMailer\PHPMailer;
+    use PHPMailer\PHPMailer\Exception;
+
+    $mail = new PHPMailer(true);
+    $mail->isSMTP();
+    $mail->Host       = getenv('MAIL_HOST');
+    $mail->SMTPAuth   = true;
+    $mail->Username   = getenv('MAIL_USERNAME');
+    $mail->Password   = getenv('MAIL_PASSWORD');
+    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+    $mail->Port       = 587;
+    $mail->setFrom(getenv('MAIL_USERNAME'), 'Crises App');
+    $mail->addAddress(getenv('MAIL_USERNAME'));
+    $mail->isHTML(true);
+    $mail->Subject = 'Test';
+    $mail->Body    = '<p>Test email</p>';
+    $mail->send();
+
+    echo json_encode(['status' => 'success', 'message' => 'Email sent!']);
+
+} catch (Exception $e) {
+    echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+} catch (Error $e) {
+    echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+}
 ?>
