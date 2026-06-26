@@ -18,9 +18,16 @@ try {
     $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
     $mail->Port       = 587;
 
-    echo json_encode(['status' => 'smtp configured', 'host' => getenv('MAIL_HOST'), 'user' => getenv('MAIL_USERNAME')]);
+    $mail->setFrom(getenv('MAIL_USERNAME'), 'Crises App');
+    $mail->addAddress(getenv('MAIL_USERNAME'));
+    $mail->isHTML(true);
+    $mail->Subject = 'Test';
+    $mail->Body    = '<p>Test email</p>';
+    $mail->send();
+
+    echo json_encode(['status' => 'success', 'message' => 'Email sent!']);
 
 } catch (Exception $e) {
-    echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+    echo json_encode(['status' => 'error', 'message' => $e->getMessage(), 'info' => $mail->ErrorInfo]);
 }
 ?>
