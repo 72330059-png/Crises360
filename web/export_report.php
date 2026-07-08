@@ -100,48 +100,22 @@ $hospitalTeams = $dal->getdata(
 );
 
 // HOSPITAL DEMOGRAPHICS (CASUALTIES) 
+
 $demographics = $dal->getdata(
     "SELECT
-        o.name              AS hospital_name,
-        d1.male_injured,
-        d1.female_injured,
-        d1.children_injured,
-        d1.male_martyrs,
-        d1.female_martyrs,
-        d1.children_martyrs,
-        d1.recorded_at
-     FROM hospital_demographics_history d1
-     LEFT JOIN hospitals h  ON h.id = d1.hospital_id
+        o.name          AS hospital_name,
+        hd.male_injured,
+        hd.female_injured,
+        hd.children_injured,
+        hd.male_martyrs,
+        hd.female_martyrs,
+        hd.children_martyrs,
+        NULL            AS recorded_at
+     FROM hospital_demographics hd
+     LEFT JOIN hospitals h  ON h.id = hd.hospital_id
      LEFT JOIN organizations o ON o.id = h.organization_id
-     WHERE DATE(d1.recorded_at) BETWEEN ? AND ?
-       AND d1.recorded_at = (
-           SELECT MAX(d2.recorded_at)
-           FROM hospital_demographics_history d2
-           WHERE d2.hospital_id = d1.hospital_id
-             AND DATE(d2.recorded_at) BETWEEN ? AND ?
-       )
-     ORDER BY o.name ASC",
-    [$dateFrom, $dateTo, $dateFrom, $dateTo]
+     ORDER BY o.name ASC"
 );
-
-// Fallback: live hospital_demographics table
-if (empty($demographics)) {
-    $demographics = $dal->getdata(
-        "SELECT
-            o.name          AS hospital_name,
-            hd.male_injured,
-            hd.female_injured,
-            hd.children_injured,
-            hd.male_martyrs,
-            hd.female_martyrs,
-            hd.children_martyrs,
-            NULL            AS recorded_at
-         FROM hospital_demographics hd
-         LEFT JOIN hospitals h  ON h.id = hd.hospital_id
-         LEFT JOIN organizations o ON o.id = h.organization_id
-         ORDER BY o.name ASC"
-    );
-}
 
 //  SHELTERS 
 $shelters = $dal->getdata(
@@ -268,30 +242,17 @@ $regionStats = $dal->getdata(
     [$dateFrom, $dateTo]
 );
 
-//  SHELTER TREND 
+//  SHELTER TREND — live shelters table only
 $shelterTrend = $dal->getdata(
     "SELECT
-        DATE_FORMAT(recorded_at, '%Y-%m') AS month,
+        DATE_FORMAT(created_at, '%Y-%m') AS month,
         AVG(occupied)  AS avg_occupied,
         AVG(capacity)  AS avg_capacity
-     FROM shelter_history
-     WHERE recorded_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
-     GROUP BY DATE_FORMAT(recorded_at, '%Y-%m')
+     FROM shelters
+     WHERE created_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
+     GROUP BY DATE_FORMAT(created_at, '%Y-%m')
      ORDER BY month ASC"
 );
-
-if (empty($shelterTrend)) {
-    $shelterTrend = $dal->getdata(
-        "SELECT
-            DATE_FORMAT(created_at, '%Y-%m') AS month,
-            AVG(occupied)  AS avg_occupied,
-            AVG(capacity)  AS avg_capacity
-         FROM shelters
-         WHERE created_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
-         GROUP BY DATE_FORMAT(created_at, '%Y-%m')
-         ORDER BY month ASC"
-    );
-}
 
 // $hospitals = $hospObj->getAllHospitals();
 $hospTotal = count($hospitals);
